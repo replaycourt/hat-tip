@@ -1,0 +1,6 @@
+# rustc 1.95.0 is the MSRV of near-sdk 5.30. Newer compilers may emit wasm features the NEAR runtime rejects.
+[toolchain]
+channel = "1.95.0"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"
