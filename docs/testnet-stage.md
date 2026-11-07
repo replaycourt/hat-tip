@@ -50,7 +50,7 @@ All in `scripts/`, Node 20+ and no dependencies (`near-lite.mjs` from Bonfire); 
 | `deploy.mjs token\|contract --root <root> [--wasm] [--set f=v] [--genesis] [--lock\|--verify-only\|--lock-only]` | deploy and `new` in one transaction, the first `sync`, the checks above; `--lock` deletes every key after all checks passed (refused on staging) |
 | `setup-gas-pool.mjs --gas <account> --contract <contract> [--page 8] [--keeper 2]` | the relay keys |
 | `house.mjs run\|report\|export-secret\|summary` | the house (below), the balance report, the `HOUSE_KEYS` value, and the per-round summary with an event replay |
-| `judge-checks.sh [--section final\|staging]` | 13 read-only checks (below) |
+| `judge-checks.sh [--section final\|staging]` | 14 read-only checks, all at one final block (below; check 14 was added after this run) |
 
 The staging deployment, step by step:
 
@@ -224,7 +224,7 @@ PASS  13. relay keys only call act, close_round, pay, check_payout, sync
 All 11 checks passed.
 ```
 
-On the final deployment checks 1 and 2 count (0 access keys expected).
+On the final deployment checks 1 and 2 count (0 access keys expected). Check 14, added after this run, compares the DAO's code hash with the versions the factory publishes (`get_contracts_metadata`); on staging it passes (version 3.31).
 
 
 

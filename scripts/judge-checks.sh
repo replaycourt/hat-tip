@@ -3,60 +3,102 @@
 #
 #   scripts/judge-checks.sh [--section final|staging] [--rpc <url>]
 #
-# The accounts come from deploy/testnet.json (the `final` section by default). Needs bash, curl and
-# python3 (python3 only decodes the RPC's JSON). Sends no transaction: every call is a `query` (a view
-# or an account read) on the public NEAR testnet RPC. Exit code: the number of checks that failed.
+# The accounts come from deploy/testnet.json, section `final` (the launched, keyless deployment) by
+# default. Needs bash, curl and python3 (python3 only decodes the RPC's JSON); macOS or Linux. Sends no
+# transaction and holds no key: every call is a read (`block`, then `query` for a view, an account,
+# its code hash or its keys) on the public NEAR testnet RPC, all at the same final block.
+#
+# Exit code: the number of checks that failed (0 when all pass); 64 bad usage; 65 the section is not
+# in deploy/testnet.json (before the launch the `final` section is empty: "not launched yet").
 # On the staging deployment the contract and the token keep their keys on purpose; checks 1 and 2
 # are then reported as INFO and not counted.
+#
+# RPC: FastNEAR's free endpoint answers HTTP 429 after a few quick calls, and dRPC's free plan
+# sometimes times out. Every read is tried up to five times, alternating the two endpoints with
+# growing pauses, and reads are spaced by $PAUSE seconds. curl runs with --fail and without its own
+# --retry, so an error page is never taken for an answer and two answers are never concatenated. A
+# read that gets no answer makes its check FAIL with the reason; it can never pass.
 
 set -u
 
 RPC=${RPC:-https://test.rpc.fastnear.com}
+FALLBACK_RPC=${FALLBACK_RPC:-https://near-testnet.drpc.org}
+PAUSE=${PAUSE:-0.3}
 SECTION=final
 while [ $# -gt 0 ]; do
   case "$1" in
-    --rpc) RPC=$2; shift 2 ;;
-    --section) SECTION=$2; shift 2 ;;
+    --rpc) RPC=${2:?--rpc needs a URL}; shift 2 ;;
+    --section) SECTION=${2:?--section needs final or staging}; shift 2 ;;
     *) echo "usage: $0 [--section final|staging] [--rpc <url>]" >&2; exit 64 ;;
   esac
 done
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-field() { # $1: python expression on `s`, the section of deploy/testnet.json
-  python3 -I -c '
+
+# The section's accounts, one per line: contract, token, DAO, gas account, DAO factory.
+ACCOUNTS=$(python3 -I - "$ROOT/deploy/testnet.json" "$SECTION" <<'PY'
 import json, sys
-s = json.load(open(sys.argv[1] + "/deploy/testnet.json", encoding="utf-8")).get(sys.argv[2])
+s = json.load(open(sys.argv[1], encoding="utf-8")).get(sys.argv[2])
 if not s:
-    sys.exit("deploy/testnet.json has no section %s" % sys.argv[2])
-print(eval(sys.argv[3]))' "$ROOT" "$SECTION" "$1"
-}
-CONTRACT=$(field 's["contract"]') || exit 64
-TOKEN=$(field 's["token"]') || exit 64
-DAO=$(field 's["dao"]') || exit 64
-GAS_ACCOUNT=$(field 's["gas"]["account"]') || exit 64
+    sys.exit(3)
+print("\n".join([s["contract"], s["token"], s["dao"], (s.get("gas") or {}).get("account", "-"),
+                 s.get("factory", "sputnikv2.testnet")]))
+PY
+)
+case $? in
+  0) ;;
+  3)
+    if [ "$SECTION" = final ]; then
+      echo "Hat Tip: not launched yet. deploy/testnet.json has no final deployment; the launch fills it in."
+      echo "The staging deployment can be checked now: scripts/judge-checks.sh --section staging"
+    else
+      echo "deploy/testnet.json has no section \"$SECTION\""
+    fi
+    exit 65 ;;
+  *) echo "cannot read the section \"$SECTION\" of deploy/testnet.json" >&2; exit 65 ;;
+esac
+{ read -r CONTRACT; read -r TOKEN; read -r DAO; read -r GAS_ACCOUNT; read -r FACTORY; } <<<"$ACCOUNTS"
 EMPTY_ARGS=e30= # base64 of {}
 b64() { printf '%s' "$1" | base64 | tr -d '\n'; }
 
-FAILED=0
-TOTAL=0
-FALLBACK_RPC=${FALLBACK_RPC:-https://near-testnet.drpc.org}
-query() { # $1: JSON params of a `query` call
-  # --fail: a rate-limited or failed attempt prints nothing, so a retry cannot append a second body.
-  # FastNEAR's free tier answers 429 after a few quick calls; then the fallback endpoint answers.
-  local out url
-  for url in "$RPC" "$FALLBACK_RPC" "$RPC"; do
-    out=$(curl -s --fail --max-time 20 --retry 2 --retry-delay 2 "$url" -H 'Content-Type: application/json' \
-      -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"query\",\"params\":$1}")
-    # an answer with a result (a contract panic is a result too); RPC errors such as rate limits are retried
-    if printf '%s' "$out" | grep -q '"result"'; then printf '%s' "$out"; return; fi
-    sleep 1
+CALLS=0
+# rpc METHOD PARAMS: prints the first answer that has a "result"; if none comes, the last error
+# answer (an RPC error, which check() reports) or nothing (which check() reports as "no answer").
+rpc() {
+  local body="{\"jsonrpc\":\"2.0\",\"id\":\"judge\",\"method\":\"$1\",\"params\":$2}"
+  local url out last="" pause=1
+  if [ "$CALLS" -gt 0 ]; then sleep "$PAUSE"; fi
+  CALLS=$((CALLS + 1))
+  for url in "$RPC" "$FALLBACK_RPC" "$RPC" "$FALLBACK_RPC" "$RPC"; do
+    if out=$(curl -s --fail --max-time 20 -H 'Content-Type: application/json' -d "$body" "$url"); then
+      case "$out" in *'"result"'*) printf '%s' "$out"; return 0 ;; esac
+      [ -n "$out" ] && last=$out
+      # answers a retry cannot change
+      case "$out" in *UNKNOWN_ACCOUNT*|*NO_CONTRACT_CODE*|*CONTRACT_EXECUTION_ERROR*|*MethodNotFound*) break ;; esac
+    fi
+    sleep "$pause"
+    pause=$((pause + 1))
   done
+  printf '%s' "$last"
 }
+
+# Every read at one final block, so that the contract, the DAO and the token are seen at the same
+# moment. If no block height comes back, each read takes the final block of its own moment.
+BLOCK=$(rpc block '{"finality":"final"}' | python3 -I -c '
+import json, sys
+print(json.load(sys.stdin)["result"]["header"]["height"])' 2>/dev/null)
+case "$BLOCK" in
+  "" | *[!0-9]*) AT='"finality":"final"'; WHERE="the final block of each read (no block height came back)" ;;
+  *) AT="\"block_id\":$BLOCK"; WHERE="block $BLOCK" ;;
+esac
+query() { rpc query "{\"request_type\":\"$1\",$AT,\"account_id\":\"$2\"}"; }  # $1: request type, $2: account
 view() { # $1: account, $2: method, $3: base64 of the JSON args
-  query "{\"request_type\":\"call_function\",\"finality\":\"final\",\"account_id\":\"$1\",\"method_name\":\"$2\",\"args_base64\":\"$3\"}"
+  rpc query "{\"request_type\":\"call_function\",$AT,\"account_id\":\"$1\",\"method_name\":\"$2\",\"args_base64\":\"$3\"}"
 }
-# Reads the RPC answer on stdin and runs the python code in $1 with `r` the result object, `v` a
-# view's decoded JSON, ROOT the repository root and the accounts as CONTRACT, TOKEN, DAO, GAS; the
-# code sets `out`, which is printed. Any error prints "error: ...".
+
+# Reads an RPC answer on stdin and runs the python code in $1 with `r` the result object, `v` a
+# view's decoded JSON, ROOT the repository root, the accounts as CONTRACT, TOKEN, DAO, GAS and any
+# further arguments of check() in sys.argv[7:]; the code sets `out`, which is printed. A missing answer, an RPC error or any exception prints
+# "error: ...", which never equals what a check expects.
 check() {
   python3 -I -c '
 import base64, json, sys, collections
@@ -70,7 +112,7 @@ def hexhash(b58):
 try:
     raw = sys.stdin.read()
     if not raw.strip():
-        raise ValueError("no answer from the RPC")
+        raise ValueError("no answer from the RPC (both endpoints, five tries)")
     ans = json.loads(raw)
     if "result" not in ans:
         raise ValueError("RPC error: %s" % json.dumps(ans.get("error"))[:200])
@@ -83,36 +125,40 @@ try:
     print(out)
 except Exception as e:
     print("error: %s" % (e,))
-' "$1" "$ROOT" "$CONTRACT" "$TOKEN" "$DAO" "$GAS_ACCOUNT"
+' "$1" "$ROOT" "$CONTRACT" "$TOKEN" "$DAO" "$GAS_ACCOUNT" "${@:2}"
 }
-report() { # $1: name, $2: what was seen, $3: what passes
+
+FAILED=0
+TOTAL=0
+report() { # $1: name, $2: what was seen, $3: what passes (the seen text may add " (details)")
   TOTAL=$((TOTAL + 1))
-  if [ "$2" = "$3" ]; then
-    printf 'PASS  %s\n' "$1"
-  else
-    printf 'FAIL  %s\n      expected: %s\n      got:      %s\n' "$1" "$3" "$2"
-    FAILED=$((FAILED + 1))
-  fi
+  case "$2" in
+    "$3" | "$3 ("*) printf 'PASS  %s%s\n' "$1" "${2#"$3"}" ;;
+    *)
+      printf 'FAIL  %s\n      expected: %s\n      got:      %s\n' "$1" "$3" "$2"
+      FAILED=$((FAILED + 1)) ;;
+  esac
 }
 info() { printf 'INFO  %s: %s\n' "$1" "$2"; }
 
-echo "Hat Tip ($SECTION): read-only checks of $CONTRACT, $TOKEN and $DAO against $RPC"
+echo "Hat Tip ($SECTION): read-only checks of $CONTRACT, $TOKEN and $DAO at $WHERE"
+echo "RPC: $RPC, fallback $FALLBACK_RPC"
 
 # 1, 2. The contract and the token have no access keys: nobody can redeploy them, change a rule or
 #       act as them.
 for acc in "$CONTRACT" "$TOKEN"; do
   n=$([ "$acc" = "$CONTRACT" ] && echo 1 || echo 2)
-  got=$(query "{\"request_type\":\"view_access_key_list\",\"finality\":\"final\",\"account_id\":\"$acc\"}" \
-    | check 'out = "%d access keys" % len(r["keys"])')
+  got=$(query view_access_key_list "$acc" | check 'out = "%d access keys" % len(r["keys"])')
   if [ "$SECTION" = staging ]; then info "$n. $acc access keys (staging keeps them)" "$got"
   else report "$n. $acc has no access keys" "$got" "0 access keys"; fi
 done
 
-# 3, 4. The deployed code is the wasm this repository records (base58 code hash = WASM_SHA256).
+# 3, 4. The deployed code is the wasm this repository records (base58 code hash = WASM_SHA256). That
+#       WASM_SHA256 is the build of this source is shown by a rebuild (build.sh --check, CI).
 for pair in "contract:$CONTRACT" "token:$TOKEN"; do
   dir=${pair%%:*}; acc=${pair#*:}
   want=$(tr -d '[:space:]' <"$ROOT/$dir/WASM_SHA256")
-  got=$(query "{\"request_type\":\"view_account\",\"finality\":\"final\",\"account_id\":\"$acc\"}" | check 'out = hexhash(r["code_hash"])')
+  got=$(query view_account "$acc" | check 'out = hexhash(r["code_hash"])')
   report "$([ "$dir" = contract ] && echo 3 || echo 4). code hash of $acc = $dir/WASM_SHA256" "$got" "$want"
 done
 
@@ -131,7 +177,8 @@ elif t["vote_policy"] != {"transfer": {"weight_kind": "RoleWeight", "quorum": "0
 if not c: problems.append("no council role")
 elif c["vote_policy"] != {"call": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"}}: problems.append("council vote policy %s" % c["vote_policy"])
 if v["default_vote_policy"] != {"weight_kind": "RoleWeight", "quorum": "0", "threshold": [1, 2]}: problems.append("default vote policy %s" % v["default_vote_policy"])
-out = "; ".join(problems) or "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2"')
+out = "; ".join(problems) or "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2"
+if not problems: out += " (council of %d)" % len(c["kind"].get("Group", []))')
 report "5. DAO policy: the three tiers exactly" "$got" "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2"
 
 # 6, 7. Nobody else can file: there is no Everyone role, and only role `thanks` may add a `call`
@@ -142,94 +189,124 @@ report "6. DAO policy: no Everyone role" "$got" "no Everyone role"
 got=$(printf '%s' "$POLICY" | check '
 cover = {"call:AddProposal", "call:*", "*:AddProposal", "*:*"}
 who = sorted(x["name"] for x in v["roles"] if cover & set(x["permissions"]))
-out = "call:AddProposal only in %s" % ",".join(who)')
+out = "call:AddProposal only in %s" % (",".join(who) or "no role")')
 report "7. DAO policy: call:AddProposal only in role thanks" "$got" "call:AddProposal only in thanks"
 
 # 8. The factory cannot upgrade the DAO's code: get_factory_info().auto_update is false.
 got=$(view "$DAO" get_factory_info "$EMPTY_ARGS" | check 'out = "auto_update %s" % str(v["auto_update"]).lower()')
 report "8. DAO factory auto-update off" "$got" "auto_update false"
 
-# 9. audit(): budgets add up, points equal their attributions, statuses and carries add up.
+# 9. audit(): budgets add up, points equal their attributions, statuses, proposal ids and carries add up.
 got=$(view "$CONTRACT" audit "$EMPTY_ARGS" | check '
 flags = ["balanced", "points_attributed", "statuses_ok", "filed_have_ids", "carry_ok"]
-bad = [f for f in flags if not v[f]]
-out = ("false: " + ",".join(bad)) if bad else "all true (%d payouts)" % v["payouts"]
-if not bad: out = "all true"')
+bad = [f for f in flags if v.get(f) is not True]
+out = ("false: " + ",".join(bad)) if bad else "all true (%d payouts)" % v["payouts"]')
 report "9. audit(): balanced, attributed, statuses, ids, carry" "$got" "all true"
 
 # 10. The rounds are being closed: the oldest unclosed round is the current one or the one before.
-got=$(view "$CONTRACT" state "$EMPTY_ARGS" | check '
+STATE=$(view "$CONTRACT" state "$EMPTY_ARGS")
+got=$(printf '%s' "$STATE" | check '
 lag = v["round"] - v["oldest_unclosed"]
-out = "last close less than two rounds old" if lag <= 1 else "%d rounds wait for a close (round %d, oldest unclosed %d)" % (lag, v["round"], v["oldest_unclosed"])')
+out = ("last close less than two rounds old (round %d)" % v["round"]) if lag <= 1 else \
+    "%d rounds wait for a close (round %d, oldest unclosed %d)" % (lag, v["round"], v["oldest_unclosed"])')
 report "10. the last close is less than two rounds old" "$got" "last close less than two rounds old"
 
 # 11. The contract is bound to this DAO and this token.
 got=$(view "$CONTRACT" config "$EMPTY_ARGS" | check 'out = "dao and token match" if v["dao"] == DAO and v["token"] == TOKEN else "config names %s, %s" % (v["dao"], v["token"])')
 report "11. config(): dao = $DAO, token = $TOKEN" "$got" "dao and token match"
 
-# 12. A sample of the contract's payouts (the last 20 filed) matches the DAO: each proposal was
-#     filed by the contract, its kind is the tier's (Transfer for tiers 1 and 3, FunctionCall
-#     ft_transfer for tier 2) with the payout's receiver and amount, and the statuses agree.
-STATE=$(view "$CONTRACT" state "$EMPTY_ARGS")
-FROM=$(printf '%s' "$STATE" | check 'out = max(v["oldest_payout"], v["next_payout"] - 40)')
-ARGS=$(b64 "$(printf '{"from":%s,"limit":40}' "$FROM")")
-PAYOUTS=$(view "$CONTRACT" payouts "$ARGS")
-IDS=$(printf '%s' "$PAYOUTS" | check 'out = " ".join(str(p["dao_proposal"]) for p in [p for p in v if p["dao_proposal"] is not None][-20:])')
-PROPS=""
-for id in $IDS; do
-  case "$id" in *[!0-9]*) break ;; esac
-  ARGS=$(b64 "$(printf '{"from_index":%s,"limit":1}' "$id")")
-  PROPS="$PROPS$(view "$DAO" get_proposals "$ARGS" | check 'out = json.dumps(v[0] if v else None)')
-"
-done
-got=$(printf '%s' "$PAYOUTS" | python3 -I -c '
+# 12. A sample of the DAO's proposals matches the contract's payouts, both ways: the last 40 DAO
+#     proposals and the last 100 payouts. Every proposal the contract filed belongs to a payout
+#     (or to one whose filing chain is still running), and every payout's proposal was filed by the
+#     contract with the tier's kind (Transfer for tiers 1 and 3, FunctionCall ft_transfer for tier
+#     2), the payout's receiver and amount, and a DAO status that agrees with the payout's status.
+PFROM=$(printf '%s' "$STATE" | check 'out = max(v["oldest_payout"], v["next_payout"] - 100)')
+case "$PFROM" in
+  "" | *[!0-9]*) PAYOUTS="" ;;
+  *) ARGS=$(printf '{"from":%s,"limit":100}' "$PFROM"); PAYOUTS=$(view "$CONTRACT" payouts "$(b64 "$ARGS")") ;;
+esac
+DFROM=$(view "$DAO" get_last_proposal_id "$EMPTY_ARGS" | check 'out = max(0, v - 40)')
+case "$DFROM" in
+  "" | *[!0-9]*) PROPOSALS="" ;;
+  *) ARGS=$(printf '{"from_index":%s,"limit":40}' "$DFROM"); PROPOSALS=$(view "$DAO" get_proposals "$(b64 "$ARGS")") ;;
+esac
+got=$(python3 -I - "$CONTRACT" "$TOKEN" "$PAYOUTS" "$PROPOSALS" <<'PY'
 import base64, json, sys
-CONTRACT, TOKEN, props_raw = sys.argv[1:4]
+CONTRACT, TOKEN = sys.argv[1:3]
+def decode(raw, what):
+    if not raw.strip():
+        raise ValueError("no answer from the RPC for %s" % what)
+    ans = json.loads(raw)
+    r = ans.get("result")
+    if r is None or "error" in r:
+        raise ValueError("RPC error for %s: %s" % (what, json.dumps(ans.get("error") or r)[:200]))
+    return json.loads(bytes(r["result"]).decode())
 try:
-    v = json.loads(bytes(json.load(sys.stdin)["result"]["result"]).decode())
-    props = [json.loads(l) for l in props_raw.splitlines() if l.strip()]
-    by_id = {p["id"]: p for p in props if p}
-    filed = [p for p in v if p["dao_proposal"] is not None][-20:]
-    want = {"paid": {"Approved"}, "approved": {"Approved"}, "filed": {"InProgress", "Approved", "Rejected", "Expired", "Failed", None},
+    payouts = decode(sys.argv[3], "payouts()")
+    props = decode(sys.argv[4], "get_proposals()")
+    ours = [q for q in props if q["proposer"] == CONTRACT]
+    by_id = {q["id"]: q for q in props}
+    by_dao = {p["dao_proposal"]: p for p in payouts if p["dao_proposal"] is not None}
+    lo = min(q["id"] for q in props) if props else 0
+    hi = max(q["id"] for q in props) if props else -1
+    want = {"paid": {"Approved"}, "approved": {"Approved", "Failed"},
+            "filed": {"InProgress", "Approved", "Rejected", "Removed", "Expired", "Failed", None},
             "rejected": {"Rejected"}, "removed": {None, "Removed"}, "expired": {"Expired"}, "failed": {"Failed", "Moved"}}
-    bad = []
-    for p in filed:
-        q = by_id.get(p["dao_proposal"])
-        st = q["status"] if q else None
-        if st not in want[p["status"]]:
-            bad.append("payout %d is %s, DAO #%d is %s" % (p["id"], p["status"], p["dao_proposal"], st))
+    def amount_receiver(q):
+        k = q["kind"]
+        if "Transfer" in k:
+            t = k["Transfer"]
+            return t.get("token_id"), t.get("receiver_id"), t.get("amount")
+        fc = k.get("FunctionCall") or {}
+        acts = fc.get("actions") or []
+        if fc.get("receiver_id") != TOKEN or len(acts) != 1 or acts[0].get("method_name") != "ft_transfer" or acts[0].get("deposit") != "1":
+            return None, None, None
+        args = json.loads(base64.b64decode(acts[0]["args"]))
+        return TOKEN, args.get("receiver_id"), args.get("amount")
+    bad, matched, outside = [], 0, 0
+    oldest_payout_proposal = min(by_dao) if by_dao else None
+    for q in ours:  # DAO -> contract
+        if q["id"] in by_dao:
             continue
-        if not q:
+        if oldest_payout_proposal is None or q["id"] < oldest_payout_proposal:
+            outside += 1
+            continue
+        tok, rec, amt = amount_receiver(q)
+        if not any(p["status"] == "filing" and p["receiver"] == rec and p["amount"] == amt for p in payouts):
+            bad.append("DAO #%d by the contract has no payout" % q["id"])
+    for pid, p in sorted(by_dao.items()):  # contract -> DAO
+        if not lo <= pid <= hi:
+            continue
+        q = by_id.get(pid)
+        st = q["status"] if q else None
+        if st not in want.get(p["status"], set()):
+            bad.append("payout %d is %s, DAO #%d is %s" % (p["id"], p["status"], pid, st))
+            continue
+        if q is None:
             continue
         if q["proposer"] != CONTRACT:
-            bad.append("DAO #%d proposer %s" % (q["id"], q["proposer"]))
+            bad.append("DAO #%d proposer %s" % (pid, q["proposer"]))
             continue
-        k = q["kind"]
-        if p["tier"] in (1, 3):
-            t = {kk: vv for kk, vv in (k.get("Transfer") or {}).items() if kk != "msg"}
-            ok = t == {"token_id": TOKEN, "receiver_id": p["receiver"], "amount": p["amount"]}
-        else:
-            fc = k.get("FunctionCall") or {}
-            acts = fc.get("actions") or []
-            args = json.loads(base64.b64decode(acts[0]["args"])) if len(acts) == 1 else {}
-            ok = fc.get("receiver_id") == TOKEN and len(acts) == 1 and acts[0].get("method_name") == "ft_transfer" and \
-                acts[0].get("deposit") == "1" and args.get("receiver_id") == p["receiver"] and args.get("amount") == p["amount"]
-        if not ok:
-            bad.append("DAO #%d kind does not match payout %d (tier %d)" % (q["id"], p["id"], p["tier"]))
-    if not filed:
-        print("no filed payouts yet")
-    elif bad:
-        print("%d of %d differ: %s" % (len(bad), len(filed), "; ".join(bad[:3])))
+        kind = "Transfer" if p["tier"] in (1, 3) else "FunctionCall"
+        if kind not in q["kind"] or amount_receiver(q) != (TOKEN, p["receiver"], p["amount"]):
+            bad.append("DAO #%d kind does not match payout %d (tier %d)" % (pid, p["id"], p["tier"]))
+            continue
+        matched += 1
+    if bad:
+        print("%d differ: %s" % (len(bad), "; ".join(bad[:3])))
+    elif matched == 0:
+        print("no payout with a DAO proposal in the sample yet")
     else:
-        print("all match")
+        print("all match (%d payouts and DAO #%d-#%d, %d by the contract)" % (matched, lo, hi, len(ours)))
 except Exception as e:
     print("error: %s" % (e,))
-' "$CONTRACT" "$TOKEN" "$PROPS")
-report "12. the last filed payouts match their DAO proposals (proposer, kind, receiver, amount, status)" "$got" "all match"
+PY
+)
+report "12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status)" "$got" "all match"
 
 # 13. The public relay keys can only call act, close_round, pay, check_payout and sync on a Hat Tip
 #     contract; the gas account's one full-access key is not in the repository.
-got=$(query "{\"request_type\":\"view_access_key_list\",\"finality\":\"final\",\"account_id\":\"$GAS_ACCOUNT\"}" | check '
+got=$(query view_access_key_list "$GAS_ACCOUNT" | check '
 def kind(p):
     if p == "FullAccess":
         return "full access"
@@ -239,8 +316,18 @@ kinds = collections.Counter(kind(k["access_key"]["permission"]) for k in r["keys
 relay = kinds.pop(CONTRACT + " act,check_payout,close_round,pay,sync", 0)
 other = {k: n for k, n in kinds.items() if k != "full access" and not k.endswith(" act,check_payout,close_round,pay,sync")}
 full = kinds.get("full access", 0)
-out = ("unexpected keys: %s" % other) if other else "%s relay keys for the contract (relay methods only), %d full access" % ("some" if relay else "no", full)')
+out = ("unexpected keys: %s" % other) if other else "%s relay keys for the contract (relay methods only), %d full access" % ("some" if relay else "no", full)
+if not other and relay: out += " (%d relay keys)" % relay')
 report "13. relay keys only call act, close_round, pay, check_payout, sync" "$got" "some relay keys for the contract (relay methods only), 1 full access"
+
+# 14. The DAO runs Sputnik v2 code the factory publishes (not a modified copy): its code hash is one
+#     of the factory's get_contracts_metadata() versions.
+DAO_HASH=$(query view_account "$DAO" | check 'out = r["code_hash"]')
+got=$(view "$FACTORY" get_contracts_metadata "$EMPTY_ARGS" | check '
+h = sys.argv[7]
+found = [m for c, m in v if c == h]
+out = ("code the factory publishes (version %s)" % ".".join(map(str, found[0]["version"]))) if found else "code hash %s is not among the factory versions" % h' "$DAO_HASH")
+report "14. the DAO's code is one the factory $FACTORY publishes" "$got" "code the factory publishes"
 
 if [ "$FAILED" -eq 0 ]; then echo "All $TOTAL checks passed."; else echo "$FAILED of $TOTAL checks failed."; fi
 exit "$FAILED"
