@@ -36,7 +36,8 @@
   "max_members": 48,
   "max_catchup": 8,
   "log_keep": 52,
-  "note_max_bytes": 80
+  "note_max_bytes": 80,
+  "guest_receive_cap_bp": 800
  },
  "initial_members": ["m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "fr1.test", "fr2.test", "c1.test", "c2.test"],
  "rounds": [
@@ -420,6 +421,9 @@
     "members_weight": "1750000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1338623",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "874"],
      ["c2.test", "6500"],
@@ -885,6 +889,9 @@
     "members_weight": "1750000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1356437",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "34250"],
      ["fr1.test", "3250"],
@@ -1376,6 +1383,9 @@
     "members_weight": "1775000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1292750",
+    "receive_scaled": false,
     "points": [
      ["c2.test", "6250"],
      ["m01.test", "6750"],
@@ -1834,6 +1844,9 @@
     "members_weight": "1600000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1195373",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "29000"],
      ["c2.test", "312"],
@@ -2260,6 +2273,9 @@
     "members_weight": "1475000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1134875",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "2250"],
      ["c2.test", "6250"],
@@ -2709,6 +2725,9 @@
     "members_weight": "1600000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1202124",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "6625"],
      ["m02.test", "145000"],
@@ -3182,6 +3201,9 @@
     "members_weight": "1775000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1306624",
+    "receive_scaled": false,
     "points": [
      ["c2.test", "8500"],
      ["fr1.test", "3500"],
@@ -3687,6 +3709,9 @@
     "members_weight": "1900000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1424123",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "59750"],
      ["fr1.test", "2000"],
@@ -4182,6 +4207,9 @@
     "members_weight": "1750000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1366750",
+    "receive_scaled": false,
     "points": [
      ["c2.test", "6250"],
      ["fr1.test", "19000"],
@@ -4726,6 +4754,9 @@
     "members_weight": "1950000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1395187",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "8250"],
      ["fr1.test", "1250"],
@@ -5162,6 +5193,9 @@
     "members_weight": "1625000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1104874",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "437"],
      ["c2.test", "32500"],
@@ -5695,6 +5729,9 @@
     "members_weight": "1875000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "1339123",
+    "receive_scaled": false,
     "points": [
      ["c1.test", "9000"],
      ["c2.test", "2124"],

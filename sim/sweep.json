@@ -1969,5 +1969,138 @@
     }
    ]
   }
+ },
+ "stage_d": {
+  "rows": [
+   {
+    "cap": 10000,
+    "visitors_share": 3.024187226196188,
+    "visitors_paid": 89.47368421052632,
+    "busy_share": 6.238788632215818,
+    "farm": 20.0217364375,
+    "hugo": 9.030735795138888,
+    "outsider": 9.497724027777778,
+    "per_round": 6.902777777777778,
+    "farm_pct": 100.0,
+    "visitors_keep": 100.0,
+    "busy_keep": 100.0,
+    "fails": ["farm"]
+   },
+   {
+    "cap": 2000,
+    "visitors_share": 3.024187226196188,
+    "visitors_paid": 89.47368421052632,
+    "busy_share": 6.238788632215818,
+    "farm": 19.861099548611108,
+    "hugo": 9.051400072916666,
+    "outsider": 9.497724027777778,
+    "per_round": 6.902777777777778,
+    "farm_pct": 99.19768752630254,
+    "visitors_keep": 100.0,
+    "busy_keep": 100.0,
+    "fails": ["farm"]
+   },
+   {
+    "cap": 1500,
+    "visitors_share": 3.0234397304534433,
+    "visitors_paid": 89.47368421052632,
+    "busy_share": 6.22866617713207,
+    "farm": 17.565552295138886,
+    "hugo": 9.261702333333332,
+    "outsider": 9.497724027777778,
+    "per_round": 6.902777777777778,
+    "farm_pct": 87.7324119712176,
+    "visitors_keep": 99.97528275576758,
+    "busy_keep": 99.83774967096213,
+    "fails": ["farm"]
+   },
+   {
+    "cap": 1000,
+    "visitors_share": 2.862640861403516,
+    "visitors_paid": 87.71929824561404,
+    "busy_share": 5.694074931158525,
+    "farm": 11.926707927083333,
+    "hugo": 9.774984145833333,
+    "outsider": 9.417714902777778,
+    "per_round": 6.892361111111111,
+    "farm_pct": 59.568798961637675,
+    "visitors_keep": 94.65818903693128,
+    "busy_keep": 91.26891880509457,
+    "fails": ["farm"]
+   },
+   {
+    "cap": 800,
+    "visitors_share": 2.5740334383956984,
+    "visitors_paid": 76.53508771929825,
+    "busy_share": 4.407795337749264,
+    "farm": 9.535114229166666,
+    "hugo": 9.992213673611111,
+    "outsider": 8.771416246527778,
+    "per_round": 6.840277777777778,
+    "farm_pct": 47.62381254458897,
+    "visitors_keep": 85.11488363216549,
+    "busy_keep": 70.65146132677614,
+    "fails": []
+   },
+   {
+    "cap": 600,
+    "visitors_share": 2.0622259014598336,
+    "visitors_paid": 66.44736842105263,
+    "busy_share": 2.7996848707820696,
+    "farm": 7.0852537430555556,
+    "hugo": 10.209439708333333,
+    "outsider": 6.991725211805555,
+    "per_round": 6.809027777777779,
+    "farm_pct": 35.38780847092327,
+    "visitors_keep": 68.19107903096642,
+    "busy_keep": 44.875456371851975,
+    "fails": ["visitors' share", "visitors paid", "busy demo"]
+   },
+   {
+    "cap": 500,
+    "visitors_share": 1.7916457890568869,
+    "visitors_paid": 65.35087719298245,
+    "busy_share": 2.077489830444808,
+    "farm": 5.902199326388889,
+    "hugo": 10.318050329861112,
+    "outsider": 5.835420527777778,
+    "per_round": 6.798611111111111,
+    "farm_pct": 29.478958255260416,
+    "visitors_keep": 59.24387794304696,
+    "busy_keep": 33.29957068455691,
+    "fails": ["visitors' share", "visitors paid", "busy demo"]
+   },
+   {
+    "cap": 400,
+    "visitors_share": 0.8016939528327112,
+    "visitors_paid": 25.219298245614034,
+    "busy_share": 0.9970760017058073,
+    "farm": 4.69959596875,
+    "hugo": 10.426663065972221,
+    "outsider": 4.606509138888889,
+    "per_round": 6.586805555555555,
+    "farm_pct": 23.472469450490937,
+    "visitors_keep": 26.509402125908686,
+    "busy_keep": 15.981884633133946,
+    "fails": ["visitors' share", "visitors paid", "busy demo"]
+   },
+   {
+    "cap": 300,
+    "visitors_share": 0.6071076169013669,
+    "visitors_paid": 24.56140350877193,
+    "busy_share": 0.4925596165986973,
+    "farm": 3.422513972222222,
+    "hugo": 10.535276493055555,
+    "outsider": 3.281688777777778,
+    "per_round": 6.583333333333334,
+    "farm_pct": 17.093991736960316,
+    "visitors_keep": 20.07506716655849,
+    "busy_keep": 7.895116273938517,
+    "fails": ["visitors' share", "visitors paid", "busy demo"]
+   }
+  ],
+  "pick": 800,
+  "n_pass": 1,
+  "fallback": false
  }
 }

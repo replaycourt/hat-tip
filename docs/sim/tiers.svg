@@ -174,7 +174,8 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;f
 <rect x="404.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 55: tier 1, 4 payouts</title></rect>
 <rect x="404.2" y="241.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 55: tier 3, 1 payouts</title></rect>
 <rect x="410.4" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 56: tier 1, 4 payouts</title></rect>
-<rect x="410.4" y="169.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 56: tier 2, 4 payouts</title></rect>
+<rect x="410.4" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 56: tier 2, 1 payouts</title></rect>
+<rect x="410.4" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 56: tier 3, 1 payouts</title></rect>
 <rect x="416.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 57: tier 1, 5 payouts</title></rect>
 <rect x="416.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 57: tier 2, 2 payouts</title></rect>
 <rect x="422.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 58: tier 1, 5 payouts</title></rect>
@@ -202,7 +203,7 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;f
 <rect x="484.6" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 68: tier 1, 4 payouts</title></rect>
 <rect x="484.6" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 68: tier 2, 2 payouts</title></rect>
 <rect x="490.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 69: tier 1, 6 payouts</title></rect>
-<rect x="490.8" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 69: tier 2, 3 payouts</title></rect>
+<rect x="490.8" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 69: tier 2, 2 payouts</title></rect>
 <rect x="497.0" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 70: tier 1, 3 payouts</title></rect>
 <rect x="497.0" y="265.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 70: tier 2, 1 payouts</title></rect>
 <rect x="497.0" y="217.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 70: tier 3, 2 payouts</title></rect>
@@ -274,13 +275,13 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;f
 <rect x="688.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 101: tier 1, 5 payouts</title></rect>
 <rect x="688.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 101: tier 2, 2 payouts</title></rect>
 <rect x="694.7" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 102: tier 1, 4 payouts</title></rect>
-<rect x="694.7" y="169.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 102: tier 2, 4 payouts</title></rect>
+<rect x="694.7" y="193.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 102: tier 2, 3 payouts</title></rect>
 <rect x="700.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 103: tier 1, 5 payouts</title></rect>
 <rect x="700.9" y="169.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 103: tier 2, 3 payouts</title></rect>
 <rect x="707.1" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 104: tier 1, 6 payouts</title></rect>
-<rect x="707.1" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 104: tier 2, 3 payouts</title></rect>
+<rect x="707.1" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 104: tier 2, 1 payouts</title></rect>
 <rect x="713.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 105: tier 1, 7 payouts</title></rect>
-<rect x="713.3" y="121.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 105: tier 2, 3 payouts</title></rect>
+<rect x="713.3" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 105: tier 2, 2 payouts</title></rect>
 <rect x="719.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 106: tier 1, 4 payouts</title></rect>
 <rect x="719.5" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 106: tier 2, 1 payouts</title></rect>
 <rect x="719.5" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 106: tier 3, 1 payouts</title></rect>
@@ -321,8 +322,8 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;f
 <rect x="818.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 122: tier 1, 7 payouts</title></rect>
 <rect x="818.3" y="169.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 122: tier 2, 1 payouts</title></rect>
 <rect x="824.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 123: tier 1, 4 payouts</title></rect>
-<rect x="824.5" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 123: tier 2, 2 payouts</title></rect>
-<rect x="824.5" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 123: tier 3, 1 payouts</title></rect>
+<rect x="824.5" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 123: tier 2, 1 payouts</title></rect>
+<rect x="824.5" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 123: tier 3, 1 payouts</title></rect>
 <rect x="830.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 124: tier 1, 6 payouts</title></rect>
 <rect x="830.7" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 124: tier 2, 1 payouts</title></rect>
 <rect x="836.9" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 125: tier 1, 3 payouts</title></rect>
@@ -365,7 +366,7 @@ text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;f
 <rect x="935.8" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 141: tier 2, 1 payouts</title></rect>
 <rect x="935.8" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 141: tier 3, 1 payouts</title></rect>
 <rect x="942.0" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 142: tier 1, 6 payouts</title></rect>
-<rect x="942.0" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 142: tier 2, 3 payouts</title></rect>
+<rect x="942.0" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 142: tier 2, 2 payouts</title></rect>
 <rect x="948.1" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 143: tier 1, 7 payouts</title></rect>
 <rect x="948.1" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 143: tier 2, 2 payouts</title></rect>
 <rect x="954.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 144: tier 1, 7 payouts</title></rect>

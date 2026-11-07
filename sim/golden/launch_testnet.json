@@ -36,7 +36,8 @@
   "max_members": 24,
   "max_catchup": 36,
   "log_keep": 108,
-  "note_max_bytes": 80
+  "note_max_bytes": 80,
+  "guest_receive_cap_bp": 800
  },
  "initial_members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
  "rounds": [
@@ -135,37 +136,37 @@
     "entries": [
      ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "ben.test", 25, "12500", "8750", "8750", "8750"],
      ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "emil.test", 25, "12500", "8750", "8750", "8750"],
-     ["ana.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "5000"],
+     ["ana.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "4584"],
      ["ana.test", "ben.test", 25, "25000", "6250", "6250", "6250"],
      ["ana.test", "cleo.test", 25, "25000", "13000", "13000", "13000"],
      ["ana.test", "dina.test", 14, "14000", "3500", "3500", "3500"],
      ["ana.test", "emil.test", 9, "9000", "2250", "2250", "2250"],
      ["ana.test", "finn.test", 22, "22000", "10000", "10000", "10000"],
-     ["ben.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "1250", "1250", "1250"],
+     ["ben.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "1250", "1250", "1146"],
      ["ben.test", "ana.test", 25, "25000", "6250", "6250", "6250"],
      ["ben.test", "cleo.test", 16, "16000", "4000", "4000", "4000"],
      ["ben.test", "dina.test", 25, "25000", "6250", "6250", "6250"],
      ["ben.test", "emil.test", 16, "16000", "4000", "4000", "4000"],
      ["ben.test", "finn.test", 13, "13000", "3250", "3250", "3250"],
-     ["cleo.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "5000"],
+     ["cleo.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "4584"],
      ["cleo.test", "ana.test", 16, "16000", "4000", "4000", "4000"],
      ["cleo.test", "ben.test", 25, "25000", "13000", "13000", "13000"],
      ["cleo.test", "dina.test", 25, "25000", "16000", "16000", "16000"],
      ["cleo.test", "emil.test", 17, "17000", "6500", "6500", "6500"],
      ["cleo.test", "finn.test", 12, "12000", "3000", "3000", "3000"],
-     ["dina.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "5000"],
+     ["dina.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "4584"],
      ["dina.test", "ana.test", 15, "15000", "4500", "4500", "4500"],
      ["dina.test", "ben.test", 25, "25000", "6250", "6250", "6250"],
      ["dina.test", "cleo.test", 12, "12000", "3000", "3000", "3000"],
      ["dina.test", "emil.test", 18, "18000", "4500", "4500", "4500"],
      ["dina.test", "finn.test", 25, "25000", "13750", "13750", "13750"],
-     ["emil.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "1250", "1250", "1250"],
+     ["emil.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "1250", "1250", "1146"],
      ["emil.test", "ana.test", 23, "23000", "16250", "16250", "16250"],
      ["emil.test", "ben.test", 19, "19000", "7000", "7000", "7000"],
      ["emil.test", "cleo.test", 14, "14000", "3500", "3500", "3500"],
      ["emil.test", "dina.test", 25, "25000", "11500", "11500", "11500"],
      ["emil.test", "finn.test", 14, "14000", "14000", "14000", "14000"],
-     ["finn.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "5000"],
+     ["finn.test", "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", 5, "5000", "5000", "5000", "4584"],
      ["finn.test", "ana.test", 16, "16000", "4000", "4000", "4000"],
      ["finn.test", "ben.test", 25, "25000", "15250", "15250", "15250"],
      ["finn.test", "cleo.test", 14, "14000", "5000", "5000", "5000"],
@@ -176,8 +177,11 @@
     "members_weight": "600000",
     "guests_weight": "25000",
     "guest_scaled": false,
+    "to_guests": "22500",
+    "to_members": "237250",
+    "receive_scaled": true,
     "points": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "22500"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "20628"],
      ["ana.test", "35000"],
      ["ben.test", "56500"],
      ["cleo.test", "28500"],
@@ -187,20 +191,20 @@
      ["gus.test", "6250"]
     ],
     "budget": "120000000",
-    "dust": "4",
+    "dust": "2",
     "payouts": [
-     {"receiver": "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "amount": "10394610", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "ana.test", "amount": "16169393", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "ben.test", "amount": "26102021", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "cleo.test", "amount": "13166506", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "dina.test", "amount": "18941289", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "emil.test", "amount": "12011549", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "finn.test", "amount": "20327237", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"}
+     {"receiver": "2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "amount": "9598957", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "ana.test", "amount": "16286771", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "ben.test", "amount": "26291502", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "cleo.test", "amount": "13262085", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "dina.test", "amount": "19078789", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "emil.test", "amount": "12098744", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "finn.test", "amount": "20474798", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "22500"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "20628"],
      ["ana.test", "35000"],
      ["ben.test", "56500"],
      ["cleo.test", "28500"],
@@ -210,9 +214,9 @@
      ["gus.test", "6250"]
     ],
     "carry": [
-     ["gus.test", "2887391", 1]
+     ["gus.test", "2908352", 1]
     ],
-    "audit": {"budget": "120000000", "planned": "117112605", "carry": "2887391", "lapsed": "0", "dust": "4", "balanced": true}
+    "audit": {"budget": "120000000", "planned": "117091646", "carry": "2908352", "lapsed": "0", "dust": "2", "balanced": true}
    }
   },
   {
@@ -309,7 +313,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999882887395",
+   "dao_balance": "999882908354",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -354,6 +358,9 @@
     "members_weight": "675000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "304500",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "61500"],
      ["ben.test", "72000"],
@@ -372,12 +379,12 @@
      {"receiver": "dina.test", "amount": "12315270", "tier": 2, "r0": "41000", "auto_limit": "0", "cosign_limit": "16860000"},
      {"receiver": "emil.test", "amount": "10443349", "tier": 2, "r0": "26000", "auto_limit": "0", "cosign_limit": "15960000"},
      {"receiver": "finn.test", "amount": "5221674", "tier": 2, "r0": "44000", "auto_limit": "0", "cosign_limit": "17040000"},
-     {"receiver": "gus.test", "amount": "21606602", "tier": 3, "r0": "6250", "auto_limit": "0", "cosign_limit": "14760000"}
+     {"receiver": "gus.test", "amount": "21627563", "tier": 3, "r0": "6250", "auto_limit": "0", "cosign_limit": "14760000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "20812"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "19080"],
      ["ana.test", "93875"],
      ["ben.test", "124262"],
      ["cleo.test", "78862"],
@@ -387,7 +394,7 @@
      ["gus.test", "53281"]
     ],
     "carry": [],
-    "audit": {"budget": "240000000", "planned": "239999992", "carry": "0", "lapsed": "0", "dust": "8", "balanced": true}
+    "audit": {"budget": "240000000", "planned": "239999994", "carry": "0", "lapsed": "0", "dust": "6", "balanced": true}
    }
   },
   {
@@ -476,7 +483,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999760000008",
+   "dao_balance": "999760000006",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -513,6 +520,9 @@
     "members_weight": "575000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "319250",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "103250"],
      ["ben.test", "75000"],
@@ -534,7 +544,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "19251"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "17649"],
      ["ana.test", "190084"],
      ["ben.test", "189942"],
      ["cleo.test", "88447"],
@@ -547,7 +557,7 @@
      ["dina.test", "845732", 3],
      ["gus.test", "4604541", 3]
     ],
-    "audit": {"budget": "360000000", "planned": "354549716", "carry": "5450273", "lapsed": "0", "dust": "11", "balanced": true}
+    "audit": {"budget": "360000000", "planned": "354549718", "carry": "5450273", "lapsed": "0", "dust": "9", "balanced": true}
    }
   },
   {
@@ -668,7 +678,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999645450284",
+   "dao_balance": "999645450282",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -733,6 +743,9 @@
     "members_weight": "700000",
     "guests_weight": "50000",
     "guest_scaled": false,
+    "to_guests": "20000",
+    "to_members": "328000",
+    "receive_scaled": false,
     "points": [
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "20000"],
      ["ana.test", "39500"],
@@ -759,7 +772,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "17807"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "16325"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "20000"],
      ["ana.test", "215327"],
      ["ben.test", "265946"],
@@ -773,7 +786,7 @@
     "carry": [
      ["finn.test", "3534482", 4]
     ],
-    "audit": {"budget": "480000000", "planned": "476465501", "carry": "3534482", "lapsed": "0", "dust": "17", "balanced": true}
+    "audit": {"budget": "480000000", "planned": "476465503", "carry": "3534482", "lapsed": "0", "dust": "15", "balanced": true}
    }
   },
   {
@@ -895,7 +908,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999523534499",
+   "dao_balance": "999523534497",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -958,6 +971,9 @@
     "members_weight": "700000",
     "guests_weight": "37500",
     "guest_scaled": false,
+    "to_guests": "23750",
+    "to_members": "305000",
+    "receive_scaled": false,
     "points": [
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "23750"],
      ["ana.test", "57500"],
@@ -984,7 +1000,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "16471"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "15100"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "42250"],
      ["ana.test", "256677"],
      ["ben.test", "300000"],
@@ -998,7 +1014,7 @@
     "carry": [
      ["hugo.test", "1916349", 5]
     ],
-    "audit": {"budget": "600000000", "planned": "598083629", "carry": "1916349", "lapsed": "0", "dust": "22", "balanced": true}
+    "audit": {"budget": "600000000", "planned": "598083631", "carry": "1916349", "lapsed": "0", "dust": "20", "balanced": true}
    }
   },
   {
@@ -1097,7 +1113,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999401916371",
+   "dao_balance": "999401916369",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -1142,6 +1158,9 @@
     "members_weight": "675000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "303750",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "78750"],
      ["ben.test", "21500"],
@@ -1165,7 +1184,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "15235"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "13967"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "39081"],
      ["ana.test", "316176"],
      ["ben.test", "299000"],
@@ -1180,7 +1199,7 @@
      ["emil.test", "4049382", 6],
      ["hugo.test", "2410176", 5]
     ],
-    "audit": {"budget": "720000000", "planned": "713540417", "carry": "6459558", "lapsed": "0", "dust": "25", "balanced": true}
+    "audit": {"budget": "720000000", "planned": "713540419", "carry": "6459558", "lapsed": "0", "dust": "23", "balanced": true}
    }
   },
   {
@@ -1274,7 +1293,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
-   "dao_balance": "999295941064",
+   "dao_balance": "999295941062",
    "expected": {
     "empty": false,
     "strikes": [
@@ -1318,6 +1337,9 @@
     "members_weight": "650000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "334811",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "80250"],
      ["ben.test", "65000"],
@@ -1340,7 +1362,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "14092"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "12919"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "36149"],
      ["ana.test", "372712"],
      ["ben.test", "341575"],
@@ -1356,7 +1378,7 @@
      ["gus.test", "806066", 7],
      ["hugo.test", "3664615", 5]
     ],
-    "audit": {"budget": "840000000", "planned": "831188879", "carry": "8811092", "lapsed": "0", "dust": "29", "balanced": true}
+    "audit": {"budget": "840000000", "planned": "831188881", "carry": "8811092", "lapsed": "0", "dust": "27", "balanced": true}
    }
   },
   {
@@ -1433,7 +1455,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "999178292602",
+   "dao_balance": "999178292600",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -1466,6 +1488,9 @@
     "members_weight": "395000",
     "guests_weight": "37500",
     "guest_scaled": false,
+    "to_guests": "13750",
+    "to_members": "184374",
+    "receive_scaled": false,
     "points": [
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "13750"],
      ["ana.test", "52500"],
@@ -1486,7 +1511,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "13035"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "11950"],
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "13750"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "33437"],
      ["ana.test", "397258"],
@@ -1502,7 +1527,7 @@
      ["finn.test", "3974480", 8],
      ["hugo.test", "3664615", 5]
     ],
-    "audit": {"budget": "960000000", "planned": "952360872", "carry": "7639095", "lapsed": "0", "dust": "33", "balanced": true}
+    "audit": {"budget": "960000000", "planned": "952360874", "carry": "7639095", "lapsed": "0", "dust": "31", "balanced": true}
    }
   },
   {
@@ -1643,7 +1668,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "999062407094",
+   "dao_balance": "999062407092",
    "expected": {
     "empty": false,
     "strikes": [
@@ -1724,6 +1749,9 @@
     "members_weight": "800000",
     "guests_weight": "50000",
     "guest_scaled": false,
+    "to_guests": "25000",
+    "to_members": "360000",
+    "receive_scaled": false,
     "points": [
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "25000"],
      ["ana.test", "57750"],
@@ -1752,7 +1780,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "12057"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "11053"],
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "37718"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "30929"],
      ["ana.test", "425213"],
@@ -1768,7 +1796,7 @@
     "carry": [
      ["gus.test", "3974025", 9]
     ],
-    "audit": {"budget": "1080000000", "planned": "1076025937", "carry": "3974025", "lapsed": "0", "dust": "38", "balanced": true}
+    "audit": {"budget": "1080000000", "planned": "1076025939", "carry": "3974025", "lapsed": "0", "dust": "36", "balanced": true}
    }
   },
   {
@@ -1901,7 +1929,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "998938742029",
+   "dao_balance": "998938742027",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -1969,6 +1997,9 @@
     "members_weight": "800000",
     "guests_weight": "50000",
     "guest_scaled": false,
+    "to_guests": "21250",
+    "to_members": "386249",
+    "receive_scaled": false,
     "points": [
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "21250"],
      ["ana.test", "93500"],
@@ -1994,7 +2025,7 @@
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "11152"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "10224"],
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "56139"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "28609"],
      ["ana.test", "486822"],
@@ -2011,7 +2042,7 @@
      ["emil.test", "202307", 10],
      ["finn.test", "533596", 10]
     ],
-    "audit": {"budget": "1200000000", "planned": "1199264055", "carry": "735903", "lapsed": "0", "dust": "42", "balanced": true}
+    "audit": {"budget": "1200000000", "planned": "1199264057", "carry": "735903", "lapsed": "0", "dust": "40", "balanced": true}
    }
   },
   {
@@ -2112,44 +2143,44 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "998815503911",
+   "dao_balance": "998815503909",
    "expected": {
     "empty": false,
     "strikes": [],
     "entries": [
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "ben.test", 25, "12500", "8750", "8750", "8750"],
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "ivy.test", 25, "12500", "8750", "8750", "8750"],
-     ["ana.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "5000"],
+     ["ana.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "4589"],
      ["ana.test", "ben.test", 25, "25000", "15250", "15250", "15250"],
      ["ana.test", "dina.test", 14, "14000", "3500", "3500", "3500"],
      ["ana.test", "emil.test", 14, "14000", "3500", "3500", "3500"],
      ["ana.test", "finn.test", 11, "11000", "6500", "6500", "6500"],
      ["ana.test", "hugo.test", 8, "8000", "8000", "8000", "2000"],
      ["ana.test", "ivy.test", 23, "23000", "16250", "16250", "16250"],
-     ["ben.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "1250", "1250", "1250"],
+     ["ben.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "1250", "1250", "1147"],
      ["ben.test", "ana.test", 13, "13000", "3250", "3250", "3250"],
      ["ben.test", "dina.test", 25, "25000", "6250", "6250", "6250"],
      ["ben.test", "emil.test", 16, "16000", "4000", "4000", "4000"],
      ["ben.test", "finn.test", 16, "16000", "4000", "4000", "4000"],
      ["ben.test", "ivy.test", 25, "25000", "6250", "6250", "6250"],
-     ["dina.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "5000"],
+     ["dina.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "4589"],
      ["dina.test", "ana.test", 21, "21000", "10500", "10500", "10500"],
      ["dina.test", "ben.test", 25, "25000", "6250", "6250", "6250"],
      ["dina.test", "emil.test", 10, "10000", "10000", "10000", "10000"],
      ["dina.test", "finn.test", 15, "15000", "8250", "8250", "8250"],
      ["dina.test", "ivy.test", 24, "24000", "15750", "15750", "15750"],
-     ["emil.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "5000"],
+     ["emil.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "4589"],
      ["emil.test", "ana.test", 25, "25000", "14500", "14500", "14500"],
      ["emil.test", "ben.test", 25, "25000", "13000", "13000", "13000"],
      ["emil.test", "ivy.test", 25, "25000", "6250", "6250", "6250"],
-     ["finn.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "5000"],
+     ["finn.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "5000", "5000", "4589"],
      ["finn.test", "ana.test", 6, "6000", "1500", "1500", "1500"],
      ["finn.test", "ben.test", 21, "21000", "9000", "9000", "9000"],
      ["finn.test", "dina.test", 9, "9000", "2250", "2250", "2250"],
      ["finn.test", "emil.test", 15, "15000", "15000", "15000", "15000"],
      ["finn.test", "gus.test", 25, "25000", "25000", "25000", "6250"],
      ["finn.test", "ivy.test", 19, "19000", "7000", "7000", "7000"],
-     ["ivy.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "1250", "1250", "1250"],
+     ["ivy.test", "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", 5, "5000", "1250", "1250", "1147"],
      ["ivy.test", "ana.test", 9, "9000", "2250", "2250", "2250"],
      ["ivy.test", "ben.test", 25, "25000", "6250", "6250", "6250"],
      ["ivy.test", "dina.test", 11, "11000", "2750", "2750", "2750"],
@@ -2161,8 +2192,11 @@
     "members_weight": "580000",
     "guests_weight": "25000",
     "guest_scaled": false,
+    "to_guests": "22500",
+    "to_members": "237500",
+    "receive_scaled": true,
     "points": [
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "22500"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "20650"],
      ["ana.test", "32000"],
      ["ben.test", "58500"],
      ["dina.test", "14750"],
@@ -2173,21 +2207,21 @@
      ["ivy.test", "60250"]
     ],
     "budget": "120000000",
-    "dust": "3",
+    "dust": "5",
     "payouts": [
-     {"receiver": "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "amount": "10384615", "tier": 2, "r0": "56139", "auto_limit": "0", "cosign_limit": "17760000"},
-     {"receiver": "ana.test", "amount": "14769230", "tier": 1, "r0": "486822", "auto_limit": "29160000", "cosign_limit": "30000000"},
-     {"receiver": "ben.test", "amount": "27000000", "tier": 2, "r0": "402652", "auto_limit": "24120000", "cosign_limit": "30000000"},
-     {"receiver": "dina.test", "amount": "6807692", "tier": 1, "r0": "257524", "auto_limit": "15420000", "cosign_limit": "29820000"},
-     {"receiver": "emil.test", "amount": "18086922", "tier": 2, "r0": "116150", "auto_limit": "0", "cosign_limit": "21360000"},
-     {"receiver": "finn.test", "amount": "11033596", "tier": 1, "r0": "215929", "auto_limit": "12900000", "cosign_limit": "27300000"},
-     {"receiver": "ivy.test", "amount": "27807692", "tier": 3, "r0": "127743", "auto_limit": "0", "cosign_limit": "22020000"}
+     {"receiver": "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "amount": "9599070", "tier": 2, "r0": "56139", "auto_limit": "0", "cosign_limit": "17760000"},
+     {"receiver": "ana.test", "amount": "14875072", "tier": 1, "r0": "486822", "auto_limit": "29160000", "cosign_limit": "30000000"},
+     {"receiver": "ben.test", "amount": "27193492", "tier": 2, "r0": "402652", "auto_limit": "24120000", "cosign_limit": "30000000"},
+     {"receiver": "dina.test", "amount": "6856478", "tier": 1, "r0": "257524", "auto_limit": "15420000", "cosign_limit": "29820000"},
+     {"receiver": "emil.test", "amount": "18215090", "tier": 2, "r0": "116150", "auto_limit": "0", "cosign_limit": "21360000"},
+     {"receiver": "finn.test", "amount": "11108842", "tier": 1, "r0": "215929", "auto_limit": "12900000", "cosign_limit": "27300000"},
+     {"receiver": "ivy.test", "amount": "28006972", "tier": 3, "r0": "127743", "auto_limit": "0", "cosign_limit": "22020000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "10315"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "74428"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "9457"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "72578"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "26463"],
      ["ana.test", "482310"],
      ["ben.test", "430953"],
@@ -2200,10 +2234,10 @@
      ["ivy.test", "178412"]
     ],
     "carry": [
-     ["gus.test", "2884615", 11],
-     ["hugo.test", "1961538", 11]
+     ["gus.test", "2905287", 11],
+     ["hugo.test", "1975595", 11]
     ],
-    "audit": {"budget": "1320000000", "planned": "1315153802", "carry": "4846153", "lapsed": "0", "dust": "45", "balanced": true}
+    "audit": {"budget": "1320000000", "planned": "1315119073", "carry": "4880882", "lapsed": "0", "dust": "45", "balanced": true}
    }
   },
   {
@@ -2322,7 +2356,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "998699614164",
+   "dao_balance": "998699648893",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -2383,6 +2417,9 @@
     "members_weight": "700000",
     "guests_weight": "25000",
     "guest_scaled": false,
+    "to_guests": "27500",
+    "to_members": "351000",
+    "receive_scaled": false,
     "points": [
      ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "27500"],
      ["ana.test", "71750"],
@@ -2397,21 +2434,21 @@
     "budget": "120000000",
     "dust": "4",
     "payouts": [
-     {"receiver": "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "amount": "8718626", "tier": 2, "r0": "74428", "auto_limit": "0", "cosign_limit": "18840000"},
+     {"receiver": "338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "amount": "8718626", "tier": 2, "r0": "72578", "auto_limit": "0", "cosign_limit": "18720000"},
      {"receiver": "ana.test", "amount": "22747688", "tier": 1, "r0": "482310", "auto_limit": "28920000", "cosign_limit": "30000000"},
      {"receiver": "cleo.test", "amount": "19656538", "tier": 1, "r0": "351688", "auto_limit": "21060000", "cosign_limit": "30000000"},
      {"receiver": "dina.test", "amount": "17437252", "tier": 2, "r0": "252959", "auto_limit": "15120000", "cosign_limit": "29520000"},
      {"receiver": "emil.test", "amount": "5785997", "tier": 2, "r0": "146188", "auto_limit": "0", "cosign_limit": "23160000"},
      {"receiver": "finn.test", "amount": "5310435", "tier": 1, "r0": "222484", "auto_limit": "13320000", "cosign_limit": "27720000"},
-     {"receiver": "gus.test", "amount": "13584747", "tier": 2, "r0": "177471", "auto_limit": "0", "cosign_limit": "25020000"},
-     {"receiver": "hugo.test", "amount": "18447667", "tier": 3, "r0": "51523", "auto_limit": "0", "cosign_limit": "17460000"},
+     {"receiver": "gus.test", "amount": "13605419", "tier": 2, "r0": "177471", "auto_limit": "0", "cosign_limit": "25020000"},
+     {"receiver": "hugo.test", "amount": "18461724", "tier": 3, "r0": "51523", "auto_limit": "0", "cosign_limit": "17460000"},
      {"receiver": "ivy.test", "amount": "13157199", "tier": 2, "r0": "178412", "auto_limit": "0", "cosign_limit": "25080000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "9541"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "96345"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "8747"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "94634"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "24478"],
      ["ana.test", "517886"],
      ["ben.test", "398631"],
@@ -2632,6 +2669,9 @@
     "members_weight": "800000",
     "guests_weight": "25000",
     "guest_scaled": false,
+    "to_guests": "32500",
+    "to_members": "417874",
+    "receive_scaled": false,
     "points": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "32500"],
      ["ana.test", "48000"],
@@ -2661,8 +2701,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "32500"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "8825"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "89119"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "8090"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "87536"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "22642"],
      ["ana.test", "527044"],
      ["ben.test", "461233"],
@@ -2821,6 +2861,9 @@
     "members_weight": "675000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "317250",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "72000"],
      ["ben.test", "56000"],
@@ -2845,8 +2888,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "30062"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "8163"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "82435"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "7483"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "80970"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "20943"],
      ["ana.test", "559515"],
      ["ben.test", "482640"],
@@ -2996,6 +3039,9 @@
     "members_weight": "600000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "231750",
+    "receive_scaled": false,
     "points": [
      ["ben.test", "25000"],
      ["cleo.test", "27500"],
@@ -3021,8 +3067,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "27807"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "7550"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "76252"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "6921"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "74897"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "19372"],
      ["ana.test", "517551"],
      ["ben.test", "471442"],
@@ -3160,6 +3206,9 @@
     "members_weight": "500000",
     "guests_weight": "37500",
     "guest_scaled": false,
+    "to_guests": "13750",
+    "to_members": "164500",
+    "receive_scaled": false,
     "points": [
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "13750"],
      ["ana.test", "32250"],
@@ -3184,8 +3233,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "25721"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "6983"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "70533"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "6401"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "69279"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "13750"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "17919"],
      ["ana.test", "510984"],
@@ -3378,6 +3427,9 @@
     "members_weight": "800000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "403999",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "92750"],
      ["ben.test", "78000"],
@@ -3405,8 +3457,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "23791"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "6459"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "65243"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5920"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "64083"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "12718"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "16575"],
      ["ana.test", "565410"],
@@ -3598,6 +3650,9 @@
     "members_weight": "700000",
     "guests_weight": "50000",
     "guest_scaled": false,
+    "to_guests": "16250",
+    "to_members": "336250",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "34000"],
      ["ben.test", "78500"],
@@ -3623,8 +3678,8 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "22006"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5974"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "60349"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5476"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "59276"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "11764"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "15331"],
      ["ana.test", "557004"],
@@ -3780,20 +3835,20 @@
     "entries": [
      ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "ana.test", 25, "12500", "8750", "8750", "8750"],
      ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "emil.test", 25, "12500", "8750", "8750", "8750"],
-     ["ana.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "1250", "1250", "1250"],
+     ["ana.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "1250", "1250", "1155"],
      ["ana.test", "ben.test", 12, "12000", "3000", "3000", "3000"],
      ["ana.test", "cleo.test", 25, "25000", "6250", "6250", "6250"],
      ["ana.test", "emil.test", 25, "25000", "6250", "6250", "6250"],
      ["ana.test", "gus.test", 16, "16000", "4000", "4000", "4000"],
      ["ana.test", "ivy.test", 17, "17000", "4250", "4250", "4250"],
-     ["ben.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["ben.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["ben.test", "ana.test", 24, "24000", "15000", "15000", "15000"],
      ["ben.test", "cleo.test", 18, "18000", "6750", "6750", "6750"],
      ["ben.test", "dina.test", 12, "12000", "3000", "3000", "3000"],
      ["ben.test", "emil.test", 11, "11000", "2750", "2750", "2750"],
      ["ben.test", "finn.test", 5, "5000", "1250", "1250", "1250"],
      ["ben.test", "ivy.test", 25, "25000", "6250", "6250", "6250"],
-     ["cleo.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["cleo.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["cleo.test", "ana.test", 25, "25000", "6250", "6250", "6250"],
      ["cleo.test", "ben.test", 15, "15000", "3750", "3750", "3750"],
      ["cleo.test", "dina.test", 8, "8000", "2000", "2000", "2000"],
@@ -3801,21 +3856,21 @@
      ["cleo.test", "finn.test", 7, "7000", "1750", "1750", "1750"],
      ["cleo.test", "gus.test", 5, "5000", "1250", "1250", "1250"],
      ["cleo.test", "ivy.test", 10, "10000", "2500", "2500", "2500"],
-     ["dina.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["dina.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["dina.test", "ana.test", 14, "14000", "14000", "14000", "14000"],
      ["dina.test", "ben.test", 16, "16000", "7000", "7000", "7000"],
      ["dina.test", "cleo.test", 10, "10000", "4000", "4000", "4000"],
      ["dina.test", "emil.test", 24, "24000", "14250", "14250", "14250"],
      ["dina.test", "finn.test", 8, "8000", "4250", "4250", "4250"],
      ["dina.test", "ivy.test", 23, "23000", "17000", "17000", "17000"],
-     ["emil.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "1250", "1250", "1250"],
+     ["emil.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "1250", "1250", "1155"],
      ["emil.test", "ana.test", 25, "25000", "6250", "6250", "6250"],
      ["emil.test", "ben.test", 13, "13000", "4750", "4750", "4750"],
      ["emil.test", "cleo.test", 17, "17000", "4250", "4250", "4250"],
      ["emil.test", "dina.test", 13, "13000", "3250", "3250", "3250"],
      ["emil.test", "finn.test", 5, "5000", "1250", "1250", "1250"],
      ["emil.test", "ivy.test", 22, "22000", "5500", "5500", "5500"],
-     ["finn.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["finn.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["finn.test", "ana.test", 16, "16000", "16000", "16000", "16000"],
      ["finn.test", "ben.test", 7, "7000", "3250", "3250", "3250"],
      ["finn.test", "cleo.test", 16, "16000", "10750", "10750", "10750"],
@@ -3823,7 +3878,7 @@
      ["finn.test", "emil.test", 14, "14000", "10250", "10250", "10250"],
      ["finn.test", "gus.test", 25, "25000", "6250", "6250", "6250"],
      ["finn.test", "ivy.test", 12, "12000", "12000", "12000", "12000"],
-     ["gus.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["gus.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["gus.test", "ana.test", 20, "20000", "8000", "8000", "8000"],
      ["gus.test", "ben.test", 21, "21000", "21000", "21000", "21000"],
      ["gus.test", "cleo.test", 8, "8000", "4250", "4250", "4250"],
@@ -3831,7 +3886,7 @@
      ["gus.test", "emil.test", 7, "7000", "7000", "7000", "7000"],
      ["gus.test", "finn.test", 25, "25000", "6250", "6250", "6250"],
      ["gus.test", "ivy.test", 10, "10000", "10000", "10000", "10000"],
-     ["ivy.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "5000"],
+     ["ivy.test", "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", 5, "5000", "5000", "5000", "4622"],
      ["ivy.test", "ana.test", 21, "21000", "8250", "8250", "8250"],
      ["ivy.test", "ben.test", 25, "25000", "6250", "6250", "6250"],
      ["ivy.test", "cleo.test", 16, "16000", "8500", "8500", "8500"],
@@ -3842,8 +3897,11 @@
     "members_weight": "800000",
     "guests_weight": "25000",
     "guest_scaled": false,
+    "to_guests": "32500",
+    "to_members": "345500",
+    "receive_scaled": true,
     "points": [
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "32500"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "30042"],
      ["ana.test", "82500"],
      ["ben.test", "49000"],
      ["cleo.test", "44750"],
@@ -3854,24 +3912,24 @@
      ["ivy.test", "57500"]
     ],
     "budget": "120000000",
-    "dust": "4",
+    "dust": "5",
     "payouts": [
-     {"receiver": "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "amount": "10317460", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
-     {"receiver": "ana.test", "amount": "26190476", "tier": 1, "r0": "557004", "auto_limit": "30000000", "cosign_limit": "30000000"},
-     {"receiver": "ben.test", "amount": "15555555", "tier": 1, "r0": "552008", "auto_limit": "30000000", "cosign_limit": "30000000"},
-     {"receiver": "cleo.test", "amount": "14206349", "tier": 1, "r0": "480910", "auto_limit": "28800000", "cosign_limit": "30000000"},
-     {"receiver": "emil.test", "amount": "22222222", "tier": 2, "r0": "187882", "auto_limit": "0", "cosign_limit": "25620000"},
-     {"receiver": "finn.test", "amount": "7916581", "tier": 1, "r0": "259286", "auto_limit": "15540000", "cosign_limit": "29940000"},
-     {"receiver": "ivy.test", "amount": "18253968", "tier": 1, "r0": "346343", "auto_limit": "20760000", "cosign_limit": "30000000"}
+     {"receiver": "5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "amount": "9599565", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "14400000"},
+     {"receiver": "ana.test", "amount": "26361898", "tier": 1, "r0": "557004", "auto_limit": "30000000", "cosign_limit": "30000000"},
+     {"receiver": "ben.test", "amount": "15657369", "tier": 1, "r0": "552008", "auto_limit": "30000000", "cosign_limit": "30000000"},
+     {"receiver": "cleo.test", "amount": "14299332", "tier": 1, "r0": "480910", "auto_limit": "28800000", "cosign_limit": "30000000"},
+     {"receiver": "emil.test", "amount": "22367671", "tier": 2, "r0": "187882", "auto_limit": "0", "cosign_limit": "25620000"},
+     {"receiver": "finn.test", "amount": "7947229", "tier": 1, "r0": "259286", "auto_limit": "15540000", "cosign_limit": "29940000"},
+     {"receiver": "ivy.test", "amount": "18373444", "tier": 1, "r0": "346343", "auto_limit": "20760000", "cosign_limit": "30000000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "20355"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5525"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "55822"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5065"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "54830"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "10881"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "32500"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "30042"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "14181"],
      ["ana.test", "597728"],
      ["ben.test", "559607"],
@@ -3885,10 +3943,10 @@
      ["ivy.test", "377867"]
     ],
     "carry": [
-     ["dina.test", "4920634", 19],
-     ["gus.test", "3650793", 19]
+     ["dina.test", "4952841", 19],
+     ["gus.test", "3674688", 19]
     ],
-    "audit": {"budget": "2280000000", "planned": "2271428495", "carry": "8571427", "lapsed": "0", "dust": "78", "balanced": true}
+    "audit": {"budget": "2280000000", "planned": "2271372392", "carry": "8627529", "lapsed": "0", "dust": "79", "balanced": true}
    }
   },
   {
@@ -4003,7 +4061,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "997743339471",
+   "dao_balance": "997743395574",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4060,6 +4118,9 @@
     "members_weight": "775000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "392500",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "97000"],
      ["ben.test", "53500"],
@@ -4076,19 +4137,19 @@
      {"receiver": "ana.test", "amount": "29656050", "tier": 1, "r0": "597728", "auto_limit": "30000000", "cosign_limit": "30000000"},
      {"receiver": "ben.test", "amount": "16356687", "tier": 1, "r0": "559607", "auto_limit": "30000000", "cosign_limit": "30000000"},
      {"receiver": "cleo.test", "amount": "12993630", "tier": 1, "r0": "489591", "auto_limit": "29340000", "cosign_limit": "30000000"},
-     {"receiver": "dina.test", "amount": "28156302", "tier": 2, "r0": "288424", "auto_limit": "17280000", "cosign_limit": "30000000"},
+     {"receiver": "dina.test", "amount": "28188509", "tier": 2, "r0": "288424", "auto_limit": "17280000", "cosign_limit": "30000000"},
      {"receiver": "emil.test", "amount": "6191082", "tier": 1, "r0": "243790", "auto_limit": "14580000", "cosign_limit": "28980000"},
-     {"receiver": "gus.test", "amount": "21918308", "tier": 2, "r0": "293725", "auto_limit": "17580000", "cosign_limit": "30000000"},
+     {"receiver": "gus.test", "amount": "21942203", "tier": 2, "r0": "293725", "auto_limit": "17580000", "cosign_limit": "30000000"},
      {"receiver": "ivy.test", "amount": "8636942", "tier": 1, "r0": "377867", "auto_limit": "22620000", "cosign_limit": "30000000"}
     ],
     "moved_to_tier2": [],
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "18828"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "5110"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "51635"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4685"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "50717"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "10064"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "30062"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "27788"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "13117"],
      ["ana.test", "649898"],
      ["ben.test", "571136"],
@@ -4104,7 +4165,7 @@
     "carry": [
      ["finn.test", "4662420", 20]
     ],
-    "audit": {"budget": "2400000000", "planned": "2395337496", "carry": "4662420", "lapsed": "0", "dust": "84", "balanced": true}
+    "audit": {"budget": "2400000000", "planned": "2395337495", "carry": "4662420", "lapsed": "0", "dust": "85", "balanced": true}
    }
   },
   {
@@ -4218,7 +4279,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "997619430470",
+   "dao_balance": "997619430471",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4273,6 +4334,9 @@
     "members_weight": "775000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "389312",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "100000"],
      ["ben.test", "79750"],
@@ -4298,10 +4362,10 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "17415"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4726"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "47762"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4333"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "46913"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "9309"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "27807"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "25703"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "12133"],
      ["ana.test", "701155"],
      ["ben.test", "608050"],
@@ -4317,7 +4381,7 @@
     "carry": [
      ["emil.test", "173228", 21]
     ],
-    "audit": {"budget": "2520000000", "planned": "2519826685", "carry": "173228", "lapsed": "0", "dust": "87", "balanced": true}
+    "audit": {"budget": "2520000000", "planned": "2519826684", "carry": "173228", "lapsed": "0", "dust": "88", "balanced": true}
    }
   },
   {
@@ -4432,7 +4496,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "997494941281",
+   "dao_balance": "997494941282",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4488,6 +4552,9 @@
     "members_weight": "775000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "421000",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "117000"],
      ["ben.test", "48750"],
@@ -4516,10 +4583,10 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "16108"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4371"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "44179"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4008"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "43394"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "8610"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "25721"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "23775"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "11223"],
      ["ana.test", "765568"],
      ["ben.test", "611196"],
@@ -4533,7 +4600,7 @@
      ["ivy.test", "409983"]
     ],
     "carry": [],
-    "audit": {"budget": "2640000000", "planned": "2639999908", "carry": "0", "lapsed": "0", "dust": "92", "balanced": true}
+    "audit": {"budget": "2640000000", "planned": "2639999907", "carry": "0", "lapsed": "0", "dust": "93", "balanced": true}
    }
   },
   {
@@ -4638,7 +4705,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "997374768058",
+   "dao_balance": "997374768059",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4688,6 +4755,9 @@
     "members_weight": "700000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "276437",
+    "receive_scaled": false,
     "points": [
      ["ben.test", "64000"],
      ["cleo.test", "55750"],
@@ -4712,10 +4782,10 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "14899"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "4043"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "40865"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "3707"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "40139"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "7964"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "23791"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "21991"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "10381"],
      ["ana.test", "708150"],
      ["ben.test", "629356"],
@@ -4732,7 +4802,7 @@
      ["gus.test", "840842", 23],
      ["hugo.test", "1410809", 23]
     ],
-    "audit": {"budget": "2760000000", "planned": "2757748253", "carry": "2251651", "lapsed": "0", "dust": "96", "balanced": true}
+    "audit": {"budget": "2760000000", "planned": "2757748252", "carry": "2251651", "lapsed": "0", "dust": "97", "balanced": true}
    }
   },
   {
@@ -4831,7 +4901,7 @@
     }
    ],
    "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test", "ivy.test"],
-   "dao_balance": "997257019713",
+   "dao_balance": "997257019714",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4879,6 +4949,9 @@
     "members_weight": "700000",
     "guests_weight": "0",
     "guest_scaled": false,
+    "to_guests": "0",
+    "to_members": "307000",
+    "receive_scaled": false,
     "points": [
      ["ana.test", "71750"],
      ["ben.test", "43500"],
@@ -4902,10 +4975,10 @@
     "lapsed": [],
     "reputation": [
      ["2a24411107e6d47690f713a5e35d4c52fa98d81e77ab31e22392b9d8316a1772", "13781"],
-     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "3739"],
-     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "37800"],
+     ["2dc2ae6409d025358dfda26b2ad0e20dd4a5555a75fc28cf1df8ac94b536d20c", "3428"],
+     ["338c2a4ccfbb4fe1149266e165234bf365af5d82029adf2e952e90051b73eab7", "37128"],
      ["44290f10ed7027367380f678cec5d97b0f3a471e60e42beac66fbab9e004d722", "7366"],
-     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "22006"],
+     ["5fd0ccfe0fe6f355cb21b61f4e85ee72fa4f5019840ac13fbe364847488d4766", "20341"],
      ["67ad1052de8f334e3f2d67ce3474cd2fc3327c45c13455346dd57fa587ccd520", "9602"],
      ["ana.test", "726788"],
      ["ben.test", "625654"],
@@ -4922,7 +4995,7 @@
      ["finn.test", "3517915", 24],
      ["hugo.test", "1410809", 23]
     ],
-    "audit": {"budget": "2880000000", "planned": "2875071177", "carry": "4928724", "lapsed": "0", "dust": "99", "balanced": true}
+    "audit": {"budget": "2880000000", "planned": "2875071176", "carry": "4928724", "lapsed": "0", "dust": "100", "balanced": true}
    }
   }
  ]

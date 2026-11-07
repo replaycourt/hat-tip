@@ -2814,6 +2814,28 @@ def md_stage_b(sb, budgets):
     return "\n".join(out).rstrip()
 
 
+def md_stage_d(sd):
+    rows = []
+    for r in sd["rows"]:
+        label = "%g %%" % (r["cap"] / 100) if r["cap"] < BP else "off"
+        if r["cap"] == sd["pick"]:
+            label = "**%s**" % label
+        rows.append([label, "%.2f %% (%.0f %%)" % (r["visitors_share"], r["visitors_keep"]),
+                     "%.0f %%" % r["visitors_paid"],
+                     "%.2f %% (%.0f %%)" % (r["busy_share"], r["busy_keep"]),
+                     "%.2f (%.0f %%)" % (r["farm"], r["farm_pct"]), "%.2f" % r["hugo"],
+                     "%.2f" % r["outsider"], "; ".join(r["fails"]) or "-"])
+    return "\n".join([
+        table(["`guest_receive_cap_bp`", "Visitors' share of payouts (kept)",
+               "Visitors thanked by 3+ house members who got a payout",
+               "Busy demo: visitors' share (kept)", "Farm seats' take, tUSD per round (of off)",
+               "Accomplice's take, tUSD per round", "Outsider farm's take, tUSD per round",
+               "Criteria failed"], rows), "",
+        "Medians over %d seeds, 144 rounds, testnet launch values; %d of %d values meet every "
+        "criterion%s." % (len(D_SEEDS), sd["n_pass"], len(sd["rows"]),
+                          " (fallback used)" if sd["fallback"] else "")])
+
+
 def md_community(summary):
     rows = []
     for sc in S_COMMUNITY:
@@ -2975,6 +2997,7 @@ def scenarios(pick, summary, workers, log=print):
         "stage_c": md_stage_c(summary["stage_c"]),
         "stage_b": md_stage_b(summary["stage_b"], {"testnet": cfg_t["round_budget"],
                                                    "community": cfg_c["round_budget"]}),
+        "stage_d": md_stage_d(summary["stage_d"]),
         "community": md_community(comm),
         "testnet": md_testnet(tn),
         "params": md_params(doc),

@@ -30,9 +30,10 @@ Units: thanks are whole numbers; weights, points and reputation are milli-thanks
 
 - **Collusion rules (both settings):** `cap_per_receiver` 25, reciprocity at 25 % (`reciprocal_bp` 2500), breadth on (fewer than 3 givers count 25 %: `breadth_k` 3, `breadth_bp` 2500), quadratic off, idle off. Against no dampening (cap 50), the colluders' excess payout share falls from +3.5 / +13.8 / +17.9 percentage points (pair / ring of three / ring of four) to -0.7 / +2.0 / +5.4, with colluders playing their best response. Honest members' payouts track their work as well as without dampening (rank correlation 0.85 against 0.83); the honest pair loses 11 % of its payout (limit 15 %).
 - **Quadratic aggregation** cuts collusion the most (objective below 0), but the honest pair loses 28-33 %: it fails the pre-registered limit. **Idle** makes collusion slightly worse (it discounts honest members who skip a round) and is evaded by a free rider who hands out token thanks.
-- **Testnet demo:** budget 120 tUSD, `min_payout` 5 tUSD (6.9 payouts per round, 91 % of visitors thanked by three house members get paid); decay 7.5 % per round; tier 1 from 200 thanks of reputation at 0.06 tUSD per thanks up to 30 tUSD, at most 80 % of a round's budget automatic; co-sign up to 14.4 tUSD plus 0.06 per thanks, at most 30 tUSD. Steady state: 72 % of payouts in tier 1, 23 % in tier 2, 5 % in tier 3; a newcomer reaches tier 1 after 8 rounds.
+- **Testnet demo:** budget 120 tUSD, `min_payout` 5 tUSD (6.9 payouts per round, 6.8 with the receive cap); decay 7.5 % per round; tier 1 from 200 thanks of reputation at 0.06 tUSD per thanks up to 30 tUSD, at most 80 % of a round's budget automatic; co-sign up to 14.4 tUSD plus 0.06 per thanks, at most 30 tUSD. Steady state: 72 % of payouts in tier 1, 22-23 % in tier 2, 5 % in tier 3; a newcomer reaches tier 1 after 8 rounds.
 - **Community example:** decay 10 % per week; tier 1 from 100 thanks at 0.1 tUSD per thanks up to 60 tUSD, at most 60 % automatic; co-sign 20 tUSD plus 0.05 per thanks up to 200 tUSD. 70 / 24 / 6 % by tier; a newcomer reaches tier 1 after 7 rounds.
-- **Not stopped** (details below): a ring of four keeps +5.4 points; colluders who thank one way only pass the council's rule; four free riders still collect 3.2 % of payouts; a member who feeds his thanks to a guest farm moves about a quarter of the testnet budget to himself and the farm.
+- **Guests' receive cap (testnet, stage D):** `guest_receive_cap_bp` 800, all guests together receive at most 8 % of a round's points. A member feeding a guest farm then moves a sixth of the budget to himself and the farm instead of a quarter; honest visitors keep 85 % of their share (71 % in a busy demo), and 77 % of the visitors welcomed by three house members get paid (89 % without the cap).
+- **Not stopped** (details below): a ring of four keeps +5.4 points; colluders who thank one way only pass the council's rule; four free riders still collect 3.2 % of payouts; a member working with a guest farm still moves about a sixth of the testnet budget to himself and the farm.
 
 ## Rerun it
 
@@ -283,6 +284,28 @@ Final: tiers 70 / 24 / 6 % in steady state, newcomer in tier 1 after 7 rounds, t
 
 Both settings meet every criterion. Several picks sit at the edge of their grid, which means the optimum may lie beyond it: on testnet `auto_per_thanks` (top), `auto_max` (top), `auto_share_bp` (top) and `cosign_max` (bottom); in the community `decay_bp` (top), `auto_rep_min`, `cosign_base` and `cosign_per_thanks` (bottom). The reason on testnet: with seven or eight payees a round, a typical payout is 10-20 % of the budget, so a tier-1 limit of 12 % (the first guess) leaves most payouts to the council. Even at 80 %, the round cap moves a payout from tier 1 to tier 2 in 43 of 96 steady rounds. `cosign_max` equals `auto_max` on testnet (30 tUSD): above that only a council majority pays.
 
+### Stage D: the guests' receive cap
+
+<!-- BEGIN generated:stage_d -->
+| `guest_receive_cap_bp` | Visitors' share of payouts (kept) | Visitors thanked by 3+ house members who got a payout | Busy demo: visitors' share (kept) | Farm seats' take, tUSD per round (of off) | Accomplice's take, tUSD per round | Outsider farm's take, tUSD per round | Criteria failed |
+|---|---|---|---|---|---|---|---|
+| off | 3.02 % (100 %) | 89 % | 6.24 % (100 %) | 20.02 (100 %) | 9.03 | 9.50 | farm |
+| 20 % | 3.02 % (100 %) | 89 % | 6.24 % (100 %) | 19.86 (99 %) | 9.05 | 9.50 | farm |
+| 15 % | 3.02 % (100 %) | 89 % | 6.23 % (100 %) | 17.57 (88 %) | 9.26 | 9.50 | farm |
+| 10 % | 2.86 % (95 %) | 88 % | 5.69 % (91 %) | 11.93 (60 %) | 9.77 | 9.42 | farm |
+| **8 %** | 2.57 % (85 %) | 77 % | 4.41 % (71 %) | 9.54 (48 %) | 9.99 | 8.77 | - |
+| 6 % | 2.06 % (68 %) | 66 % | 2.80 % (45 %) | 7.09 (35 %) | 10.21 | 6.99 | visitors' share; visitors paid; busy demo |
+| 5 % | 1.79 % (59 %) | 65 % | 2.08 % (33 %) | 5.90 (29 %) | 10.32 | 5.84 | visitors' share; visitors paid; busy demo |
+| 4 % | 0.80 % (27 %) | 25 % | 1.00 % (16 %) | 4.70 (23 %) | 10.43 | 4.61 | visitors' share; visitors paid; busy demo |
+| 3 % | 0.61 % (20 %) | 25 % | 0.49 % (8 %) | 3.42 (17 %) | 10.54 | 3.28 | visitors' share; visitors paid; busy demo |
+
+Medians over 8 seeds, 144 rounds, testnet launch values; 1 of 9 values meet every criterion.
+<!-- END generated:stage_d -->
+
+- **Only 8 % meets every criterion.** At 10 % the farm keeps 60 % of its take; at 6 % honest visitors keep only 68 % of their share and two thirds of the welcomed visitors get paid.
+- **At 8 %** the farm seats' take falls from 20.0 to 9.5 tUSD a round. The accomplice's own take rises a little (9.0 to 10.0 tUSD): the cap moves points from guests to members, him included, and what the seats give him is bounded by the giving cap, not by this one. Together they fall from 29 to 19.5 tUSD a round, from a quarter to a sixth of the budget.
+- **Honest visitors pay for it.** Their share of payouts falls from 3.0 to 2.6 % (85 % kept), the share of welcomed visitors who get paid from 89 to 77 %, and in a busy demo their share falls from 6.2 to 4.4 % (71 % kept). The cap cannot tell a farm's seats from busy honest visitors: both are guests receiving thanks.
+
 ### The testnet demo
 
 ![Payouts per round by tier, testnet demo](sim/tiers.svg)
@@ -292,20 +315,23 @@ Both settings meet every criterion. Several picks sit at the edge of their grid,
 <!-- BEGIN generated:testnet -->
 | Variant | Payouts per round | Tier 1 / 2 / 3 (%) | Newcomer to tier 1 | Pair's excess (pp) | Pair's tier-2/3 payouts rejected | Free rider's share | Guests' share | Farm's take per round (tUSD) | Free rider's take per round (tUSD) |
 |---|---|---|---|---|---|---|---|---|---|
-| House, visitors and a newcomer | 6.90 | 72 / 23 / 5 | 8 | +2.6 | 4 % | 2.7 % | 3.0 % | - | 3.18 |
+| House, visitors and a newcomer | 6.84 | 72 / 22 / 5 | 8 | +2.7 | 4 % | 2.7 % | 2.6 % | - | 3.19 |
 | The same without dampening | 7.40 | 76 / 18 / 6 | 5 | +10.0 | 14 % | 1.2 % | 2.3 % | - | 1.45 |
 | House only (no visitors, no newcomer) | 6.10 | 70 / 19 / 10 | - | +4.5 | 3 % | 3.8 % | 0.0 % | - | 4.59 |
-| Guest farm, outsider | 8.91 | 72 / 27 / 0 | 5 | +4.2 | 0 % | 5.7 % | 7.9 % | 9.50 | 6.80 |
-| Guest farm with the free rider as accomplice | 10.40 | 68 / 32 / 0 | 5.5 | +1.9 | 0 % | 7.5 % | 16.7 % | 20.02 | 9.03 |
+| Busy demo: visitors at 2 per round | 7.10 | 72 / 23 / 5 | 5.5 | +1.4 | 3 % | 2.2 % | 4.4 % | - | 2.62 |
+| Guest farm, outsider | 8.83 | 73 / 27 / 1 | 5 | +4.4 | 0 % | 5.7 % | 7.3 % | 8.77 | 6.85 |
+| Guest farm with the free rider as accomplice | 9.41 | 73 / 26 / 0 | 5.5 | +3.7 | 0 % | 8.3 % | 8.0 % | 9.54 | 9.99 |
+| The same without the receive cap | 10.40 | 68 / 32 / 0 | 5.5 | +1.9 | 0 % | 7.5 % | 16.7 % | 20.02 | 9.03 |
 | Accomplice farm without dampening | 10.62 | 66 / 34 / 0 | 4 | +4.8 | 9 % | 10.7 % | 17.4 % | 20.85 | 12.89 |
 
 Medians over 8 seeds, 144 rounds of 20 minutes, testnet launch values. Tier shares count payouts in rounds 49-144.
 <!-- END generated:testnet -->
 
-- **Tiers.** In steady state 72 % of payouts are automatic, 23 % wait for one council vote and 5 % for a majority. Tier 3 is mostly the largest payouts (above 30 tUSD: the top contributors in their best rounds) and the newcomer's first ones; guests' payouts land in tier 2. The first rounds are all tier 2 and 3: nobody has reputation yet. A newcomer reaches tier 1 after 8 rounds (2 h 40 min).
-- **The labelled pair** (mutual thanks, the demo's published strategy) still gets +2.6 points more than its work share, against +10.0 without dampening; the council rejects 4 % of its tier-2 and tier-3 payouts. On the page, 25 thanks from the partner count 6.25.
-- **The labelled free rider** gets 2.7 % of the payouts (3.18 tUSD a round): idle is off, so a member who never gives is not discounted, and honest house members thank its vague notes a little.
-- **Guest farm.** One person holding all six seats takes 9.5 tUSD a round (8 % of the budget) from the house members' welcome thanks alone, and keeps every real visitor out. With a member as accomplice, who gives his 100 thanks to the farm's seats while the seats give him the cap, the farm takes 20 tUSD and the accomplice 9 tUSD a round: about a quarter of the budget. Dampening hardly changes it (34 tUSD without). The guests' cap limits what guests *give*; thanks *to* guests count at full weight.
+- **Tiers.** In steady state 72 % of payouts are automatic, 22 % wait for one council vote and 5 % for a majority (stage B, before the receive cap: 72 / 23 / 5). Tier 3 is mostly the largest payouts (above 30 tUSD: the top contributors in their best rounds) and the newcomer's first ones; guests' payouts land in tier 2. The first rounds are all tier 2 and 3: nobody has reputation yet. A newcomer reaches tier 1 after 8 rounds (2 h 40 min).
+- **The labelled pair** (mutual thanks, the demo's published strategy) still gets +2.7 points more than its work share, against +10.0 without dampening; the council rejects 4 % of its tier-2 and tier-3 payouts. On the page, 25 thanks from the partner count 6.25.
+- **The labelled free rider** gets 2.7 % of the payouts (3.19 tUSD a round): idle is off, so a member who never gives is not discounted, and honest house members thank its vague notes a little.
+- **Guest farm.** One person holding all six seats takes 8.8 tUSD a round (7 % of the budget) from the house members' welcome thanks alone, and keeps every real visitor out. With a member as accomplice, who gives his 100 thanks to the farm's seats while the seats give him the cap, the seats take 9.5 tUSD and the accomplice 10 tUSD a round: about a sixth of the budget. Without the receive cap it was 20 and 9 tUSD (a quarter), without any dampening 34 tUSD. The giving cap bounds what the seats give the accomplice; the receive cap bounds what they receive.
+- **Busy demo.** With two new visitors a round, guests get 4.4 % of the payouts (6.2 % without the receive cap) and payouts rise to 7.1 a round.
 
 ## Launch parameters
 
@@ -342,6 +368,7 @@ Medians over 8 seeds, 144 rounds of 20 minutes, testnet launch values. Tier shar
 | `max_catchup` | 8 | 36 |
 | `log_keep` | 52 | 108 |
 | `note_max_bytes` | 80 | 80 |
+| `guest_receive_cap_bp` | 800 | 800 |
 <!-- END generated:params -->
 
 Why each *sim* value:
@@ -349,7 +376,8 @@ Why each *sim* value:
 - `cap_per_receiver` 25, `reciprocal_bp` 2500, `breadth_k` 3, `breadth_bp` 2500, `quadratic` off, `idle_bp` 10000 (off): stage A, the same in both settings (DESIGN.md: "same").
 - `round_budget` 120 tUSD and `min_payout` 5 tUSD (testnet): stage C. The community keeps DESIGN.md's 500 and 5 tUSD.
 - `decay_bp` and the tier limits: stage B, per setting. In the community, reputation halves in about 7 weeks; on testnet in about 9 rounds (3 hours), so the demo reaches its steady state within a day.
-- `guest_weight_bp` 5000 and `guest_cap_bp` 2000 (testnet) were not swept; they stay at DESIGN.md's values. The guest farm results show that the cap on what guests give works (the outsider farm steers at most 20 % of the weight) and that what guests receive is the open flank.
+- `guest_receive_cap_bp` 800: stage D, the only value that meets every criterion. The community gets the same value; without guest seats it never binds.
+- `guest_weight_bp` 5000 and `guest_cap_bp` 2000 (testnet) were not swept; they stay at DESIGN.md's values. The cap on what guests give works (the outsider farm steers at most 20 % of the weight).
 - Not simulated, from DESIGN.md: `round_ms`, `thanks_per_round`, `max_receivers`, `carry_rounds`, `reserve`, `guest_seats`, `max_members`, `max_catchup`, `log_keep`; `note_max_bytes` 80 from DESIGN.md's notes.
 
 ## What the rules do not stop
@@ -358,7 +386,7 @@ Why each *sim* value:
 - **One-way thanks.** Colluders who thank in one direction per round, alternating, are invisible to reciprocity and to the house council's rule, which looks for a reciprocal partner. Under the launch rules this is the colluders' best response in most seeds. Pair memory (P in DESIGN.md) would target it; it is not in I-1 and not simulated.
 - **Free riders.** Four free riders who never give collect 3.2 % of the community's payouts, from honest members who thank their padded notes. Idle would reduce that, but it costs honest members who skip a round, raises the colluders' take, and is evaded by any token allocation.
 - **Honest mutual help** is discounted like collusion: the honest pair loses 7-13 % of its payout (11 % in the honest community).
-- **Guests.** One person can hold every guest seat, keep real visitors out, and collect the welcome thanks (8 % of the testnet budget). A member who works with such a farm moves about a quarter of the budget to himself and the farm, because thanks *to* guests are not capped. A fix would be to apply the guests' cap to the points guests receive as well; that is a contract rule and is not in I-1.
+- **Guests.** One person can hold every guest seat, keep real visitors out, and collect the welcome thanks (about 7 % of the testnet budget). A member who works with such a farm still moves about a sixth of the budget to himself and the farm: the receive cap halves the seats' take, but what the seats give him is bounded only by the giving cap. A tighter receive cap would cut honest visitors more than the farm.
 - **The council's rule** is a heuristic: it catches mutual pairs that live off each other, not one-way rings or a member feeding a guest farm. A human council sees more, but the contract cannot make it look.
 - **Sybils** are kept out only by DAO membership. Every scenario here assumes the DAO admits real people.
 
@@ -376,6 +404,6 @@ Why each *sim* value:
 - `sim/hat_tip_sim.py`: the model, the behaviour models, the sweep, the scenarios, the charts, the golden vectors, the replay and this document's generated blocks. `python3 sim/hat_tip_sim.py --check` recomputes the golden vectors, the replay and `sim/params.json` from the model and fails on any difference (`--check --sweep` also reruns the sweep).
 - `sim/params.json`: the launch values (I-2) and the house strategies.
 - `sim/sweep.json`: the sweep's summary, from which the stage tables here are rendered.
-- `sim/golden/*.json`: fixed rounds with every intermediate number (I-3); format and the integer rules in `sim/golden/README.md`. Three are hand-written to reach every rule and edge case (`linear`, `dampening`, `guests`), two use the launch values with allocations from the behaviour models (`launch_testnet`, `launch_community`; the latter is a full 24-member community with up to 10 receivers per giver, a size test for the close).
+- `sim/golden/*.json`: fixed rounds with every intermediate number (I-3); format and the integer rules in `sim/golden/README.md`. Four are hand-written to reach every rule and edge case (`linear`, `dampening`, `guests`, `receive_cap`), two use the launch values with allocations from the behaviour models (`launch_testnet`, `launch_community`; the latter is a full 24-member community with up to 10 receivers per giver, a size test for the close).
 - `sim/replay.json`: the testnet house community over 36 rounds, with and without dampening, the same gifts; for the page's second replay.
 - `docs/sim/excess.svg`, `tracking.svg`, `tiers.svg`, `reputation.svg`: the charts.
