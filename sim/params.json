@@ -43,7 +43,8 @@
   }
  },
  "testnet": {
-  "about": "The testnet demo (DESIGN.md's 'Testnet demo' column).",
+  "about": "The testnet demo (DESIGN.md's 'Testnet demo' column). contract_near: the NEAR the contract account needs at deployment, before its keys are deleted (contract/README.md, 'Storage').",
+  "contract_near": 11,
   "config": {
    "dao": null,
    "token": null,

@@ -1,6 +1,6 @@
 {
  "name": "linear",
- "about": "All dampening off (reciprocal_bp 10000, linear, no breadth or idle rule). A replaced allocation, policy entries the contract ignores (0x and implicit accounts), two empty rounds, a DAO that holds less than the budget and then nothing, a member removed at a close, a round whose only entries are dropped (no points, so no budget), carry topped up and lapsing, tiers growing with reputation and the round cap on tier 1.",
+ "about": "All dampening off (reciprocal_bp 10000, linear, no breadth or idle rule). A replaced allocation, policy entries the contract ignores (0x and implicit accounts), two empty rounds, a DAO that holds less than the budget and then nothing (earlier payouts paid before), a member removed at a close, a round whose only entries are dropped (no points, so no budget), carry topped up and lapsing, tiers growing with reputation and the round cap on tier 1.",
  "format": "hat-tip golden v1; see sim/golden/README.md",
  "config": {
   "dao": "dao.test",
@@ -279,7 +279,17 @@
   },
   {
    "round": 5,
-   "outcomes": [],
+   "outcomes": [
+    {"round": 1, "receiver": "ana.test", "status": "paid"},
+    {"round": 1, "receiver": "ben.test", "status": "paid"},
+    {"round": 1, "receiver": "cleo.test", "status": "paid"},
+    {"round": 1, "receiver": "dina.test", "status": "paid"},
+    {"round": 1, "receiver": "emil.test", "status": "paid"},
+    {"round": 2, "receiver": "ana.test", "status": "paid"},
+    {"round": 2, "receiver": "ben.test", "status": "paid"},
+    {"round": 2, "receiver": "cleo.test", "status": "paid"},
+    {"round": 2, "receiver": "dina.test", "status": "paid"}
+   ],
    "seats": [],
    "notes": [],
    "allocations": [
@@ -565,7 +575,16 @@
   },
   {
    "round": 9,
-   "outcomes": [],
+   "outcomes": [
+    {"round": 5, "receiver": "ana.test", "status": "paid"},
+    {"round": 5, "receiver": "ben.test", "status": "paid"},
+    {"round": 5, "receiver": "cleo.test", "status": "paid"},
+    {"round": 5, "receiver": "dina.test", "status": "paid"},
+    {"round": 8, "receiver": "ana.test", "status": "paid"},
+    {"round": 8, "receiver": "ben.test", "status": "paid"},
+    {"round": 8, "receiver": "cleo.test", "status": "paid"},
+    {"round": 8, "receiver": "dina.test", "status": "paid"}
+   ],
    "seats": [],
    "notes": [],
    "allocations": [

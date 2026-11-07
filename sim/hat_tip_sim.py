@@ -307,9 +307,13 @@ class Hat:
             v = self.rep.get(acc, 0) + x
             self.rep[acc] = 0 if is_implicit(acc) and v < MILLI else v
             self.hist.setdefault(acc, {})[r] = x
-        # budget and shares (no points, no budget)
+        # budget and shares (no points, no budget): what the DAO holds beyond the reserve and
+        # beyond what earlier rounds still owe (payouts without an outcome, and carries)
         total_p = sum(p.values())
-        budget = min(c["round_budget"], max(0, dao_balance - c["reserve"])) if total_p else 0
+        owed = (sum(x["amount"] for x in self.payouts if x["status"] == "planned")
+                + sum(v[0] for v in self.carry.values()))
+        budget = (min(c["round_budget"], max(0, dao_balance - c["reserve"] - owed))
+                  if total_p else 0)
         shares = {}
         planned = []
         for acc in sorted(p):
@@ -427,7 +431,7 @@ GOLDEN_SCRIPTS = {
         "about": "All dampening off (reciprocal_bp 10000, linear, no breadth or idle rule). "
                  "A replaced allocation, policy entries the contract ignores (0x and implicit "
                  "accounts), two empty rounds, a DAO that holds less than the budget and then "
-                 "nothing, a member removed at a close, a round whose only entries are dropped "
+                 "nothing (earlier payouts paid before), a member removed at a close, a round whose only entries are dropped "
                  "(no points, so no budget), carry topped up and lapsing, tiers growing with "
                  "reputation and the round cap on tier 1.",
         "config": {},
@@ -447,7 +451,10 @@ GOLDEN_SCRIPTS = {
                  "members": FIVE, "balance": 900 * U}),
             (3, {}),
             (4, {}),
-            (5, {"calls": [(ANA, [(BEN, 50), (CLEO, 50)]),
+            (5, {"outcomes": [(1, ANA, "paid"), (1, BEN, "paid"), (1, CLEO, "paid"),
+                              (1, DINA, "paid"), (1, EMIL, "paid"), (2, ANA, "paid"),
+                              (2, BEN, "paid"), (2, CLEO, "paid"), (2, DINA, "paid")],
+                 "calls": [(ANA, [(BEN, 50), (CLEO, 50)]),
                            (BEN, [(ANA, 50), (CLEO, 20), (DINA, 30)]),
                            (CLEO, [(ANA, 50), (DINA, 50)]),
                            (DINA, [(ANA, 10), (EMIL, 1)])],
@@ -463,7 +470,10 @@ GOLDEN_SCRIPTS = {
                            (CLEO, [(ANA, 50), (BEN, 25), (DINA, 25)]),
                            (DINA, [(ANA, 50), (BEN, 50)])],
                  "members": [ANA, BEN, CLEO, DINA], "balance": 400 * U}),
-            (9, {"calls": [(ANA, [(BEN, 50), (CLEO, 50)]),
+            (9, {"outcomes": [(5, ANA, "paid"), (5, BEN, "paid"), (5, CLEO, "paid"),
+                              (5, DINA, "paid"), (8, ANA, "paid"), (8, BEN, "paid"),
+                              (8, CLEO, "paid"), (8, DINA, "paid")],
+                 "calls": [(ANA, [(BEN, 50), (CLEO, 50)]),
                            (BEN, [(ANA, 50), (CLEO, 50)]),
                            (CLEO, [(ANA, 50), (BEN, 50)]),
                            (DINA, [(ANA, 1)])],
@@ -2437,6 +2447,12 @@ def house_document():
     }
 
 
+# The NEAR the keyless contract account must hold at launch: code 3.5, the round logs of
+# log_keep rounds with the house and all six guest seats busy about 6, bond float and token
+# registrations about 0.5, and the 1 NEAR below which it refuses guests (contract/README.md).
+LAUNCH_CONTRACT_NEAR = 11
+
+
 def params_document(pick):
     cfg_c, cfg_t = launch_configs(pick)
     return {
@@ -2453,7 +2469,10 @@ def params_document(pick):
         "community": {"about": "Example for a real community with weekly rounds "
                                "(DESIGN.md's 'Community' column).",
                       "config": config_json(cfg_c)},
-        "testnet": {"about": "The testnet demo (DESIGN.md's 'Testnet demo' column).",
+        "testnet": {"about": "The testnet demo (DESIGN.md's 'Testnet demo' column). "
+                             "contract_near: the NEAR the contract account needs at deployment, "
+                             "before its keys are deleted (contract/README.md, 'Storage').",
+                    "contract_near": LAUNCH_CONTRACT_NEAR,
                     "config": config_json(cfg_t)},
         "pick": {"rules": pick["rules"], "testnet_budget": pick["testnet_budget"],
                  "tiers_testnet": pick["tiers_testnet"],
