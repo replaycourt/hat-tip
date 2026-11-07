@@ -153,8 +153,15 @@ export class Rpc {
    * `restMs`; then the first host is used again. (The fallback is for trouble only: the free dRPC
    * plan, for one, does not wait for transactions.)
    */
-  constructor(hosts, { timeoutMs = 9000, restMs = 30_000, fetchImpl, now = () => Date.now() } = {}) {
+  constructor(hosts, { timeoutMs = 9000, restMs = 30_000, fetchImpl, now = () => Date.now(), maxInFlight = 4, minGapMs = 0 } = {}) {
     this.hosts = hosts
+    // Public RPC nodes answer a burst of calls with HTTP 429 (without CORS headers, so a browser
+    // sees a failed fetch); a few calls at a time, a little apart, are enough for a page.
+    this.maxInFlight = maxInFlight
+    this.minGapMs = minGapMs
+    this.inFlight = 0
+    this.waiting = []
+    this.nextStart = 0
     this.timeoutMs = timeoutMs
     this.restMs = restMs
     this.now = now
@@ -180,20 +187,45 @@ export class Rpc {
     if (this.host !== before) this.onHostChange?.(this.host)
   }
 
+  /** Waits for one of `maxInFlight` slots (release() hands it to the next waiter), then keeps
+   * starts at least `minGapMs` apart. */
+  async slot() {
+    if (this.inFlight < this.maxInFlight) this.inFlight++
+    else await new Promise((res) => this.waiting.push(res))
+    if (this.minGapMs > 0) {
+      const t = Date.now()
+      const at = Math.max(t, this.nextStart)
+      this.nextStart = at + this.minGapMs
+      if (at > t) await sleep(at - t)
+    }
+  }
+
+  release() {
+    const next = this.waiting.shift()
+    if (next) next()
+    else this.inFlight--
+  }
+
   async call(method, params, { retries = 2 } = {}) {
     let lastErr
     for (let attempt = 0; attempt <= retries; attempt++) {
-      const host = this.host
+      await this.slot()
+      const host = this.host // chosen once the slot is ours: a host may have been rested meanwhile
       try {
         this.calls++
-        const r = await this.fetch(host, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: String(this.calls), method, params }),
-          signal: AbortSignal.timeout(this.timeoutMs),
-        })
-        if (!r.ok && r.status !== 200) throw new RpcError(`http ${r.status}`, { http: r.status, text: `http ${r.status}` })
-        const j = await r.json()
+        let j
+        try {
+          const r = await this.fetch(host, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: String(this.calls), method, params }),
+            signal: AbortSignal.timeout(this.timeoutMs),
+          })
+          if (!r.ok && r.status !== 200) throw new RpcError(`http ${r.status}`, { http: r.status, text: `http ${r.status}` })
+          j = await r.json()
+        } finally {
+          this.release()
+        }
         if (j.error) {
           const text = JSON.stringify(j.error)
           const err = new RpcError(text, j.error)

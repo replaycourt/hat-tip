@@ -665,11 +665,21 @@ export function proposalInfo(p) {
   }
 }
 
+/** "Council A and C" for ["Council A", "Council C"]; "Ana, Ben and Cleo" otherwise. */
+export function joinNames(names) {
+  if (names.length < 2) return names.join('')
+  const words = names.map((n) => n.split(' '))
+  const head = words[0][0]
+  const shared = words.every((w) => w.length === 2 && w[0] === head)
+  const parts = shared ? words.map((w, i) => (i === 0 ? w.join(' ') : w[1])) : names
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+}
+
 /** The column a payout sits in and the one line under it. */
 export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) => a } = {}) {
   const s = String(payout.status).toLowerCase()
   const voters = (info?.votes ?? []).filter(([, v]) => v === 'Approve').map(([a]) => name(a))
-  const by = voters.length ? ` by ${voters.join(', ')}` : ''
+  const by = voters.length ? ` by ${joinNames(voters)}` : ''
   const tier = Number(payout.tier)
   switch (s) {
     case 'planned':

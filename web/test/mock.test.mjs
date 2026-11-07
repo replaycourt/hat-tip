@@ -159,6 +159,8 @@ test('the mock speaks the contract and DAO shapes', async () => {
   const prop = await c.proposal(p.dao_proposal)
   assert.equal(L.proposalInfo(prop).receiver, p.receiver)
   assert.equal(await c.proposal(99_999), null, 'a deleted proposal reads as null')
+  const range = await c.proposals(p.dao_proposal, 3)
+  assert.deepEqual(range.map((x) => x.id), [p.dao_proposal, p.dao_proposal + 1, p.dao_proposal + 2])
   assert.deepEqual(await c.tiers(p.receiver), (await c.member(p.receiver)).limits)
   for (const k of ['rounds_closed', 'budgets', 'planned', 'carry', 'lapsed', 'dust', 'points', 'attributed', 'paid', 'rejected', 'expired', 'removed', 'failed', 'strikes', 'by_status']) assert.ok(k in st.totals, `totals.${k}`)
   // a tier-2 proposal is the contract's ft_transfer call, as filed (contract/README.md, "The proposals")

@@ -84,7 +84,7 @@ async function boot() {
   document.body.classList.add('live')
   await Promise.all([loadPolicy(), poll({ first: true })])
   renderRules()
-  loadLedger()
+  ledgerWhenSeen()
   setInterval(tick, 250)
   document.addEventListener('visibilitychange', () => !document.hidden && schedule(200))
 }
@@ -123,7 +123,7 @@ function wire() {
     recompute()
     render()
   })
-  U.$('btn-replay').addEventListener('click', () => S.last && playStory(storySummary(), true))
+  U.$('btn-replay').addEventListener('click', () => S.last && playStory(storyOf(S.last, S.lastPayouts), true))
   U.$('btn-older').addEventListener('click', () => loadLedger(true))
   U.$('drawer-close').addEventListener('click', U.closeDrawer)
   U.$('drawer-backdrop').addEventListener('click', U.closeDrawer)
@@ -182,14 +182,18 @@ async function poll({ first = false } = {}) {
       S.lastClosed = lastClosed
       await Promise.all([loadLast(lastClosed), loadPeople()])
       if (closedNow) {
-        playStory(storySummary())
-        loadLedger()
+        const closed = await client.round(lastClosed).catch(() => null)
+        if (closed?.gifts?.length) playStory(storyOf(closed, closed.n === S.last?.n ? S.lastPayouts : []))
+        if (S.ledgerWanted) loadLedger()
         loadPolicy()
       }
     } else {
       await Promise.all([refreshPayouts(), first ? null : loadPeople({ only: newAccounts() })])
     }
-    if (S.me) {
+    // the visitor's own record and tUSD: every third poll, or right after something happened
+    S.polls = (S.polls ?? 0) + 1
+    if (S.me && (first || closedNow || S.meDirty || S.polls % 3 === 0)) {
+      S.meDirty = false
       const [bal2, rec] = await Promise.all([client.balanceOf(S.me).catch(() => '0'), client.member(S.me).catch(() => null)])
       S.myBalance = L.big(bal2)
       S.myRecord = rec
@@ -204,14 +208,17 @@ async function poll({ first = false } = {}) {
 }
 
 /** The last closed round with payouts (an empty round shows the one before it). */
-async function loadLast(n) {
-  let rv = null
-  for (let k = n; k >= Math.max(1, n - 6); k--) {
-    rv = await client.round(k)
-    if (rv?.payouts?.length) break
+async function loadLast(lastClosed) {
+  // The newest payout names the newest round that paid anything; the rounds after it may be
+  // empty (nobody gave) or have paid nothing.
+  let n = lastClosed
+  const next = Number(S.state?.next_payout ?? 0)
+  if (next > 0) {
+    const [p] = await client.payouts(next - 1, 1)
+    if (p) n = Math.min(lastClosed, Number(p.round))
   }
-  S.last = rv
-  S.lastPayouts = await payoutsOf(rv)
+  S.last = n >= 1 ? await client.round(n) : null
+  S.lastPayouts = await payoutsOf(S.last)
   await loadProposals(S.lastPayouts)
 }
 
@@ -223,16 +230,21 @@ async function payoutsOf(rv) {
   return list.filter((p) => p.round === rv.n)
 }
 
+/** The DAO proposals of these payouts that may still change, in one get_proposals read. */
 async function loadProposals(payouts) {
-  const want = payouts.filter((p) => p.dao_proposal != null && !L.isFinal(S.proposals.get(Number(p.dao_proposal))?.status ?? 'x'))
-  await Promise.all(
-    want.map((p) =>
-      client
-        .proposal(p.dao_proposal)
-        .then((x) => x && S.proposals.set(Number(p.dao_proposal), x))
-        .catch(() => null),
-    ),
-  )
+  const ids = payouts
+    .map((p) => p.dao_proposal)
+    .filter((id) => id != null)
+    .map(Number)
+    .filter((id) => (S.proposals.get(id)?.status ?? 'InProgress') === 'InProgress')
+  if (!ids.length) return
+  const from = Math.min(...ids)
+  const limit = Math.min(100, Math.max(...ids) - from + 1)
+  try {
+    for (const x of await client.proposals(from, limit)) S.proposals.set(Number(x.id), x)
+  } catch (e) {
+    console.info('proposals', e?.message ?? e)
+  }
 }
 
 /** Payouts that are not final yet: their status and their DAO proposal. */
@@ -422,6 +434,8 @@ function renderGuests(notes, givenTo) {
     .join('')
 }
 
+const shown = new Map() // tier -> the HTML of its list now on the page
+
 function renderPayouts() {
   if (!S.last) return
   U.setText('pay-round', String(S.last.n))
@@ -430,7 +444,7 @@ function renderPayouts() {
   for (const t of [1, 2, 3]) {
     const list = S.lastPayouts.filter((p) => Number(p.tier) === t).sort((a, b) => Number(L.big(b.amount) - L.big(a.amount)))
     const story = S.story && S.story.n === S.last.n && S.story.step < 4
-    U.$(`tier-${t}`).innerHTML = list.length
+    const html = list.length
       ? list
           .map((p) => {
             const info = L.proposalInfo(S.proposals.get(Number(p.dao_proposal)))
@@ -439,6 +453,11 @@ function renderPayouts() {
           })
           .join('')
       : `<li class="tier-empty">${t === 1 ? 'None this round.' : 'Nobody this round.'}</li>`
+    // only when something changed: a new list replays the cards' entrance
+    if (shown.get(t) !== html) {
+      U.$(`tier-${t}`).innerHTML = html
+      shown.set(t, html)
+    }
   }
   const paid = new Set(S.lastPayouts.map((p) => p.receiver))
   const carried = (S.last.points ?? []).filter(([a]) => !paid.has(a))
@@ -547,6 +566,7 @@ function onDone(out, item) {
     U.toast(`The contract said no: ${out?.error ?? 'refused'}.`, 'warn', 6000)
     return
   }
+  S.meDirty = true
   if (item.kind === 'allocate') {
     S.giving = false
     S.draft = new Map()
@@ -563,11 +583,12 @@ function onError(err, item) {
 
 // ---- the close story ----------------------------------------------------------------------------
 
-function storySummary() {
-  const sm = L.roundSummary(S.last, S.lastPayouts)
-  const props = S.lastPayouts.map((p) => p.dao_proposal).filter((x) => x != null)
-  const paid = new Set(S.lastPayouts.map((p) => p.receiver))
-  return { ...sm, carried: (S.last.points ?? []).filter(([a]) => !paid.has(a)).length, firstProposal: props.length ? Math.min(...props) : null, lastProposal: props.length ? Math.max(...props) : null }
+function storyOf(rv, payouts) {
+  const sm = L.roundSummary(rv, payouts)
+  const props = payouts.map((p) => p.dao_proposal).filter((x) => x != null)
+  const paid = new Set(payouts.map((p) => p.receiver))
+  const guestsOnly = (rv.gifts ?? []).every((g) => L.isImplicit(g[0]))
+  return { ...sm, carried: (rv.points ?? []).filter(([a]) => !paid.has(a)).length, firstProposal: props.length ? Math.min(...props) : null, lastProposal: props.length ? Math.max(...props) : null, guestsOnly, guestCapBp: S.cfg.guest_cap_bp }
 }
 
 let storyTimer = null
@@ -580,7 +601,7 @@ function playStory(summary, scroll = false) {
   el.hidden = false
   const draw = () => {
     // the proposals are filed a moment after the close: read the summary again at every step
-    if (S.last?.n === S.story.n) S.story.summary = storySummary()
+    if (S.last?.n === S.story.n) S.story.summary = storyOf(S.last, S.lastPayouts)
     el.innerHTML = U.storyHtml(S.story.summary, S.story.step)
     renderPayouts()
   }
@@ -616,6 +637,22 @@ function help(st) {
 // ---- ledger -------------------------------------------------------------------------------------
 
 const LEDGER_PAGE = 8
+
+/** The ledger costs ten reads: load it when it comes near the screen, not in the first burst. */
+function ledgerWhenSeen() {
+  const el = U.$('ledger')
+  if (!globalThis.IntersectionObserver) return loadLedger()
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return
+      io.disconnect()
+      S.ledgerWanted = true
+      loadLedger()
+    },
+    { rootMargin: '600px 0px' },
+  )
+  io.observe(el)
+}
 
 async function loadLedger(older = false) {
   if (S.lastClosed == null || S.lastClosed < 1) {
@@ -673,8 +710,18 @@ async function openMember(account) {
   } catch {
     return U.openDrawer('member', 'Record', '<p class="muted">Could not read this record. Try again.</p>')
   }
-  const props = m.payouts.filter((p) => p.dao_proposal != null && !S.proposals.has(Number(p.dao_proposal))).slice(-6)
-  await Promise.all(props.map((p) => client.proposal(p.dao_proposal).then((x) => x && S.proposals.set(Number(p.dao_proposal), x)).catch(() => null)))
+  // the votes behind the last few payouts, in one read
+  const recent = m.payouts.slice(-6).filter((p) => p.dao_proposal != null && !S.proposals.has(Number(p.dao_proposal)))
+  if (recent.length) {
+    const ids = recent.map((p) => Number(p.dao_proposal))
+    const from = Math.min(...ids)
+    const want = new Set(ids)
+    try {
+      for (const x of await client.proposals(from, Math.min(100, Math.max(...ids) - from + 1))) if (want.has(Number(x.id))) S.proposals.set(Number(x.id), x)
+    } catch (e) {
+      console.info('proposals', e?.message ?? e)
+    }
+  }
   // a strike takes the round's points back, decayed to when the council's answer was read (about a round later)
   const strikes = m.payouts.filter((p) => p.status === 'rejected' || p.status === 'removed').map((p) => ({ at: p.round + 1, amount: L.decay(p.points, S.cfg) }))
   const to = S.lastClosed ?? 0
@@ -713,6 +760,7 @@ async function openProof() {
       tokenHash: proof.tokenHash,
       expectedHash: client?.codeHash,
       expectedTokenHash: client?.tokenCodeHash,
+      stage: !MOCK && DEPLOYMENT.name === 'stage',
       lockTx: client?.lockTx,
       report: S.report,
       audit: S.audit,

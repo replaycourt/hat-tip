@@ -32,13 +32,38 @@ export const DEPLOYMENTS = {
     house: {},
   },
   stage: {
-    contract: null,
-    gasAccount: null,
-    codeHash: null,
-    tokenCodeHash: null,
+    contract: 'thanks.hat-tip-stage.testnet',
+    gasAccount: 'hat-tip-gas.testnet',
+    codeHash: '9o7sKeDvmHwKkMFXz3cVm36QP72aa6iCzy3DsGm1P3Xm',
+    tokenCodeHash: '41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip',
     lockTx: null,
-    gasKeys: [],
-    house: {},
+    // PUBLIC on purpose: function-call keys of hat-tip-gas.testnet that may only call `act`,
+    // `close_round`, `pay`, `check_payout` and `sync` on thanks.hat-tip-stage.testnet, 1 NEAR allowance each
+    // (see the comment at the top).
+    gasKeys: [
+      { public_key: 'ed25519:59Ny8fFy7dDvJfbsWDVDiSyw764ekieddqXq2Mq8GNC2', private_key: 'ed25519:3Ukjh3p2sxjfSmF7FsCgyxm4HQ9NHgh6HDCQWqWGt19jxcCofVsUAG7Bm8ZWghPyaPwvB8CpanY5STkiq45maaJN' },
+      { public_key: 'ed25519:G27BzzhsmcuNTWRmrmyLcX4rY36AV5NQrqk5FNxRcirM', private_key: 'ed25519:ELWQohMziu6wscZo4tseBQURxnCJViqruC8XbBRp2JCBtYyDwJSW5VYQC6k4J6MLDD6rPrMy8dpk6FXi8SXXEdX' },
+      { public_key: 'ed25519:79AggFigia8tgxCoH959D9ospUb3DkpEomhE4wfxzz7i', private_key: 'ed25519:4nA4tzmQygmi3aeNasTVCc3q7Z6wVWdGU3pFEunQXqfS3mK5pVnJztp6A3aZtzUifJAvXe7BTzgm3xCLzNZt5heG' },
+      { public_key: 'ed25519:A9r2t8ugcwZaedXegmpaySejrWL799P5CrbgMy3qjFVz', private_key: 'ed25519:xfoqGK6Jfiv6MgCj6t3Vp4PUw3mtG5DNwF2zBFpCMf1fvzYgGeCi4aCj9jWGdNWTaiX3vpELS2cKXw1nnRVUcSC' },
+      { public_key: 'ed25519:34u8CT9KdiA5MGCHeTbVZc1z5WgN9tTRDZHx5gqtYB7X', private_key: 'ed25519:3nLkkg7UAbqjZV5hSkK5ANhQdb13V1DKr9xqY4mY6c9eTEQszM15gn54KJ7LAgCBUnwxRkGfaGvEe1MoTZoosGhF' },
+      { public_key: 'ed25519:5BRXKdLU5aAzMbYibxuafNV1SMTbgdt1aTy4QgTE8PAn', private_key: 'ed25519:47MWrSfPxVymrcQyFvP69wM5CjQCxUFnMn3cmomePwsvHUhS3LV1C4iJGQnx7AxNPMVit1xWKsatYPrHBJMUiFbt' },
+      { public_key: 'ed25519:5cdCXh5DCjQeZZx1RNWNuFzEiu86GFtynaZdtFWXXpU4', private_key: 'ed25519:AkB6vYf7rUnH5dmyEXjmnYnFLB7YuGiLKco2AScXtifppRHKvKpeq6Eg9S99GtrFifXbxTM3QRdVDp9J2JDQW3n' },
+      { public_key: 'ed25519:BNJBPfw5oDQ1UGtPWspNzdGkMLZ615QS3H5mDC4hL5Up', private_key: 'ed25519:58FTLC1RaZ7t2RVTxH9CgNjekJkpc8BfH4rBiwXfDSbjbu94gDu4md35xm2aUp71RaH2jToK9rXtEhkqTy43AQL4' },
+    ],
+    // The labelled house members and council (deploy/testnet.json, house; sim/params.json).
+    house: {
+      'ana.hat-tip-stage.testnet': 'honest',
+      'ben.hat-tip-stage.testnet': 'honest',
+      'cleo.hat-tip-stage.testnet': 'honest',
+      'dina.hat-tip-stage.testnet': 'honest',
+      'emil.hat-tip-stage.testnet': 'honest',
+      'finn.hat-tip-stage.testnet': 'pair',
+      'gus.hat-tip-stage.testnet': 'pair',
+      'hugo.hat-tip-stage.testnet': 'free_rider',
+      'council-a.hat-tip-stage.testnet': 'council',
+      'council-b.hat-tip-stage.testnet': 'council',
+      'council-c.hat-tip-stage.testnet': 'council',
+    },
   },
 }
 
@@ -50,11 +75,19 @@ export const RPC_HOSTS = ['https://test.rpc.fastnear.com', 'https://near-testnet
 export const EXPLORER = 'https://testnet.nearblocks.io'
 export const REPO = 'https://github.com/replaycourt/hat-tip'
 
-/** Gas attached to relayed calls (contract/README.md, "Gas"). */
-export const ACT_GAS = 30_000_000_000_000n
-export const CLOSE_GAS = 255_000_000_000_000n
-export const PAY_GAS = 300_000_000_000_000n
-export const CHECK_GAS = 135_000_000_000_000n
+/**
+ * Gas attached to relayed calls. The contract refuses a call with less than it needs and names
+ * the figure ("this call needs N Tgas"); test/config.test.mjs recomputes the needs from the
+ * constants in contract/src/config.rs. Burnt on stage (docs/testnet-stage.md): act 3, close 15,
+ * pay about 6-18 per payout, check 7.5. Unused gas is refunded; a relay key's allowance (1 NEAR)
+ * must only cover the prepaid gas of one call at the pessimistic gas price (PAY_GAS: 0.3 NEAR).
+ */
+export const ACT_GAS = 30_000_000_000_000n // no cross-contract call; burns about 3 Tgas
+export const CLOSE_GAS = 255_000_000_000_000n // need 2 x 20 link + 10 get_policy + 5 ft_balance_of + 180 on_close + 15 margin = 250, +5
+export const PAY_GAS = 300_000_000_000_000n // files as many payouts as fit, 40-130 Tgas each (+15 margin)
+export const CHECK_GAS = 140_000_000_000_000n // need 20 link + 10 get_proposals + 90 on_checked + 15 margin = 135, +5
+/** Payouts one relayed `pay` asks for; the contract files only as many as PAY_GAS covers. */
+export const PAY_MAX = 10
 
 /** The deployment named by `?contract=` if it is one of DEPLOYMENTS, else DEFAULT. */
 export function pickDeployment(search = globalThis.location?.search ?? '') {

@@ -130,12 +130,13 @@ export function payoutHtml(p, { name, stage, fresh = false, me, house }) {
 
 /** The close of a round in five steps, revealed one by one (`step` 0..5). */
 export function storyHtml(s, step) {
+  const none = s.points === 0n
   const steps = [
-    ['Round closed', `Round ${s.n}: ${s.givers} people gave ${L.fmtInt(s.thanks)} thanks.`],
-    ['Counted', `${L.fmtThanks(s.points)} thanks counted after the rules.`],
-    ['Split', `${tusd(s.budget)} split by thanks: ${s.payouts} payout${s.payouts === 1 ? '' : 's'}${s.carried ? `, ${s.carried} carried` : ''}.`],
-    ['Filed in the DAO', s.firstProposal != null ? `${s.payouts} proposals, #${s.firstProposal}${s.payouts > 1 ? `–#${s.lastProposal}` : ''}.` : 'Proposals are being filed.'],
-    ['Approved', `${s.byTier[1].n} paid at once · ${s.byTier[2].n} wait for one vote · ${s.byTier[3].n} for the council.`],
+    ['Round closed', `Round ${s.n}: ${s.givers} ${s.givers === 1 ? 'person' : 'people'} gave ${L.fmtInt(s.thanks)} thanks.`],
+    ['Counted', none ? (s.guestsOnly ? `Nothing counted: guests steer at most ${L.fmtPct(s.guestCapBp ?? 0)} of a round, and no member gave.` : 'Nothing counted after the rules.') : `${L.fmtThanks(s.points)} thanks counted after the rules.`],
+    ['Split', none || s.budget === 0n ? 'Nothing to split: the budget stays in the DAO.' : `${tusd(s.budget)} split by thanks: ${s.payouts} payout${s.payouts === 1 ? '' : 's'}${s.carried ? `, ${s.carried} carried` : ''}.`],
+    ['Filed in the DAO', !s.payouts ? 'No proposals this round.' : s.firstProposal != null ? `${s.payouts} proposal${s.payouts === 1 ? '' : 's'}, #${s.firstProposal}${s.payouts > 1 ? `–#${s.lastProposal}` : ''}.` : 'Proposals are being filed.'],
+    ['Approved', !s.payouts ? 'No payouts; reputation decayed as every round.' : `${s.byTier[1].n} paid at once · ${s.byTier[2].n} wait for one vote · ${s.byTier[3].n} for the council.`],
   ]
   return `<div class="story-inner">${steps
     .map(([h, t], i) => `<div class="story-step${i < step ? ' on' : ''}${i === step - 1 ? ' now' : ''}"><span class="story-num">${i + 1}</span><b>${esc(h)}</b><span>${esc(t)}</span></div>`)
@@ -155,7 +156,7 @@ export function ledgerHtml(rows, { name, open = new Set() }) {
       return `<li class="ledger-row${empty ? ' empty' : ''}${open.has(s.n) ? ' open' : ''}">
         <button class="lr-head" type="button" data-round="${esc(s.n)}"${empty ? ' disabled' : ''} aria-expanded="${open.has(s.n)}">
           <span class="lr-n">Round ${esc(s.n)}</span>
-          <span class="lr-givers">${empty ? 'nobody gave · only reputation decayed' : `${s.givers} givers · ${L.fmtInt(s.thanks)} thanks → ${L.fmtThanks(s.points)} counted`}</span>
+          <span class="lr-givers">${empty ? 'nobody gave · only reputation decayed' : `${s.givers} giver${s.givers === 1 ? '' : 's'} · ${L.fmtInt(s.thanks)} thanks → ${L.fmtThanks(s.points)} counted`}</span>
           <span class="lr-paid">${empty ? '' : esc(tusd(s.paid))}</span>
           <span class="lr-tiers">${empty ? '' : tiers}</span>
         </button>
@@ -296,8 +297,12 @@ export function proposalHtml(p, { name, dao, explorer, mock, payout, house }) {
 
 // ---- proof --------------------------------------------------------------------------------------
 
-const keysLine = (keys) =>
-  keys == null ? '<span class="muted">checking…</span>' : keys.length === 0 ? '<b class="good">0 access keys</b>' : `<b class="bad">${keys.length} access key${keys.length === 1 ? '' : 's'}</b>`
+const keysLine = (keys, stage = false, what = 'nobody can change the rules') =>
+  keys == null
+    ? '<span class="muted">checking…</span>'
+    : keys.length === 0
+      ? `<b class="good">0 access keys</b> <span class="muted">· ${what}</span>`
+      : `<b class="bad">${keys.length} access key${keys.length === 1 ? '' : 's'}</b>${stage ? ' <span class="muted">· this is staging, which keeps its keys; the launch deletes them</span>' : ''}`
 
 function hashLine(got, want) {
   if (!got) return '<span class="muted">checking…</span>'
@@ -328,14 +333,14 @@ export function proofHtml(x) {
     <h3>The contract</h3>
     <ul class="proof-list">
       <li><span>Account</span><span>${lk(`address/${x.contract}`, x.contract)}</span></li>
-      <li><span>Its keys</span><span>${keysLine(x.contractKeys)} <span class="muted">· nobody can change the rules</span></span></li>
+      <li><span>Its keys</span><span>${keysLine(x.contractKeys, x.stage)}</span></li>
       <li><span>Code hash</span><span>${hashLine(x.contractHash, x.expectedHash)}</span></li>
       ${x.lockTx && !x.mock ? `<li><span>Locked</span><span>${lk(`txns/${x.lockTx}`, `${x.lockTx.slice(0, 10)}…`)} <span class="muted">· the last key deleted</span></span></li>` : ''}
     </ul>
     <h3>The token (tUSD)</h3>
     <ul class="proof-list">
       <li><span>Account</span><span>${lk(`address/${x.token}`, x.token)}</span></li>
-      <li><span>Its keys</span><span>${keysLine(x.tokenKeys)} <span class="muted">· fixed supply, nobody can mint</span></span></li>
+      <li><span>Its keys</span><span>${keysLine(x.tokenKeys, x.stage, 'fixed supply, nobody can mint')}</span></li>
       <li><span>Code hash</span><span>${hashLine(x.tokenHash, x.expectedTokenHash)}</span></li>
     </ul>
     <h3>The DAO’s policy, read live</h3>

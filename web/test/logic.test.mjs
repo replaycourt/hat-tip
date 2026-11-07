@@ -293,6 +293,8 @@ test('DAO proposals: transfers and ft_transfer calls read alike; stages read fro
   assert.equal(L.payoutStage({ status: 'filed', tier: 3 }, t).text, '1 of 2 council votes')
   assert.equal(L.payoutStage({ status: 'paid', tier: 1 }).text, 'Paid at once')
   assert.equal(L.payoutStage({ status: 'paid', tier: 2 }, c, { name }).text, 'Paid · approved by Council A')
+  assert.equal(L.payoutStage({ status: 'paid', tier: 3 }, { votes: [['council-a.x.testnet', 'Approve'], ['council-c.x.testnet', 'Approve']] }, { name }).text, 'Paid · approved by Council A and C')
+  assert.equal(L.joinNames(['Ana', 'Ben', 'Cleo']), 'Ana, Ben and Cleo')
   assert.equal(L.payoutStage({ status: 'rejected', tier: 2 }).state, 'struck')
   assert.equal(L.payoutStage({ status: 'expired', tier: 3 }).state, 'lapsed')
   assert.equal(L.payoutStage({ status: 'planned', tier: 1 }).state, 'waiting')

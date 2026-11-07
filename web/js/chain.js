@@ -4,7 +4,7 @@
 // to outcomes, and friendly errors when the network is in a mood.
 // (The gas pool and the retry logic are taken over from Bonfire, an earlier entry by the same author.)
 import { Rpc, RpcError, encodeTx, functionCallAction, hex, implicitAccount, keyFromNearString, keyFromSeed, newKey, sign, signTx, sleep, summarise, txHash, unhex, utf8 } from './near.js'
-import { ACT_GAS, CHECK_GAS, CLOSE_GAS, DEPLOYMENT, PAY_GAS, RPC_HOSTS } from './config.js'
+import { ACT_GAS, CHECK_GAS, CLOSE_GAS, DEPLOYMENT, PAY_GAS, PAY_MAX, RPC_HOSTS } from './config.js'
 import { nextNonce, signingText } from './logic.js'
 
 const STORE_KEY = 'hattip:key:v1'
@@ -160,7 +160,7 @@ export function notDeployed(err) {
 // ---- the contract, its DAO and its token --------------------------------------------------------
 
 export class Client {
-  constructor({ rpc = new Rpc(RPC_HOSTS), deployment = DEPLOYMENT, pool } = {}) {
+  constructor({ rpc = new Rpc(RPC_HOSTS, { maxInFlight: 3, minGapMs: 120 }), deployment = DEPLOYMENT, pool } = {}) {
     this.mock = false
     this.rpc = rpc
     this.contract = deployment.contract
@@ -223,6 +223,10 @@ export class Client {
   async proposal(id) {
     const list = await this.rpc.view(this.dao, 'get_proposals', { from_index: Number(id), limit: 1 })
     return list?.find((p) => Number(p.id) === Number(id)) ?? null
+  }
+  /** The DAO's proposals with ids from..from+limit-1 that still exist, in one read. */
+  async proposals(from, limit) {
+    return (await this.rpc.view(this.dao, 'get_proposals', { from_index: Number(from), limit: Number(limit) })) ?? []
   }
   daoBalance() {
     return this.rpc.view(this.token, 'ft_balance_of', { account_id: this.dao })
@@ -289,7 +293,7 @@ export class Client {
     return this.relayed('close', 'close_round', {}, CLOSE_GAS)
   }
   /** Files as many planned payouts as the gas allows (40-130 Tgas each, contract/README.md). */
-  pay(max = 6) {
+  pay(max = PAY_MAX) {
     return this.relayed('pay', 'pay', { max }, PAY_GAS)
   }
   checkPayout(id) {

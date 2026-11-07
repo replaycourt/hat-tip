@@ -342,3 +342,49 @@ test('a key is made only when asked for, then loaded again from storage', async 
   assert.match(a.account, /^[0-9a-f]{64}$/)
   assert.ok(store.has('hattip:key:v1'))
 })
+
+test('Rpc keeps at most maxInFlight calls on the wire (public nodes answer bursts with 429)', async () => {
+  let now = 0
+  let peak = 0
+  const fetchImpl = async () => {
+    now++
+    peak = Math.max(peak, now)
+    await new Promise((r) => setTimeout(r, 5))
+    now--
+    return { ok: true, status: 200, json: async () => ({ result: { header: { hash: '11111111111111111111111111111111' } } }) }
+  }
+  const rpc = new N.Rpc(['https://a'], { fetchImpl, maxInFlight: 3 })
+  await Promise.all(Array.from({ length: 12 }, () => rpc.blockHash()))
+  assert.equal(peak, 3)
+  assert.equal(rpc.inFlight, 0, 'every slot handed back')
+})
+
+test('Rpc: an HTTP 429 rests the host and the call goes through on the other one', async () => {
+  const seen = []
+  const fetchImpl = async (host) => {
+    seen.push(host)
+    return host === 'https://a' ? { ok: false, status: 429, json: async () => ({}) } : { ok: true, status: 200, json: async () => ({ result: { header: { hash: '11111111111111111111111111111111' } } }) }
+  }
+  const rpc = new N.Rpc(['https://a', 'https://b'], { fetchImpl })
+  assert.equal((await rpc.blockHash()).length, 32)
+  assert.deepEqual(seen, ['https://a', 'https://b'])
+  assert.equal(rpc.host, 'https://b', 'the first host rests')
+})
+
+test('Client.proposals reads a range of DAO proposals in one get_proposals call', async () => {
+  const views = []
+  const rpc = { view: async (account, method, args) => (views.push([account, method, args]), [{ id: 4 }, { id: 6 }]) }
+  const c = new Client({ rpc, deployment: DEP, pool: { empty: true } })
+  c.dao = 'cafe.sputnikv2.testnet'
+  assert.deepEqual((await c.proposals(4, 3)).map((p) => p.id), [4, 6])
+  assert.deepEqual(views, [['cafe.sputnikv2.testnet', 'get_proposals', { from_index: 4, limit: 3 }]])
+})
+
+test('Rpc keeps call starts at least minGapMs apart', async () => {
+  const starts = []
+  const fetchImpl = async () => (starts.push(Date.now()), { ok: true, status: 200, json: async () => ({ result: { header: { hash: '11111111111111111111111111111111' } } }) })
+  const rpc = new N.Rpc(['https://a'], { fetchImpl, maxInFlight: 4, minGapMs: 40 })
+  await Promise.all(Array.from({ length: 5 }, () => rpc.blockHash()))
+  const gaps = starts.slice(1).map((t, i) => t - starts[i])
+  assert.ok(gaps.every((g) => g >= 35), JSON.stringify(gaps))
+})

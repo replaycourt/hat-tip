@@ -73,7 +73,7 @@ export function mockConfig({ roundMs = 180_000, genesisMs }) {
     max_catchup: 36,
     log_keep: 108,
     note_max_bytes: 80,
-    guest_receive_cap_bp: 10000,
+    guest_receive_cap_bp: 800,
   }
 }
 
@@ -779,6 +779,9 @@ export class MockClient {
   /** One DAO proposal, or null if the DAO deleted it (as get_proposals answers). */
   proposal(id) {
     return this.read(() => this.world.dao.proposals.get(Number(id)) ?? null)
+  }
+  proposals(from, limit) {
+    return this.read(() => [...this.world.dao.proposals.values()].filter((p) => p.id >= from && p.id < from + limit))
   }
   tiers(account) {
     return this.read(() => this.world.memberView(account).limits)

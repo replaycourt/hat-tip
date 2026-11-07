@@ -31,8 +31,9 @@ python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
 - `?mock=1` plays a made-up Repair Café in the tab with no network at all: house members post notes and give thanks during the round, the round closes on the clock with the same counting as the contract, payouts go to a stand-in DAO with the demo policy, and the house council votes by its published rule. A banner says it is mock data. Knobs: `&round=<seconds>` (length of a round, default 180), `&at=<0..0.95>` (how far the round is at load, default 0.6), `&seed=<n>`.
-- Without `?mock=1` the page reads NEAR testnet. `?contract=stage` uses the staging deployment instead of the final one.
-- Until `js/config.js` names a contract, the live page says the contract is not deployed yet and offers the mock.
+- Without `?mock=1` the page reads NEAR testnet. `?contract=stage` uses the staging deployment (`thanks.hat-tip-stage.testnet`, 5-minute rounds) instead of the final one.
+- Until `js/config.js` names a contract, the live page says the contract is not deployed yet and offers the mock. Today that is the default (`final`); the staging deployment is filled in.
+- The round length, the budget and every rule on the page come from the contract's `config()`; nothing about them is written into the page.
 
 Tests (Node 20 or later, no packages):
 
@@ -56,7 +57,9 @@ Everything that names a deployment is in `js/config.js`. Fill its `final` (and `
 
 The DAO and the token are read from the contract's `config()`. If the RPC hosts change, `connect-src` in `index.html` must change with them (a test checks it).
 
-What the page reads: the contract's `config`, `state`, `round`, `member`, `payouts` and `audit`; the DAO's `get_policy` and `get_proposal`; the token's `ft_balance_of` for the DAO and the guest; `view_access_key_list` and `view_account` for the proof. What it sends, through the relay keys: `act` (a guest's `join` with a note, and `allocate`, each signed by the browser key over `hattip:v1:<contract>:<nonce>:<action>`), and, only when the house script is late, `close_round` and `pay`.
+What the page reads: the contract's `config`, `state`, `round`, `member`, `payouts` and `audit`; the DAO's `get_policy` and `get_proposals` (a removed proposal is deleted by Sputnik, so it reads ranges); the token's `ft_balance_of` for the DAO and the guest; `view_access_key_list` and `view_account` for the proof. What it sends, through the relay keys: `act` (a guest's `join` with a note, and `allocate`, each signed by the browser key over `hattip:v1:<contract>:<nonce>:<action>`), and, only when the house script is late, `close_round` and `pay`.
+
+Gas the page attaches, from the contract's own needs (it refuses less and names the figure; a test recomputes them from `contract/src/config.rs`): `act` 30 Tgas (burns about 3), `close_round` 255 (needs 250 + 5), `check_payout` 140 (needs 135 + 5), `pay` 300 (40 to 130 per payout; files as many as fit). A relay key's 1 NEAR allowance covers the prepaid gas of the dearest call (300 Tgas, 0.3 NEAR at the pessimistic price). The RPC client keeps at most four calls on the wire and lets a host that answers HTTP 429 rest for 30 seconds while the other one serves.
 
 ## How it is built
 
@@ -73,8 +76,12 @@ What the page reads: the contract's `config`, `state`, `round`, `member`, `payou
 
 The NEAR layer, the gas pool, the proof drawer and the test layout are taken over from Bonfire, an earlier entry by the same author.
 
+## Checked against staging
+
+In headless Chrome against `?contract=stage` (desktop 1440×900 and phone 390×844), with no console errors and no CSP report: a guest arrives, gives thanks, sees the preview move, and the two `act` transactions land on chain (the round's gifts and note name the guest); the page closes due rounds through the relay; the close of the guest's round plays its five steps; the last round with payouts shows all three tiers with their DAO proposals (tier 1 paid at once, a tier-2 payout removed by the council with its strike, tier 3 approved by two council members); a member's record, a DAO proposal read live, the rules from `get_policy` and the proof drawer (code hashes match `WASM_SHA256`; staging keeps its keys, which the drawer says) all read correctly. Screenshots: `docs/shots/`.
+
 ## Not yet
 
-- The live mode has run only against mock data and unit tests; it needs the deployed contract (`deploy/testnet.json`) and its final view shapes.
-- The second replay of DESIGN.md (the same community with and without dampening) waits for the simulation's replay file.
-- The mock uses demo parameters of its own; the live page shows whatever the contract's `config()` says.
+- The final deployment: `DEPLOYMENTS.final` stays empty until the launch.
+- The second replay of DESIGN.md (the same community with and without dampening) from `sim/replay.json`.
+- The mock plays the launch parameters and house strategies of `sim/params.json`, with a round of three minutes by default so that a close comes soon.

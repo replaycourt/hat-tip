@@ -3,10 +3,10 @@
 // nothing private in any shipped file.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DEFAULT, DEPLOYMENTS, RPC_HOSTS, pickDeployment } from '../js/config.js'
+import { ACT_GAS, CHECK_GAS, CLOSE_GAS, DEFAULT, DEPLOYMENTS, PAY_GAS, PAY_MAX, RPC_HOSTS, pickDeployment } from '../js/config.js'
 import { b58decode, keyFromNearString, nearPublicKey } from '../js/near.js'
 
 const WEB = fileURLToPath(new URL('..', import.meta.url))
@@ -94,4 +94,64 @@ test('nothing private ships: no local paths, no user names, no secret keys', () 
     for (const m of text.matchAll(/ed25519:[1-9A-HJ-NP-Za-km-z]{80,90}/g)) assert.ok(PUBLIC_GAS_SECRETS.has(m[0]), `${p}: a private key that is not a published gas key`)
     assert.ok(!/seed phrase|mnemonic/i.test(text), `${p}: mentions a seed phrase`)
   }
+})
+
+const REPO = fileURLToPath(new URL('../../', import.meta.url))
+const DEPLOY = join(REPO, 'deploy/testnet.json')
+const CONTRACT_CONFIG = join(REPO, 'contract/src/config.rs')
+
+test('the stage deployment is the one deploy/testnet.json records, ready to play', { skip: !existsSync(DEPLOY) && 'no deploy/testnet.json' }, () => {
+  const dep = JSON.parse(readFileSync(DEPLOY, 'utf8')).staging
+  const st = DEPLOYMENTS.stage
+  assert.equal(st.contract, dep.contract)
+  assert.equal(st.gasAccount, dep.gas.account)
+  assert.equal(st.codeHash, dep.code_hashes.contract)
+  assert.equal(st.tokenCodeHash, dep.code_hashes.token)
+  assert.equal(st.lockTx, null, 'staging keeps its keys')
+  assert.deepEqual(st.gasKeys.map((k) => k.public_key).sort(), [...dep.gas.relay_keys].sort(), 'exactly the page relay keys')
+  for (const k of dep.gas.keeper_keys ?? []) assert.ok(!st.gasKeys.some((g) => g.public_key === k), 'never the keeper keys')
+  const house = Object.fromEntries([...dep.house.members.map((m) => [m.account, m.kind]), ...dep.house.council.map((c) => [c.account, 'council'])])
+  assert.deepEqual(st.house, house, 'every house member and council member labelled with its strategy')
+  assert.equal(DEPLOYMENTS.final.contract, null, 'final stays empty until the launch')
+})
+
+test('gas: every relayed call carries at least what the contract asks for', { skip: !existsSync(CONTRACT_CONFIG) && 'no contract source' }, () => {
+  const src = readFileSync(CONTRACT_CONFIG, 'utf8')
+  const g = (name) => {
+    const m = src.match(new RegExp(`pub const ${name}: Gas = Gas::from_tgas\\((\\d+)\\)`))
+    assert.ok(m, name)
+    return BigInt(m[1])
+  }
+  const T = 1_000_000_000_000n
+  const [LINK, OWN, MARGIN] = [g('GAS_LINK'), g('GAS_OWN'), g('GAS_MARGIN')]
+  // close.rs: a round with allocations; the contract's message names need + 5
+  const close = 2n * LINK + g('GAS_GET_POLICY') + g('GAS_FT_BALANCE') + g('GAS_ON_CLOSE') + MARGIN
+  assert.ok(CLOSE_GAS >= (close + 5n) * T, `close_round needs ${close + 5n} Tgas`)
+  // pay.rs: check_payout = link + get_proposals + on_checked (own + 2 links + storage_deposit + act_proposal + on_finalized) + margin
+  const onChecked = OWN + 2n * LINK + g('GAS_STORAGE_DEPOSIT') + g('GAS_ACT_PROPOSAL') + g('GAS_ON_FINALIZED')
+  const check = LINK + g('GAS_GET_PROPOSAL') + onChecked + MARGIN
+  assert.equal(check + 5n, 140n, 'the figure the contract names')
+  assert.ok(CHECK_GAS >= (check + 5n) * T, `check_payout needs ${check + 5n} Tgas`)
+  // pay.rs: the dearest payout (tier 1 with registration) must fit, with the margin, in one pay
+  const filing1 = LINK + g('GAS_ADD_PROPOSAL') + (OWN + LINK + g('GAS_ACT_PROPOSAL') + g('GAS_ON_VOTED'))
+  const registering1 = LINK + g('GAS_STORAGE_DEPOSIT') + OWN + filing1
+  assert.ok(PAY_GAS >= (registering1 + MARGIN + 5n) * T, `pay needs ${registering1 + MARGIN + 5n} Tgas for one payout`)
+  assert.ok(PAY_GAS <= 300n * T, 'at most 300 Tgas, the most a relay key should prepay')
+  assert.ok(PAY_MAX >= 1)
+  assert.ok(ACT_GAS >= 10n * T && ACT_GAS <= 50n * T, 'act burns about 3 Tgas')
+})
+
+test("a relay key's allowance covers the dearest call prepaid at the pessimistic gas price", { skip: !existsSync(DEPLOY) && 'no deploy/testnet.json' }, () => {
+  const dep = JSON.parse(readFileSync(DEPLOY, 'utf8')).staging
+  const allowance = BigInt(Math.round(Number(dep.gas.relay_allowance_near) * 1000)) * 10n ** 21n
+  const pessimistic = 1_000_000_000n // yocto per gas: 10x testnet's 10^8 (docs/testnet-probe.md, "Gas")
+  for (const gas of [ACT_GAS, CLOSE_GAS, PAY_GAS, CHECK_GAS]) assert.ok(gas * pessimistic <= allowance, `${gas} gas prepaid fits in ${dep.gas.relay_allowance_near} NEAR`)
+})
+
+test('the round length is read from the contract, never written into the page', () => {
+  for (const f of ['index.html', 'js/main.js', 'js/ui.js']) {
+    const text = readFileSync(join(WEB, f), 'utf8')
+    assert.ok(!/\b\d+[ -](second|minute|hour)s?\b/i.test(text), `${f}: a fixed round length`)
+  }
+  assert.match(readFileSync(join(WEB, 'js/main.js'), 'utf8'), /a round lasts \$\{L\.fmtDuration\(roundMs\)\}/)
 })
