@@ -5,10 +5,13 @@
 // rules, signed with function-call keys that can do nothing else.
 //
 //   node scripts/house.mjs run [--section staging] (--rounds <N> | --minutes <M>) [--seed <s>]
-//                              [--quiet <k,...>] [--guest <k,...>] [--log <file.jsonl>] [--dry-run]
+//                              [--quiet <k,...>] [--guest <k,...>] [--remove <k,...>] [--log <file.jsonl>] [--dry-run]
 //   node scripts/house.mjs report [--section staging]          balances; LOW lines when something runs low
 //   node scripts/house.mjs export-secret [--section staging]   the HOUSE_KEYS value for GitHub
-//   node scripts/house.mjs summary [--section staging] [--log <file.jsonl>] [--from <round>]
+//   node scripts/house.mjs summary [--section staging] [--log <file.jsonl,...>] [--from <round>]
+//       per round: budget, payouts with tier, status and DAO proposal; payouts by tier and status;
+//       audit(); the house members' reputation and limits; with --log the events by kind and a
+//       replay of the events that rebuilds every reputation and compares it with member()
 //
 // Per round, by the clock (round r runs genesis_ms + (r-1)*round_ms .. + r*round_ms):
 // - notes: between 5 % and 30 % of the round every member that works this round posts what it
@@ -48,6 +51,9 @@
 //               skip, all at once), so the pair and the free rider share the budget
 // --guest k     staging test: on the run's k-th round a fresh browser-style guest joins with a note
 //               and gives its thanks through the relay (act), as the page does
+// --remove k    staging test: the first tier-2 payout of the run's k-th round gets one council
+//               VoteRemove instead of the rule (the DAO deletes the proposal and keeps the bond;
+//               the contract records `removed` and a strike)
 // --log f       append every transaction record (JSON lines) to f
 // --dry-run     read the chain, print the plan of the current round; send nothing
 import { existsSync, readFileSync } from 'node:fs'
@@ -265,6 +271,8 @@ async function run() {
   const seed = opt('seed', String(Date.now()))
   const quietK = kset(opt('quiet'))
   const guestK = kset(opt('guest'))
+  const removeK = kset(opt('remove'))
+  const removedRounds = new Set()
   const dry = flag('dry-run')
   const rec = new Recorder({ log: opt('log', null) })
   const t0 = Date.now()
@@ -392,14 +400,19 @@ async function run() {
         const rv = await view(d.contract, 'round', { n: p.round })
         if (!rv) continue
         dec = councilDecision(p.tier, p.receiver, rv)
+        // staging test: on a --remove round the first tier-2 payout is removed instead (one vote)
+        if (p.tier === 2 && removeK.has(p.round - first + 1) && !removedRounds.has(p.round)) {
+          removedRounds.add(p.round)
+          dec = { approve: false, remove: true, why: 'staging test (--remove): VoteRemove instead of the rule' }
+        }
         decided.set(p.id, dec)
-        console.log(`[${stamp()}] council on payout ${p.id} (r${p.round}, tier ${p.tier}, ${tusd(p.amount)} tUSD to ${short(p.receiver)}, DAO #${p.dao_proposal}): ${dec.approve ? 'approve' : 'reject'}, ${dec.why}`)
+        console.log(`[${stamp()}] council on payout ${p.id} (r${p.round}, tier ${p.tier}, ${tusd(p.amount)} tUSD to ${short(p.receiver)}, DAO #${p.dao_proposal}): ${dec.remove ? 'remove' : dec.approve ? 'approve' : 'reject'}, ${dec.why}`)
       }
-      const action = dec.approve ? 'VoteApprove' : 'VoteReject'
+      const action = dec.remove ? 'VoteRemove' : dec.approve ? 'VoteApprove' : 'VoteReject'
       const mine = voted.get(p.id) ?? new Set()
       voted.set(p.id, mine)
       const need = p.tier === 2 ? 1 : 2
-      const same = Object.entries(prop.votes ?? {}).filter(([a, v]) => mine.has(a) || (house.council.some((c) => c.account === a) && v === (dec.approve ? 'Approve' : 'Reject'))).length
+      const same = Object.entries(prop.votes ?? {}).filter(([a, v]) => mine.has(a) || (house.council.some((c) => c.account === a) && v === (dec.remove ? 'Remove' : dec.approve ? 'Approve' : 'Reject'))).length
       const voters = house.council.filter((c) => c.signer && !(c.account in (prop.votes ?? {})))
       const startAt = p.id % Math.max(1, voters.length)
       const order = [...voters.slice(startAt), ...voters.slice(0, startAt)]
@@ -564,26 +577,69 @@ async function summary() {
       payouts: ps.map((p) => ({ id: p.id, to: p.receiver.split('.')[0].slice(0, 12), tusd: tusd(p.amount), tier: p.tier, status: p.status, dao: p.dao_proposal })) })
   }
   const audit = await view(d.contract, 'audit')
-  const all = await view(d.contract, 'payouts', { from: 0, limit: 100 })
+  const all = []
+  for (let at = st.oldest_payout; at < st.next_payout; at += 100) all.push(...(await view(d.contract, 'payouts', { from: at, limit: 100 })))
   const byTier = {}
   for (const p of all) {
     byTier[p.tier] ??= {}
     byTier[p.tier][p.status] = (byTier[p.tier][p.status] ?? 0) + 1
   }
+  // Events: counted by kind, and replayed to rebuild every reputation (round_closed decays every
+  // record once, points adds, struck subtracts), then compared with member(). Needs the logs of
+  // every transaction since genesis that logged events, in any number of files (--log a,b,...).
   let events = null
-  if (opt('log') && existsSync(opt('log'))) {
+  let replay = null
+  const logs = String(opt('log', '')).split(',').filter((f) => f && existsSync(f))
+  if (logs.length) {
     events = {}
-    for (const line of readFileSync(opt('log'), 'utf8').split('\n').filter(Boolean)) {
-      const x = JSON.parse(line)
-      for (const e of x.eventsFull ?? []) events[e.event] = (events[e.event] ?? 0) + e.data.length
+    const recs = logs.flatMap((f) => readFileSync(f, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)))
+    recs.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))
+    const rep = new Map()
+    const D = BigInt(cfg.decay_bp)
+    const isGuest = (a) => /^[0-9a-f]{64}$/.test(a)
+    let lastRound = 0
+    let gaps = 0
+    for (const x of recs) {
+      for (const e of x.eventsFull ?? []) {
+        events[e.event] = (events[e.event] ?? 0) + e.data.length
+        for (const ev of e.data) {
+          if (e.event === 'round_closed') {
+            if (ev.round !== lastRound + 1) gaps++
+            lastRound = ev.round
+            for (const [a, r] of rep) {
+              let v = (r * (10000n - D)) / 10000n
+              if (isGuest(a) && v < 1000n) v = 0n
+              rep.set(a, v)
+            }
+          } else if (e.event === 'points') {
+            for (const [ri, pts] of ev.points) {
+              const a = ev.accounts[ri]
+              let v = (rep.get(a) ?? 0n) + BigInt(pts)
+              if (isGuest(a) && v < 1000n) v = 0n
+              rep.set(a, v)
+            }
+          } else if (e.event === 'struck') {
+            const r = rep.get(ev.account) ?? 0n
+            const strike = BigInt(ev.strike)
+            rep.set(ev.account, r - (strike < r ? strike : r))
+            if (String(rep.get(ev.account)) !== String(ev.reputation)) gaps++
+          }
+        }
+      }
     }
+    const differ = []
+    for (const [a, r] of rep) {
+      const v = await view(d.contract, 'member', { account_id: a })
+      if (BigInt(v.reputation) !== r) differ.push(`${short(a)}: events ${r}, member() ${v.reputation}`)
+    }
+    replay = { accounts: rep.size, last_round_replayed: lastRound, gaps_or_mismatched_strikes: gaps, differ }
   }
   const members = {}
   for (const m of H.members) {
     const v = await view(d.contract, 'member', { account_id: accountOf(m.name) })
     members[m.name] = { reputation: (Number(v.reputation) / 1000).toFixed(1), auto: tusd(v.limits.auto), cosign: tusd(v.limits.cosign), strikes: v.strikes, carry: tusd(v.carry) }
   }
-  const out = { state: { round: st.round, oldest_unclosed: st.oldest_unclosed, paused: st.paused, planned: st.planned, open_payouts: st.open_payouts, totals: st.totals }, round_ms: cfg.round_ms, rounds: rows, by_tier: byTier, audit, members, events }
+  const out = { state: { round: st.round, oldest_unclosed: st.oldest_unclosed, paused: st.paused, planned: st.planned, open_payouts: st.open_payouts, totals: st.totals }, round_ms: cfg.round_ms, rounds: rows, by_tier: byTier, audit, members, events, replay }
   console.log(JSON.stringify(out, null, 1))
 }
 
