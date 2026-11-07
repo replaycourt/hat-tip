@@ -3,3 +3,5 @@ target/
 node_modules/
 *.log
 .DS_Store
+# the internal build plan names local tools and paths; it stays out of the public repo
+PLAN.md
