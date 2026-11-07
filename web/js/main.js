@@ -193,15 +193,24 @@ async function poll({ first = false } = {}) {
     }
     // the visitor's own record and tUSD: every third poll, or right after something happened
     S.polls = (S.polls ?? 0) + 1
-    if (S.me && (first || closedNow || S.meDirty || S.polls % 3 === 0)) {
+    const myOpen = S.myRecord?.payouts?.some((p) => !L.isFinal(p.status))
+    if (S.me && (first || closedNow || S.meDirty || myOpen || S.polls % 3 === 0)) {
       S.meDirty = false
       const [bal2, rec] = await Promise.all([client.balanceOf(S.me).catch(() => '0'), client.member(S.me).catch(() => null)])
       S.myBalance = L.big(bal2)
       S.myRecord = rec
-      if (rec) S.people.set(S.me, rec)
+      if (rec) {
+        S.people.set(S.me, rec)
+        // the DAO's word on the guest's own payouts, in the same refresh as the balance, so the
+        // two lines of the guest's card never contradict each other
+        await loadProposals(rec.payouts.filter((p) => !L.isFinal(p.status)))
+      }
     }
-    recompute()
-    render()
+    // what the reader looks at stays put while the board above it grows or shrinks
+    U.keepView(() => {
+      recompute()
+      render()
+    })
     help(st)
   } finally {
     schedule(pollEvery())
@@ -449,7 +458,7 @@ function renderPayouts() {
       ? list
           .map((p) => {
             const info = L.proposalInfo(S.proposals.get(Number(p.dao_proposal)))
-            const stage = story ? { state: 'waiting', text: 'Filing in the DAO…' } : L.payoutStage(p, info, { tier3Votes: tier3, name })
+            const stage = story ? { state: 'waiting', text: 'Filing in the DAO…' } : L.payoutStage(p, info, { tier3Votes: tier3, name, contract: client.contract })
             return U.payoutHtml(p, { name: name(p.receiver), stage, fresh: S.fresh.has(p.id), me: S.me, house: client.house })
           })
           .join('')
@@ -486,7 +495,7 @@ function renderYou() {
   else if (seated && x?.given) lines.push(`Members gave you ${x.given} thanks so far.`)
   else if (seated && mine.length) lines.push('House members thank guests who write a note and give thanks; give them a moment.')
   for (const p of [...(rec?.payouts ?? [])].reverse().slice(0, 3)) {
-    const st = L.payoutStage(p, L.proposalInfo(S.proposals.get(Number(p.dao_proposal))), { name })
+    const st = L.payoutStage(p, L.proposalInfo(S.proposals.get(Number(p.dao_proposal))), { name, contract: client.contract })
     lines.push(`Round ${p.round}: ${U.tusd(p.amount)} · ${st.text}.`)
   }
   if (S.myBalance > 0n) lines.push(`Your browser account holds ${U.tusd(S.myBalance)}.`)
@@ -599,13 +608,14 @@ function playStory(summary, scroll = false) {
   clearTimeout(storyTimer)
   S.story = { n: summary.n, step: reduced ? 5 : 0, summary }
   const el = U.$('story')
-  el.hidden = false
-  const draw = () => {
-    // the proposals are filed a moment after the close: read the summary again at every step
-    if (S.last?.n === S.story.n) S.story.summary = storyOf(S.last, S.lastPayouts)
-    el.innerHTML = U.storyHtml(S.story.summary, S.story.step)
-    renderPayouts()
-  }
+  const draw = () =>
+    U.keepView(() => {
+      el.hidden = false
+      // the proposals are filed a moment after the close: read the summary again at every step
+      if (S.last?.n === S.story.n) S.story.summary = storyOf(S.last, S.lastPayouts)
+      el.innerHTML = U.storyHtml(S.story.summary, S.story.step)
+      renderPayouts()
+    })
   draw()
   if (scroll) U.$('payouts').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' })
   storyTimer = setInterval(() => {
@@ -614,7 +624,7 @@ function playStory(summary, scroll = false) {
     if (S.story.step >= 5) {
       clearInterval(storyTimer)
       // the summary stays a while, then the payouts below tell the rest; Replay brings it back
-      storyTimer = setTimeout(() => (el.hidden = true), 40_000)
+      storyTimer = setTimeout(() => U.keepView(() => (el.hidden = true)), 40_000)
     }
   }, 900)
 }
@@ -702,7 +712,7 @@ async function loadLedger(older = false) {
 }
 
 function renderLedger() {
-  U.$('ledger-host').innerHTML = U.ledgerHtml(S.ledger, { name, open: S.ledgerOpen })
+  U.keepView(() => (U.$('ledger-host').innerHTML = U.ledgerHtml(S.ledger, { name, open: S.ledgerOpen })))
 }
 
 function toggleLedger(n) {
@@ -720,12 +730,12 @@ function renderRules() {
 // ---- drawers ------------------------------------------------------------------------------------
 
 async function openMember(account) {
-  U.openDrawer('member', 'Record', '<p class="muted">Reading the record…</p>')
+  U.openDrawer('member', 'Record', '<p class="muted">Reading the record…</p>', `member:${account}`)
   let m
   try {
     m = await client.member(account)
   } catch {
-    return U.openDrawer('member', 'Record', '<p class="muted">Could not read this record. Try again.</p>')
+    return U.openDrawer('member', 'Record', '<p class="muted">Could not read this record. Try again.</p>', `member:${account}`)
   }
   // the votes behind the last few payouts, in one read
   const recent = m.payouts.slice(-6).filter((p) => p.dao_proposal != null && !S.proposals.has(Number(p.dao_proposal)))
@@ -744,19 +754,19 @@ async function openMember(account) {
   const to = S.lastClosed ?? 0
   const from = Math.max(1, to - Number(S.cfg.log_keep) + 1, (m.history[0]?.round ?? to) - 1)
   const series = L.repSeries(S.cfg, { history: m.history.map((h) => ({ round: h.round, points: h.points })), strikes, from, to, guest: m.kind === 'guest' })
-  U.openDrawer('member', 'Record', U.memberHtml(m, { name, house: client.house, series, explorer: EXPLORER, mock: MOCK, me: S.me, proposals: S.proposals }))
+  U.openDrawer('member', 'Record', U.memberHtml(m, { name, house: client.house, series, explorer: EXPLORER, mock: MOCK, me: S.me, proposals: S.proposals, contract: client.contract }), `member:${account}`)
 }
 
 async function openProposal(id) {
-  U.openDrawer('proposal', `DAO proposal #${id}`, '<p class="muted">Reading the DAO…</p>')
+  U.openDrawer('proposal', `DAO proposal #${id}`, '<p class="muted">Reading the DAO…</p>', `proposal:${id}`)
   try {
     const p = await client.proposal(id)
     if (!p) throw new Error('removed')
     S.proposals.set(id, p)
     const payout = S.lastPayouts.find((x) => Number(x.dao_proposal) === id) ?? null
-    U.openDrawer('proposal', `DAO proposal #${id}`, U.proposalHtml(p, { name, dao: S.cfg.dao, explorer: EXPLORER, mock: MOCK, payout, house: client.house }))
+    U.openDrawer('proposal', `DAO proposal #${id}`, U.proposalHtml(p, { name, dao: S.cfg.dao, explorer: EXPLORER, mock: MOCK, payout, house: client.house, contract: client.contract }), `proposal:${id}`)
   } catch {
-    U.openDrawer('proposal', `DAO proposal #${id}`, '<p class="muted">The DAO has no such proposal (a removed proposal is deleted).</p>')
+    U.openDrawer('proposal', `DAO proposal #${id}`, '<p class="muted">The DAO has no such proposal (a removed proposal is deleted).</p>', `proposal:${id}`)
   }
 }
 

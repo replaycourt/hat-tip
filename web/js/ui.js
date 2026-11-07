@@ -244,7 +244,7 @@ export function sparkHtml(series, { w = 520, h = 120 } = {}) {
     <div class="spark-axis"><span>round ${series[0].round}</span><span>${esc(L.fmtThanks(max))} max</span><span>round ${series[series.length - 1].round}</span></div>`
 }
 
-export function memberHtml(m, { name, house, series, explorer, mock, me, proposals }) {
+export function memberHtml(m, { name, house, series, explorer, mock, me, proposals, contract }) {
   const hist = [...m.history].reverse()
   const payouts = [...m.payouts].reverse()
   const kind = m.kind === 'guest' ? 'guest (browser key)' : m.kind === 'member' ? 'member of the DAO' : 'not a member now'
@@ -270,7 +270,7 @@ export function memberHtml(m, { name, house, series, explorer, mock, me, proposa
     <h3>Payouts</h3>
     ${payouts.length ? `<ol class="rec-payouts">${payouts
       .map((p) => {
-        const st = L.payoutStage(p, L.proposalInfo(proposals?.get(Number(p.dao_proposal))), { name })
+        const st = L.payoutStage(p, L.proposalInfo(proposals?.get(Number(p.dao_proposal))), { name, contract })
         return `<li class="${esc(st.state)}"><span>Round ${esc(p.round)}</span><b>${esc(tusd(p.amount))}</b>${pill(p.tier)}<span class="rp-stage">${esc(st.text)}</span>${p.dao_proposal != null ? `<button class="p-prop" type="button" data-proposal="${esc(p.dao_proposal)}">#${esc(p.dao_proposal)}</button>` : ''}</li>`
       })
       .join('')}</ol>` : '<p class="muted">No payouts yet.</p>'}`
@@ -278,9 +278,9 @@ export function memberHtml(m, { name, house, series, explorer, mock, me, proposa
 
 // ---- a DAO proposal -----------------------------------------------------------------------------
 
-export function proposalHtml(p, { name, dao, explorer, mock, payout, house }) {
+export function proposalHtml(p, { name, dao, explorer, mock, payout, house, contract }) {
   const info = L.proposalInfo(p)
-  const votes = info.votes.length ? info.votes.map(([a, v]) => `<li><span>${esc(name(a))} ${botMark(a, house)}</span><b class="${v === 'Approve' ? 'good' : 'bad'}">${esc(v)}</b></li>`).join('') : '<li class="muted">No votes yet.</li>'
+  const votes = info.votes.length ? info.votes.map(([a, v]) => `<li><span>${esc(L.voterName(a, { contract, name }))} ${botMark(a, house)}</span><b class="${v === 'Approve' ? 'good' : 'bad'}">${esc(v)}</b></li>`).join('') : '<li class="muted">No votes yet.</li>'
   return `
     <p class="prop-desc"><code>${esc(info.description)}</code></p>
     <dl class="rec-facts">
@@ -364,23 +364,65 @@ export function proofHtml(x) {
     <ul class="tx-list">${txs}</ul>`
 }
 
+// ---- keeping the reader's place -----------------------------------------------------------------
+
+/**
+ * Which block anchors the view: the first whose top is on screen, else the first still partly on
+ * screen. `rects` are [{top, bottom}] in document order, relative to the viewport.
+ */
+export function pickAnchor(rects, viewportHeight) {
+  const i = rects.findIndex((r) => r.top >= 0 && r.top < viewportHeight)
+  if (i >= 0) return i
+  return rects.findIndex((r) => r.bottom > 0)
+}
+
+/** How far to scroll so the anchor stays where it was; nothing at the very top of the page. */
+export const scrollFix = (before, after, scrollY) => (scrollY > 0 && Math.abs(after - before) >= 1 ? after - before : 0)
+
+const ANCHORS = '.round-card, #story, .card.member, .guest, .tier, #payouts .section-head, #replay, #ledger, #rules'
+
+/** Runs `change` and scrolls so that what the reader looks at does not move. */
+export function keepView(change) {
+  const blocks = [...document.querySelectorAll(ANCHORS)].filter((el) => !el.closest('[hidden]'))
+  const i = pickAnchor(blocks.map((el) => el.getBoundingClientRect()), window.innerHeight)
+  const anchor = i >= 0 ? blocks[i] : null
+  const before = anchor?.getBoundingClientRect().top
+  const out = change()
+  if (anchor && anchor.isConnected) {
+    const d = scrollFix(before, anchor.getBoundingClientRect().top, window.scrollY)
+    if (d) window.scrollBy(0, d)
+  }
+  return out
+}
+
 // ---- drawer -------------------------------------------------------------------------------------
+
+/** A drawer opens at its top, unless it is the one already open being drawn again (a refresh). */
+export const freshDrawer = (open, prevKey, key) => !open || prevKey !== key
 
 let lastFocus = null
 let drawerKind = null
-export function openDrawer(kind, title, html) {
+let drawerKey = null
+export function openDrawer(kind, title, html, key = kind) {
+  const fresh = freshDrawer(drawerOpen(), drawerKey, key)
   if (!drawerOpen()) lastFocus = document.activeElement
   drawerKind = kind
+  drawerKey = key
   setText('drawer-title', title)
-  $('drawer-body').innerHTML = html
-  applyWidths($('drawer-body'))
+  const body = $('drawer-body')
+  body.innerHTML = html
+  applyWidths(body)
   $('drawer').hidden = false
   $('drawer-backdrop').hidden = false
+  // only once it is shown: a hidden element keeps the offset it had and ignores a new one
+  if (fresh) body.scrollTop = 0
   document.body.classList.add('drawer-on')
   $('drawer-close').focus()
 }
 
 export function closeDrawer() {
+  drawerKey = null
+  $('drawer-body').scrollTop = 0
   $('drawer').hidden = true
   $('drawer-backdrop').hidden = true
   document.body.classList.remove('drawer-on')

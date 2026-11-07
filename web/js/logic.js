@@ -458,7 +458,7 @@ export function explainReceiver(cfg, cnt, account) {
     }
   }
   const guestRows = rows.filter((r) => !cnt.members.has(r.giver))
-  if (guestRows.length) reasons.push({ kind: 'guest', givers: guestRows.length, who: guestRows.map((r) => r.giver), bp: Number(c.guestWeightBp), capped: cnt.guestScaled, capBp: Number(c.guestCapBp) })
+  if (guestRows.length) reasons.push({ kind: 'guest', givers: guestRows.length, who: guestRows.map((r) => r.giver), bp: Number(c.guestWeightBp), capped: cnt.guestScaled, capBp: Number(c.guestCapBp), noMembers: cnt.membersWeight === 0n })
   if (c.quadratic && rows.length) reasons.push({ kind: 'quadratic', givers: rows.length })
   if (cnt.narrow.has(account)) reasons.push({ kind: 'breadth', k: Number(c.breadthK), support: cnt.support.get(account) ?? 0, bp: Number(c.breadthBp) })
   if (cnt.idle.has(account)) reasons.push({ kind: 'idle', bp: Number(c.idleBp) })
@@ -474,6 +474,8 @@ export function reasonText(r, name = (a) => a, { open = false } = {}) {
         ? `Thanked each other ${r.given} with ${name(r.other)}: counted ${fmtThanks(r.counted)} each way.`
         : `${name(r.other)} gave ${r.given} and got ${r.back} back: mutual thanks count ${fmtPct(r.bp)}, ${fmtThanks(r.counted)} counted.`
     case 'guest': {
+      // early in a round: guests steer a share of what members give, so with no member's thanks yet they count 0
+      if (r.noMembers) return `Guest thanks count once members have given: guests together steer at most ${fmtPct(r.capBp)} of a round.`
       const who = r.givers === 1 ? (r.who ? name(r.who[0]) : 'A guest') : `${r.givers} guests`
       const verb = who === 'You' ? 'gave as a guest' : r.givers === 1 ? (r.who ? 'gave as a guest' : 'gave thanks here') : 'gave thanks here'
       return `${who} ${verb}: guest thanks count ${fmtPct(r.bp)}${r.capped ? `, and all guests together at most ${fmtPct(r.capBp)} of the round` : ''}.`
@@ -693,10 +695,25 @@ export function joinNames(names) {
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
 }
 
-/** The column a payout sits in and the one line under it. */
-export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) => a } = {}) {
+/** Who cast a vote, as the page says it: the contract's own vote is "the contract", not a person. */
+export const voterName = (account, { contract = null, name = (a) => a } = {}) => (contract && account === contract ? 'the contract' : name(account))
+
+/**
+ * The payout's status as it stands now: the contract records an outcome only when check_payout
+ * reads it, so a DAO proposal that is already decided (read live) says more than the contract's
+ * lagging `filed` or `approved`. A final status of the contract always stands.
+ */
+export function currentStatus(payout, info = null) {
   const s = String(payout.status).toLowerCase()
-  const voters = (info?.votes ?? []).filter(([, v]) => v === 'Approve').map(([a]) => name(a))
+  if (isFinal(s) || !info) return s
+  const dao = { Approved: 'paid', Rejected: 'rejected', Removed: 'removed', Expired: 'expired', Failed: 'failed' }[info.status]
+  return dao ?? s
+}
+
+/** The column a payout sits in and the one line under it. */
+export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) => a, contract = null } = {}) {
+  const s = currentStatus(payout, info)
+  const voters = (info?.votes ?? []).filter(([, v]) => v === 'Approve').map(([a]) => voterName(a, { contract, name }))
   const by = voters.length ? ` by ${joinNames(voters)}` : ''
   const tier = Number(payout.tier)
   switch (s) {

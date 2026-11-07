@@ -41,6 +41,8 @@ html {
 }
 body {
   margin: 0;
+  /* the page keeps the reader's place itself (ui.js keepView); no second correction by the browser */
+  overflow-anchor: none;
   background: var(--paper);
   color: var(--ink);
   font: 15px/1.5 var(--sans);
