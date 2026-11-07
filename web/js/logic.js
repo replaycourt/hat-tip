@@ -224,11 +224,26 @@ export function limitsFor(cfg, account, r0) {
 
 export const tierOf = (q, { auto, cosign }) => (q <= big(auto) ? 1 : q <= big(cosign) ? 2 : 3)
 
-/** What a round's budget is: the configured budget, or less if the DAO holds less. */
-export function budgetOf(cfg, daoBalance, totalPoints = 1n) {
+/**
+ * What a round's budget is (contract/src/close.rs, step 7): the configured budget, or less if the
+ * DAO holds less beyond the reserve and beyond what earlier rounds still owe (`owed`: payouts
+ * without a final status, and carries). 0 when no points were counted.
+ */
+export function budgetOf(cfg, daoBalance, totalPoints = 1n, owed = 0n) {
   const c = numCfg(cfg)
   if (big(totalPoints) === 0n) return 0n
-  return minB(c.roundBudget, maxB(0n, big(daoBalance) - c.reserve))
+  return minB(c.roundBudget, maxB(0n, big(daoBalance) - c.reserve - big(owed)))
+}
+
+/**
+ * What earlier rounds still owe, from state().totals as the contract keeps them: the payouts
+ * without a final status (planned less paid, rejected, expired, removed and failed; the
+ * contract's Totals::open) plus the carries.
+ */
+export function owedOf(totals) {
+  if (!totals) return 0n
+  const done = ['paid', 'rejected', 'expired', 'removed', 'failed'].reduce((a, k) => a + big(totals[k] ?? 0), 0n)
+  return big(totals.planned) - done + big(totals.carry)
 }
 
 /**
@@ -347,7 +362,9 @@ export class Hat {
       this.hist.get(acc).set(r, x)
     }
     const total = sumB([...p.values()])
-    const budget = budgetOf(this.cfg, daoBalance, total)
+    // what earlier rounds still owe: payouts without an outcome, and the carries before this round
+    const owed = sumB(this.payouts.filter((x) => !isFinal(x.status)).map((x) => x.amount)) + this.carryTotal()
+    const budget = budgetOf(this.cfg, daoBalance, total, owed)
     const plan = planPayouts(this.cfg, p, budget, r, (a) => this.carry.get(a), (a) => this.limits(a, r0.get(a)))
     for (const [acc, cv] of plan.carries) {
       if (cv) this.carry.set(acc, cv)
@@ -405,14 +422,15 @@ export class Hat {
  * What the round would pay if it closed now with these allocations: the same counting, shares
  * and tiers as the close, with each account's limits as the contract states them now
  * (`member().limits`, from the reputation before this round) and its carry.
- * `limits` and `carry` are Maps account -> {auto, cosign} and account -> [amount, since].
+ * `limits` and `carry` are Maps account -> {auto, cosign} and account -> [amount, since];
+ * `owed` is what earlier rounds still owe (owedOf(state().totals)).
  */
-export function previewRound(cfg, { round, members, seats, allocations, limits = new Map(), carry = new Map(), daoBalance }) {
+export function previewRound(cfg, { round, members, seats, allocations, limits = new Map(), carry = new Map(), daoBalance, owed = 0n }) {
   const memberSet = namedMembers(members)
   const cnt = countRound(cfg, memberSet, new Set(seats ?? []), allocations)
   const p = new Map([...cnt.points].filter(([, x]) => x > 0n))
   const total = sumB([...p.values()])
-  const budget = budgetOf(cfg, daoBalance, total)
+  const budget = budgetOf(cfg, daoBalance, total, owed)
   const plan = planPayouts(cfg, p, budget, round, (a) => carry.get(a), (a) => limits.get(a) ?? limitsFor(cfg, a, 0n))
   const byAccount = new Map()
   const given = new Map()

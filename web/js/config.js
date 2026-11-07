@@ -84,7 +84,7 @@ export const REPO = 'https://github.com/replaycourt/hat-tip'
  */
 export const ACT_GAS = 30_000_000_000_000n // no cross-contract call; burns about 3 Tgas
 export const CLOSE_GAS = 255_000_000_000_000n // need 2 x 20 link + 10 get_policy + 5 ft_balance_of + 180 on_close + 15 margin = 250, +5
-export const PAY_GAS = 300_000_000_000_000n // files as many payouts as fit, 40-130 Tgas each (+15 margin)
+export const PAY_GAS = 300_000_000_000_000n // files as many payouts as fit, 45-135 Tgas each (+15 margin)
 export const CHECK_GAS = 140_000_000_000_000n // need 20 link + 10 get_proposals + 90 on_checked + 15 margin = 135, +5
 /** Payouts one relayed `pay` asks for; the contract files only as many as PAY_GAS covers. */
 export const PAY_MAX = 10

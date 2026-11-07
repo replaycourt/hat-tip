@@ -286,7 +286,7 @@ function recompute() {
     limits.set(a, { auto: L.big(m.limits.auto), cosign: L.big(m.limits.cosign) })
     if (L.big(m.carry) > 0n) carry.set(a, [L.big(m.carry), m.carry_since])
   }
-  S.preview = L.previewRound(S.cfg, { round: S.open.n, members: S.state.members, seats, allocations: alloc, limits, carry, daoBalance: S.balance })
+  S.preview = L.previewRound(S.cfg, { round: S.open.n, members: S.state.members, seats, allocations: alloc, limits, carry, daoBalance: S.balance, owed: L.owedOf(S.state.totals) })
 }
 
 // ---- rendering ----------------------------------------------------------------------------------
@@ -306,7 +306,7 @@ function renderHero() {
   const st = S.state
   if (!st) return
   U.setText('round-n', String(st.round))
-  const budget = L.budgetOf(S.cfg, S.balance)
+  const budget = L.budgetOf(S.cfg, S.balance, 1n, L.owedOf(st.totals))
   U.setText('budget', U.tusd(budget))
   U.setText('dao-balance', U.tusd(S.balance))
   const given = (S.open?.gifts ?? []).reduce((a, g) => a + Number(g[2]), 0)

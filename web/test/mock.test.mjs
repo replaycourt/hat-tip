@@ -100,6 +100,7 @@ test('a full live round: a guest gives, is welcomed, and is paid after one counc
     limits: new Map([...people].map(([a, m]) => [a, { auto: BigInt(m.limits.auto), cosign: BigInt(m.limits.cosign) }])),
     carry: new Map([...people].filter(([, m]) => BigInt(m.carry) > 0n).map(([a, m]) => [a, [BigInt(m.carry), m.carry_since]])),
     daoBalance: BigInt(await c.daoBalance()),
+    owed: L.owedOf(st2.totals),
   })
   // the close
   advance(w.delays.close + w.delays.file + 50)

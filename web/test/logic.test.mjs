@@ -138,6 +138,37 @@ test('the round cap moves the largest tier-1 payouts to tier 2 (ties: lower acco
   assert.equal(plan.dust, 0n)
 })
 
+test('the budget leaves out the reserve and what earlier rounds still owe (contract/src/close.rs)', () => {
+  // the DAO's balance is the binding term: 100 held, 30 owed -> 70 of the 120 budget
+  const cfg = { ...CFG, round_budget: U(120) }
+  assert.equal(L.budgetOf(cfg, 100_000_000n, 1n, 30_000_000n), 70_000_000n)
+  assert.equal(L.budgetOf({ ...cfg, reserve: U(20) }, 100_000_000n, 1n, 30_000_000n), 50_000_000n)
+  assert.equal(L.budgetOf(cfg, 100_000_000n, 1n, 130_000_000n), 0n, 'never below zero')
+  assert.equal(L.budgetOf(cfg, 1_000_000_000_000n, 1n, 30_000_000n), 120_000_000n, 'a rich DAO: the configured budget binds')
+  assert.equal(L.budgetOf(cfg, 1_000_000_000_000n, 0n, 0n), 0n, 'no points, no budget')
+  // owed from state().totals: planned less every final status, plus the carries (Totals::open)
+  const totals = { planned: '500', paid: '200', rejected: '50', expired: '10', removed: '0', failed: '40', carry: '7' }
+  assert.equal(L.owedOf(totals), 207n)
+  assert.equal(L.owedOf(null), 0n)
+})
+
+test('the close leaves out open payouts and carries when the DAO holds little', () => {
+  const hat = new L.Hat({ ...CFG, round_budget: U(100), min_payout: U(2) })
+  const gifts = new Map([[A, [[B, 25], [C, 25]]], [B, [[A, 25], [C, 25]]], [C, [[A, 25], [B, 25]]]])
+  const r1 = hat.close(1, MEMBERS, [], gifts, 150_000_000n)
+  assert.equal(r1.budget, 100_000_000n, 'round 1: nothing owed, the budget binds')
+  const open1 = r1.payouts.reduce((a, x) => a + x.amount, 0n)
+  // round 2: nothing paid yet, the DAO still holds 150; what round 1 planned is owed
+  const r2 = hat.close(2, MEMBERS, [], gifts, 150_000_000n)
+  assert.equal(r2.budget, 150_000_000n - open1 - 0n, 'the DAO balance less what is owed binds')
+  // once round 1's payouts are paid, the DAO holds less but owes nothing for them
+  for (const x of r1.payouts) hat.resolve(1, x.receiver, 'paid')
+  const owed2 = r2.payouts.reduce((a, x) => a + x.amount, 0n) + hat.carryTotal()
+  const r3 = hat.close(3, MEMBERS, [], gifts, 150_000_000n - open1)
+  assert.equal(r3.budget, L.budgetOf(hat.cfg, 150_000_000n - open1, 1n, owed2))
+  assert.ok(hat.audit())
+})
+
 test('small shares are carried and stamped; a later share tops them up', () => {
   const hat = new L.Hat(CFG)
   const r1 = hat.close(1, MEMBERS, [], new Map([[A, [[B, 99], [C, 1]]], [B, [[A, 1]]]]), 1_000_000_000n)
