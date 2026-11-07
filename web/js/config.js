@@ -34,7 +34,7 @@ export const DEPLOYMENTS = {
   stage: {
     contract: 'thanks.hat-tip-stage.testnet',
     gasAccount: 'hat-tip-gas.testnet',
-    codeHash: '9o7sKeDvmHwKkMFXz3cVm36QP72aa6iCzy3DsGm1P3Xm',
+    codeHash: 'ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw',
     tokenCodeHash: '41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip',
     lockTx: null,
     // PUBLIC on purpose: function-call keys of hat-tip-gas.testnet that may only call `act`,

@@ -1,6 +1,77 @@
 # Hat Tip on testnet: the staging deployment
 
-Before the final keyless launch, the whole setup ran on a staging deployment on NEAR testnet: tUSD, the Hat Tip contract and a Sputnik v2 DAO from the public factory, with the demo policy of DESIGN.md, the eight labelled house members, the three house council members and the keeper, all driven by the scripts in `scripts/`. This file lists every account, what ran, the result per tier, the real gas, and the problems found. The machine-readable record is `deploy/testnet.json` (section `staging`, interface I-4) and `docs/testnet-stage.json` (every transaction of the house runs).
+Before the final keyless launch, the whole setup ran on a staging deployment on NEAR testnet: tUSD, the Hat Tip contract and a Sputnik v2 DAO from the public factory, with the demo policy of DESIGN.md, the eight labelled house members, the three house council members and the keeper, all driven by the scripts in `scripts/`. The contract was deployed twice: first the build `82adfa55...` (28 rounds, below as history), then, after a pre-lock review changed its stored records, the reviewed build `91e5f94a...` under the same account name ("The reviewed contract", next). This file lists every account, what ran, the result per tier, the real gas, and the problems found. The machine-readable record is `deploy/testnet.json` (section `staging`, interface I-4) and `docs/testnet-stage-2.json` / `docs/testnet-stage.json` (every transaction of the house runs on the reviewed and the first contract).
+
+## The reviewed contract (current, since 2026-11-07 17:42 UTC)
+
+**Result: the reviewed contract runs end to end on staging under the old name, and every paid payout is booked only on a second look.** The pre-lock review (`contract/README.md`, deviation 8) changed the stored records (`Payout.settle_at`, `approved_at`, `HatTip.held`); the contract has no upgrade or migration method, so the old account was emptied, deleted and recreated, and the new wasm deployed fresh. Kept: the account name `thanks.hat-tip-stage.testnet`, and with it the DAO role `thanks`, the 10 relay keys, the house keys (`HOUSE_KEYS` unchanged) and the page's stage entry (only its code hash changed). 14 five-minute rounds (17:42 to 18:55 UTC), 480 transactions, none failed or refused: **6 tier-1 payouts executed by the contract's vote, 35 tier-2 payouts after one council vote, 30 tier-3 payouts after two**; the council's published rule rejected 7 tier-2 and 2 tier-3 payouts (9 strikes). All 71 paid payouts were booked on the second `check_payout` of their `Approved` proposal; the first one changed nothing. `audit()` balanced, the events rebuild every reputation, `judge-checks.sh --section staging` passes 12 of 12 (checks 1 and 2 are INFO on staging), and `compare-wasm.py` finds the deployed code byte-identical to the build.
+
+**Redeploy**, every step scripted (`scripts/reset-contract.mjs`, `accounts.mjs create`, `deploy.mjs contract`):
+
+| Step | Tx | Tgas |
+|---|---|---|
+| A plain `DeleteAccount` is refused: `DeleteAccountWithLargeState` (418,100 bytes; NEAR deletes only accounts of at most 10,000) | `J9mYzcrKd4WpeYmWghyBD1F75WHg3xqXsE5cfZ96rmJb` | |
+| Faucet `hat-tip-fund-2.testnet` (10 NEAR), 9.95 NEAR to the root | `86zKS5rVZEG9vA4uquyZgbUGiEHba9yXFk1Rpo9VKP7Q`, `2M9iqXdmmg4LPTUGKfHEda9r5Bz4iHhVuLgz5v9kHvTH` | 0.44 |
+| Deploy the 210-byte cleanup module (assembled in `reset-contract.mjs`; it removes the keys it is given) in place of the contract | `86DV6TyRbNg6zxA1ECfAwLViKkjkiTHYid3W9MvBHFL2` | 0.60 |
+| `clean`: the 197 storage keys `view_state` listed | `4kQQ7cRv9GM2GtrCXBQCnNZ5vnWXd2HCdxgdjoic6Y1m` | 25.57 |
+| `DeleteAccount` (392 bytes left), beneficiary the root (5.47 NEAR back) | `6LsE3HYRgQb8URHp6ENENyqpvVYWWVm7wWYTKnALDuPB` | 0.95 |
+| Recreate `thanks.hat-tip-stage.testnet` with 11 NEAR (`sim/params.json` `testnet.contract_near`, now read by `accounts.mjs` and checked by `deploy.mjs`) and a new full-access key | `4snMPofd1R9Pmj2wVaXMKYY5FimhvUgKNbPCCJWRschR` | 8.34 |
+| Deploy and `new(config)`: wasm `91e5f94a8b9bd7aa4faf3a870455a4db2014b0f9017fb70aa4b181c0ba194ab8` (359,545 bytes, `contract/build.sh --check`), code hash `ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw`; the same config as before (`round_ms` 300,000, the rest the testnet block of `sim/params.json`), `genesis_ms` 1794073320000 (17:42:00 UTC) | `CRSLZGxe4p4Q1vs9bZ24EhboE7yhWf5souCSXpeEJXGj` | 27.97 |
+| First `sync()`: 8 members, 3 council, bond 0.01 NEAR, unpaused | `7cpFqdJJmJHP6bamUHg77EGEKmHU2BiU88gwuwPQRpdw` | 7.36 |
+
+`config()` was compared field by field; `scripts/compare-wasm.py <build> --deployment contract --section staging`: byte-identical (the token too, unchanged).
+
+**The run.** `house.mjs run --rounds 14 --quiet 8 --guest 2,10`, seed 2026110717; restarted at 17:48 to run the fixed payout window (below), resuming round 2 with the same seed. Every transaction is in `docs/testnet-stage-2.json`.
+
+| Tier | Payouts | Paid | Rejected (strike) |
+|---|---|---|---|
+| 1, the contract's vote | 6 | 6 | - |
+| 2, one council vote | 42 | 35 (incl. both guests: 6.05 and 7.56 tUSD) | 7 |
+| 3, two council votes | 32 | 30 | 2 |
+
+Tier 1 starts in round 11, once the first auto limits (ana, ben) passed their shares; after 14 rounds the mix is 8 / 52 / 40 %, and tier 1 grows with reputation, as in the first run (52 % in its rounds 16-28). 1,496.57 tUSD paid, 179.05 rejected. The quiet round 8 (honest members skip) gave finn and gus 60 tUSD each, both tier 3 with one giver: rejected by two votes each. Of the seven tier-2 rejections, two hit finn with gus, his labelled partner, as the top giver (rounds 6 and 7); four hit members whose top giver they had thanked back in a thin round (dina from emil, gus from dina, dina from finn, emil from ana), and one (round 2) emil, whose top giver was the guest he had welcomed with 5 thanks: the published rule reads any reciprocal top giver with more than half of the points as a partner, a guest included.
+
+**Paid only on the second look.** The keeper checks a payout whose proposal is `Approved` on two ticks at least 5 s apart (`CHECK_GAP_MS`); the contract books `paid` only when the second answer is asked for at least 3 blocks after the first. Every one of the 71 paid payouts went through this: 71 first checks returned `{"status":"filed"|"approved","changed":false}` (7.11 Tgas, no event), 71 second checks booked `paid` (7.45 Tgas). Examples:
+
+| Payout | First check (noted) | Second check (`paid`) |
+|---|---|---|
+| tier 3, payout 0 (ana, DAO #155; votes `5BMSG42zyW2teFAExnHBA4CQioPqC6M2gppmRCXnxvpt`, `FcNCzhL2mTX6prjdQbPqaAZ4Px4oUmj3q5xBkdyiNePR`) | `HXc8gSkQfCaHVqfzrDinKukcUQXkwuSGoVzSZTfbphDt`, block 276663973 | `53e4UQHjCFuUUWNbsE7jJ6Aszt9PZQncXrK2hziPnuVm`, block 276664075 |
+| tier 2, payout 5 (guest `5b92bb7d...`, DAO #163; vote `5AuY41dNC8mHkZzkXBXdFMEwd7SueqRUDQsDKvjjJEXu`) | `FxUaRPWNXh6afyAFW4dSmN4u11dyRu2UM5h3YuQQKg2T` | `56ei8Sj6JihvBJfY7E6gtAZ5EYJ2BW7nZv2XeGneLdd` |
+| tier 1, payout 57 (DAO #212; filed and approved in `pay` `2igd44eop8qNj9hcKNZwKNCkCq2fsGkYj65W2LeTvt1r`) | `6zskDBBF69ShuZjUnDF847dP8VdPx8FTeM8MabzvyRxC` | `8gidbYNKXHuPYLbMbKN1roXBwqdLSNcxA7pTUerD9BsP`, 8 s later |
+
+Rejections: tier 2 emil r2 (vote `6mJwcrajf7SW4oTPndqbcF98eb8nBhqcf3N4sXVEQkPc`, check `rejected` + `struck` `5seZsPZbN14Dp2PPq6PToQS8XmfQCrWd5ZSJS97rMbVv`); tier 3 finn r8 (votes `WRhhQpmTRXTzYFzdNtRwgkF7pwFgebUVnytMkYfGqzb`, `31GRwg7x8XkAtmEAe7o51WWTskm8FCpVdqzDjmctaPTo`, check `8Ngm4JDEpK1q8VqzzBrEmMjBRPiNcXGCYsVZ4hmjc5CT`).
+
+**Events and audit.** 104 `note`, 2 `joined`, 87 `allocated`, 14 `round_closed`, 14 `points`, 80 `payout_planned`, 16 `carry`, 80 `filed`, 6 `approved`, 71 `paid`, 9 `rejected`, 9 `struck`. The replay (`house.mjs summary --log`) rebuilds the reputation of all 10 accounts with a record exactly. `audit()` after round 14: budgets 1,680 tUSD = planned 1,675.620203 + carry 4.379748 + dust 0.000049; 80 payouts, 71 paid, 9 rejected, none open.
+
+**Gas, the new parts.** `check_payout` that notes the first `Approved`: 7.11 Tgas; the one that books `paid`: 7.45; `close_round` with allocations 14.27 (11.50-15.48); everything else as in the first run.
+
+**The keeper's payout window (fixed during this run).** The re-review found that `house.mjs` read only `payouts(from, 100)` from the first open payout: a payout lost in `filing` (no proposal id, never final) would have pinned that window, so after about 100 more payouts the house would stop voting and checking (tier-2/3 proposals would expire), and a held payout below the window would never be checked. Now (`hat-tip-lib.mjs` `nextWindow`, `readWindow`): the window starts at the first payout that is neither final nor in `filing` without a proposal id, it pages up to the newest payout, the open payouts below it are read one by one, and every id in `state().held_payouts` is read too. `scripts/test/house-window.test.mjs` (run by CI) checks it, among others with a lost filing among 400 payouts and a pruning in between. The run above used the fixed window from round 2 on.
+
+**NEAR.** This step: 10 NEAR from one more faucet account. Burnt by the reset, the redeploy and the 14 rounds: about 0.32 NEAR. All 4 faucet accounts so far: 40 NEAR, of which all staging accounts hold 39.09: root 5.35, gas account 9.51, contract 10.99 (3.96 of it its storage), token 3.01, DAO 7.51 (6.33 storage), house accounts 0.23-0.25 each.
+
+**Round by round.** Receiver, tUSD, tier, outcome and DAO proposal of every payout of the reviewed contract:
+
+| Round | Givers | Budget (tUSD) | Payouts: receiver, tUSD, tier, outcome, DAO proposal |
+|---|---|---|---|
+| 1 | 7 | 120 | ana 21.647659 t3 paid #155; ben 35.213526 t3 paid #156; cleo 18.665093 t3 paid #157; dina 18.568881 t3 paid #158; gus 21.455235 t3 paid #159 |
+| 2 | 7 | 120 | guest 5b92bb7d… 6.05042 t2 paid #163; ana 38.420168 t3 paid #160; ben 24 t3 paid #161; dina 6.756302 t2 paid #162; emil 8.918259 t2 rejected #164; finn 20.255739 t3 paid #166; gus 19.663865 t3 paid #165 |
+| 3 | 6 | 120 | ana 29.44407 t3 paid #167; ben 15.787033 t2 paid #168; cleo 21.049378 t3 paid #169; dina 23.304668 t3 paid #170; emil 26.56231 t3 paid #171 |
+| 4 | 6 | 120 | ana 32.168267 t3 paid #172; ben 34.691268 t3 paid #173; cleo 24.220813 t3 paid #174; emil 11.101205 t2 paid #175; finn 20.162606 t3 paid #176 |
+| 5 | 6 | 120 | ana 26.666666 t2 paid #177; ben 22.933333 t2 paid #178; cleo 25.6 t3 paid #179; emil 6 t2 paid #180; finn 20.266666 t3 paid #181; gus 19.540531 t2 paid #182 |
+| 6 | 6 | 120 | ana 24.510166 t2 paid #183; ben 37.818853 t3 paid #184; dina 14.972273 t2 rejected #185; emil 13.75231 t2 paid #186; finn 5.101663 t2 rejected #187; gus 9.648798 t2 rejected #188; hugo 15.081955 t3 paid #189 |
+| 7 | 6 | 120 | ana 25.974025 t2 paid #190; cleo 9.350649 t2 paid #191; dina 22.077922 t3 paid #192; emil 33.636363 t3 paid #193; finn 6.103896 t2 rejected #194; gus 18.181818 t2 paid #195 |
+| 8 | 2 | 120 | finn 60 t3 rejected #196; gus 60 t3 rejected #197 |
+| 9 | 7 | 120 | ana 24.177631 t2 paid #198; ben 19.93421 t2 paid #199; cleo 26.546052 t3 paid #200; emil 17.664473 t2 paid #201; finn 5.328947 t2 paid #202; gus 14.210526 t2 paid #203; hugo 12.175324 t2 paid #204 |
+| 10 | 8 | 120 | guest 58253b23080b… 7.559681 t2 paid #211; ana 30.238726 t3 paid #205; ben 22.917771 t2 paid #206; cleo 24.588859 t2 paid #207; dina 8.37821 t2 rejected #208; emil 5.490716 t2 paid #209; gus 20.610079 t2 paid #210 |
+| 11 | 6 | 120 | ana 21.401317 t1 paid #212; ben 24.458648 t2 paid #213; cleo 27.760566 t2 paid #214; dina 27.271393 t3 paid #215; finn 21.765736 t3 paid #216 |
+| 12 | 6 | 120 | ana 24.827586 t1 paid #217; ben 20.965517 t1 paid #218; dina 27.034482 t3 paid #219; emil 5.931034 t2 rejected #220; finn 15.034482 t2 paid #221; gus 26.970984 t3 paid #222 |
+| 13 | 7 | 120 | ana 28.49544 t2 paid #223; ben 21.22419 t1 paid #224; cleo 22.796352 t2 paid #225; dina 13.265118 t2 paid #226; emil 18.472906 t2 paid #227; gus 13.952939 t2 paid #228 |
+| 14 | 7 | 120 | ana 29.405111 t2 paid #229; ben 24.315765 t1 paid #230; cleo 12.817612 t1 paid #231; dina 29.310864 t3 paid #232; emil 5.93757 t2 paid #233; gus 17.058734 t2 paid #234 |
+
+## First deployment: wasm 82adfa55... (history)
+
+Everything below is the first deployment and its 28-round run, kept as it was written. The DAO, tUSD, the gas account, the house accounts and their keys are the same today; the contract account was emptied, deleted and recreated for the reviewed build (above).
+
 
 **Result: everything works end to end on the real chain, and no contract bug was found.** 28 five-minute rounds (2026-11-07, 12:55 to 15:18 UTC) and 744 transactions: the eight house members sent 202 notes and 163 allocations, three browser-style guests joined and gave thanks through the relay, the keeper closed every round, filed all 154 payouts in the DAO and recorded every outcome, and the house council voted 147 times. All three tiers paid through the DAO: **48 tier-1 payouts executed by the contract's own vote, 60 tier-2 payouts approved by one council vote, 39 tier-3 payouts approved by two council votes**; six payouts were rejected by the council's published rule (four tier 2, two tier 3) and one was removed in a staging test, each with its strike. `audit()` is balanced after every round, the events of all transactions rebuild every reputation exactly, and `scripts/judge-checks.sh --section staging` passes 11 of 11 checks. The only failed transactions (6) were the house script's own: `check_payout` with the 135 Tgas that `contract/README.md` names, where the contract asks for 140 ("Problems found", 1).
 
@@ -45,12 +116,14 @@ All in `scripts/`, Node 20+ and no dependencies (`near-lite.mjs` from Bonfire); 
 | `hat-tip-lib.mjs` | names of a deployment from its root account, `deploy/testnet.json`, transaction records with every receipt and event, seeded random streams, the strategies' `split` (a port of `sim/hat_tip_sim.py`) |
 | `accounts.mjs faucet <account>` | a top-level account with 10 NEAR from the testnet faucet through the NEAR CLI |
 | `accounts.mjs fund --from --to --near` | moves NEAR between two keychain accounts |
-| `accounts.mjs create --root <root> --contract-near --token-near [--member-near] [--council-near] [--key-allowance]` | the sub-accounts: `thanks.`, `tusd.`, the eight house members and the three council members, each with a full-access key and (house) a function-call key |
+| `accounts.mjs create --root <root> [--contract-near] [--token-near 3] [--member-near] [--council-near] [--key-allowance]` | the sub-accounts: `thanks.` (funded with `sim/params.json` `testnet.contract_near` unless `--contract-near` says otherwise; `deploy.mjs` refuses a contract account holding less), `tusd.`, the eight house members and the three council members, each with a full-access key and (house) a function-call key |
 | `create-dao.mjs --root <root> [--deposit 6] [--period-hours 24] [--top-up <NEAR>] [--auto-update-off]` | the DAO from `sputnikv2.testnet` with the demo policy, checked against `get_policy`; optionally turns the factory auto-update off through a council proposal |
 | `deploy.mjs token\|contract --root <root> [--wasm] [--set f=v] [--genesis] [--lock\|--verify-only\|--lock-only]` | deploy and `new` in one transaction, the first `sync`, the checks above; `--lock` deletes every key after all checks passed (refused on staging) |
 | `setup-gas-pool.mjs --gas <account> --contract <contract> [--page 8] [--keeper 2]` | the relay keys |
 | `house.mjs run\|report\|export-secret\|summary` | the house (below), the balance report, the `HOUSE_KEYS` value, and the per-round summary with an event replay |
 | `judge-checks.sh [--section final\|staging]` | 14 read-only checks, all at one final block (below; check 14 was added after this run) |
+| `reset-contract.mjs --root <root>` | staging only: empties the contract account through a 210-byte cleanup module and deletes it (beneficiary: the root), so a contract with changed records can be deployed fresh under the same name ("The reviewed contract", below) |
+| `test/house-window.test.mjs` | the keeper's window of open payouts (`nextWindow`, `readWindow` in `hat-tip-lib.mjs`) |
 
 The staging deployment, step by step:
 

@@ -16,11 +16,6 @@
     "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
     "near": "10.00"
    },
-   "thanks.hat-tip-stage.testnet": {
-    "role": "contract",
-    "funded_near": "5.500",
-    "full_access_key": "ed25519:2BAN4j344GxSNXHyvgCCg9CUMuHsXiRjfaUH6NXiPYyR"
-   },
    "tusd.hat-tip-stage.testnet": {
     "role": "token",
     "funded_near": "3.000",
@@ -176,6 +171,16 @@
      ],
      "allowance_near": "0.25"
     }
+   },
+   "hat-tip-fund-2.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00",
+    "sent": "9.95 NEAR to the root for the redeploy"
+   },
+   "thanks.hat-tip-stage.testnet": {
+    "role": "contract",
+    "funded_near": "11.000",
+    "full_access_key": "ed25519:EQrP6X2QkheX2hBpxzevqBcb7rUAy76ajNH5zrHUEVFt"
    }
   },
   "txs": {
@@ -196,12 +201,6 @@
     "tgas": 0.44,
     "fee_near": "0.000045",
     "note": "9.9500 NEAR"
-   },
-   "create thanks.hat-tip-stage.testnet": {
-    "hash": "31ActW3r4nxtqofuzGRu6vcHBpyJQrAKW6q4eyT5pH7Q",
-    "tgas": 8.34,
-    "fee_near": "0.007115",
-    "note": "5.500 NEAR"
    },
    "create tusd.hat-tip-stage.testnet": {
     "hash": "4WJdCUXoQh5FU2hajMXBGPFftGedWiDrx6EXd2i9fj8m",
@@ -313,22 +312,56 @@
     "fee_near": "0.001455",
     "note": "deploy + new, 167062 bytes"
    },
-   "deploy contract": {
-    "hash": "BjFqHqcRt4hDbuyB2DgdEnR9Vyb882R5HoJo6qTNftb5",
-    "tgas": 27.26,
-    "fee_near": "0.002727",
-    "note": "deploy + new, 349776 bytes"
-   },
-   "first sync": {
-    "hash": "9hsttbPKhhkKG6U1tGHDQd6Fftobm5LFaMbYUzxSUogJ",
-    "tgas": 7.34,
-    "fee_near": "0.000689"
-   },
    "gas pool keys": {
     "hash": "cg1h9FK9EJbT3g286HGpzYcjJvuwF7u4A1iinmP8nTd",
     "tgas": 2.26,
     "fee_near": "0.000226",
     "note": "8 page + 2 keeper keys"
+   },
+   "reset: plain DeleteAccount refused (DeleteAccountWithLargeState, 418,100 bytes)": {
+    "hash": "J9mYzcrKd4WpeYmWghyBD1F75WHg3xqXsE5cfZ96rmJb"
+   },
+   "faucet hat-tip-fund-2.testnet": {
+    "hash": "86zKS5rVZEG9vA4uquyZgbUGiEHba9yXFk1Rpo9VKP7Q",
+    "note": "faucet, 10 NEAR"
+   },
+   "fund hat-tip-stage.testnet from hat-tip-fund-2.testnet": {
+    "hash": "2M9iqXdmmg4LPTUGKfHEda9r5Bz4iHhVuLgz5v9kHvTH",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "reset deploy the cleanup module": {
+    "hash": "86DV6TyRbNg6zxA1ECfAwLViKkjkiTHYid3W9MvBHFL2",
+    "tgas": 0.6,
+    "fee_near": "0.000060"
+   },
+   "reset clean 197 keys": {
+    "hash": "4kQQ7cRv9GM2GtrCXBQCnNZ5vnWXd2HCdxgdjoic6Y1m",
+    "tgas": 25.57,
+    "fee_near": "0.002557"
+   },
+   "reset delete thanks.hat-tip-stage.testnet": {
+    "hash": "6LsE3HYRgQb8URHp6ENENyqpvVYWWVm7wWYTKnALDuPB",
+    "tgas": 0.95,
+    "fee_near": "0.000051"
+   },
+   "create thanks.hat-tip-stage.testnet": {
+    "hash": "4snMPofd1R9Pmj2wVaXMKYY5FimhvUgKNbPCCJWRschR",
+    "tgas": 8.34,
+    "fee_near": "0.007115",
+    "note": "11.000 NEAR"
+   },
+   "deploy contract": {
+    "hash": "CRSLZGxe4p4Q1vs9bZ24EhboE7yhWf5souCSXpeEJXGj",
+    "tgas": 27.97,
+    "fee_near": "0.002797",
+    "note": "deploy + new, 359545 bytes"
+   },
+   "first sync": {
+    "hash": "7cpFqdJJmJHP6bamUHg77EGEKmHU2BiU88gwuwPQRpdw",
+    "tgas": 7.36,
+    "fee_near": "0.000692"
    }
   },
   "root": "hat-tip-stage.testnet",
@@ -430,57 +463,19 @@
   "code_hashes": {
    "dao": "AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH",
    "token": "41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip",
-   "contract": "9o7sKeDvmHwKkMFXz3cVm36QP72aa6iCzy3DsGm1P3Xm"
+   "contract": "ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw"
   },
   "dao_version": "2.3.1",
   "factory": "sputnikv2.testnet",
   "factory_auto_update": false,
   "wasm_sha256": {
    "token": "2cc43cf6998ccb454b21ec031a1d535d467a73074b8192a5d3cf7aa66e5b46e1",
-   "contract": "82adfa550c68493df8136def30dd62a7cbb794e0ba41dbca90b1f9f46875baf0"
+   "contract": "91e5f94a8b9bd7aa4faf3a870455a4db2014b0f9017fb70aa4b181c0ba194ab8"
   },
   "locked": {
    "token": false,
    "contract": false
   },
-  "config": {
-   "dao": "hat-tip-stage.sputnikv2.testnet",
-   "token": "tusd.hat-tip-stage.testnet",
-   "members_role": "members",
-   "council_role": "council",
-   "thanks_role": "thanks",
-   "genesis_ms": 1794056100000,
-   "round_ms": 300000,
-   "thanks_per_round": 100,
-   "cap_per_receiver": 25,
-   "max_receivers": 10,
-   "reciprocal_bp": 2500,
-   "quadratic": false,
-   "breadth_k": 3,
-   "breadth_bp": 2500,
-   "idle_bp": 10000,
-   "decay_bp": 750,
-   "round_budget": "120000000",
-   "min_payout": "5000000",
-   "carry_rounds": 12,
-   "reserve": "0",
-   "auto_rep_min": 200,
-   "auto_per_thanks": "60000",
-   "auto_max": "30000000",
-   "cosign_base": "14400000",
-   "cosign_per_thanks": "60000",
-   "cosign_max": "30000000",
-   "auto_share_bp": 8000,
-   "guest_seats": 6,
-   "guest_weight_bp": 5000,
-   "guest_cap_bp": 2000,
-   "max_members": 24,
-   "max_catchup": 36,
-   "log_keep": 108,
-   "note_max_bytes": 80,
-   "guest_receive_cap_bp": 800
-  },
-  "genesis_iso": "2026-11-07T12:55:00.000Z",
   "gas": {
    "account": "hat-tip-gas.testnet",
    "methods": [
@@ -586,58 +581,227 @@
     }
    ],
    "guests_in_tests": [
-    "1d9c5c10f6a21ca411343d56e4f12df15896a9c81c24dbda086bfd9c7ccd7b08",
-    "9ff2c1c9dca7f409786414a60d5c548ad90ed64751ff50a8d10fcc0d32d8cd44",
-    "3ae885e95a12d109f847aa53afa38a2cf16b3ed6f9fa238c35e7727ba520c026"
+    "5b92bb7dc270050bae160aa8bbf8c9eec10fa02f619d65c85d7a0159579dffc5",
+    "58253b23080bb0345791b11671fe8913db3fb93f2b40f9bfe1899c7c7b0cece2"
    ]
   },
-  "house_run": {
-   "when": "2026-11-07 12:55-15:18 UTC, rounds 1-28 (round 27 empty)",
+  "history": [
+   {
+    "what": "the first staging deployment of the contract (wasm 82adfa55..., before the pre-lock review), 2026-11-07 12:54 UTC; its 28-round house run; emptied and deleted for the reviewed code (scripts/reset-contract.mjs) because the stored records changed",
+    "contract": "thanks.hat-tip-stage.testnet",
+    "code_hash": "9o7sKeDvmHwKkMFXz3cVm36QP72aa6iCzy3DsGm1P3Xm",
+    "wasm_sha256": "82adfa550c68493df8136def30dd62a7cbb794e0ba41dbca90b1f9f46875baf0",
+    "genesis_iso": "2026-11-07T12:55:00.000Z",
+    "config": {
+     "dao": "hat-tip-stage.sputnikv2.testnet",
+     "token": "tusd.hat-tip-stage.testnet",
+     "members_role": "members",
+     "council_role": "council",
+     "thanks_role": "thanks",
+     "genesis_ms": 1794056100000,
+     "round_ms": 300000,
+     "thanks_per_round": 100,
+     "cap_per_receiver": 25,
+     "max_receivers": 10,
+     "reciprocal_bp": 2500,
+     "quadratic": false,
+     "breadth_k": 3,
+     "breadth_bp": 2500,
+     "idle_bp": 10000,
+     "decay_bp": 750,
+     "round_budget": "120000000",
+     "min_payout": "5000000",
+     "carry_rounds": 12,
+     "reserve": "0",
+     "auto_rep_min": 200,
+     "auto_per_thanks": "60000",
+     "auto_max": "30000000",
+     "cosign_base": "14400000",
+     "cosign_per_thanks": "60000",
+     "cosign_max": "30000000",
+     "auto_share_bp": 8000,
+     "guest_seats": 6,
+     "guest_weight_bp": 5000,
+     "guest_cap_bp": 2000,
+     "max_members": 24,
+     "max_catchup": 36,
+     "log_keep": 108,
+     "note_max_bytes": 80,
+     "guest_receive_cap_bp": 800
+    },
+    "account_created": {
+     "hash": "31ActW3r4nxtqofuzGRu6vcHBpyJQrAKW6q4eyT5pH7Q",
+     "tgas": 8.34,
+     "fee_near": "0.007115",
+     "note": "5.500 NEAR"
+    },
+    "txs": {
+     "deploy contract": {
+      "hash": "BjFqHqcRt4hDbuyB2DgdEnR9Vyb882R5HoJo6qTNftb5",
+      "tgas": 27.26,
+      "fee_near": "0.002727",
+      "note": "deploy + new, 349776 bytes"
+     },
+     "first sync": {
+      "hash": "9hsttbPKhhkKG6U1tGHDQd6Fftobm5LFaMbYUzxSUogJ",
+      "tgas": 7.34,
+      "fee_near": "0.000689"
+     }
+    },
+    "house_run": {
+     "when": "2026-11-07 12:55-15:18 UTC, rounds 1-28 (round 27 empty)",
+     "round_ms": 300000,
+     "script": "scripts/house.mjs run (seeds 20261107, 2026110713, 2026110715); flags --quiet 10 (round 12), --guest 1,2,13 (rounds 1, 4, 15), --remove 1 (round 28)",
+     "transactions": 744,
+     "failed": 6,
+     "failed_why": "check_payout with 135 Tgas attached (contract/README.md); the contract needs 140. Fixed in scripts/hat-tip-lib.mjs",
+     "payouts": 154,
+     "by_tier": {
+      "1": {
+       "paid": 48
+      },
+      "2": {
+       "paid": 60,
+       "rejected": 4,
+       "removed": 1
+      },
+      "3": {
+       "paid": 39,
+       "rejected": 2
+      }
+     },
+     "strikes": 7,
+     "audit": "balanced, points_attributed, statuses_ok, filed_have_ids, carry_ok all true after round 28",
+     "event_replay": "the events of all 744 transactions rebuild every reputation exactly (11 accounts, member() compared)",
+     "evidence": "docs/testnet-stage.json (every transaction), docs/testnet-stage.md (first deployment)"
+    },
+    "evidence_txs": {
+     "tier1_pay_file_vote_transfer": "G4gSufPJgvmM2EKSecj8kj4njgg3n2hXqPChhGmPZ6Vm",
+     "tier1_check_paid": "9pNwn6guBzuGdbKSS9w12i7uXXt8rPw8Z6Af7CVcgbLL",
+     "tier2_council_vote_approve": "BXaba7A14xDfBjzctzLe1SoiAtuhn6PuBffwRWbzK1VX",
+     "tier2_check_paid": "6x6KoYiQPfeySHHeRcQF5uv2KzMr3aYP2cHuLeAWXKhE",
+     "tier2_council_vote_reject": "2D2LPmDd4HL13F6UeA4zydKbmfq3AcqGH3vbjNEgb4SE",
+     "tier2_check_rejected_struck": "BYs7RPocVYTiWd6LewYDq2rVPgXfB8DSagMU8haHCtf8",
+     "tier3_council_vote_1": "GkVrTavePMekFEqWesJUq1QQm9YJTgda4FGgFqCHcPsM",
+     "tier3_council_vote_2_executes": "8eMiTd69e5svSE2ubw1bTNRgS1Y3PvbUF2FmkW97S5F3",
+     "tier3_check_paid": "9coRuPkpepjJyBFWaXidTTTg9RoTHELrmoQDMVBXhrjt",
+     "tier3_council_reject_1": "3NRAL84pZFYDsvH2cWaobFS8m36vt6F1d2pVBJjeEEBZ",
+     "tier3_council_reject_2": "73tNMcRvV6ytMLUuzqg3BHWuSUDpA3U58bxQpdpASUaV",
+     "tier3_check_rejected_struck": "5E1Qczw73TbB94XqvG3UV58EN5dpTihTwTLADkd8sjVb",
+     "council_vote_remove": "7fHFJi2e7hepzdzJkmafkgB7te2JY32dBSdLCYfPPQRY",
+     "check_removed_struck": "ARApvmDHctxbtLSfYfhL28HCm86QQaVQSmFNMB5bVpGC",
+     "close_round_with_allocations": "EVJtH5aZ56bc4gZzYmsZwUznLvQcAtGmKYZbYnAp2tHk",
+     "close_round_empty": "Bt7LW48vFgf8xo2GqBzf8u2DmCmipa2vHqDDwKLYWVip",
+     "guest_join_relayed": "8khdJg8Xr9NcJ8yLoGXhyERNvDsLPM2qvBmZzZQb4oKN",
+     "guest_allocate_relayed": "BDz2iCfGtrkJPss6jfoH7Ev6XGxEJR4xRR21HNznJwY7",
+     "guest_payout_check_paid": "AQ7AjBbwswexAN2qd4UrP1tAVaEyWFE84JxcignUK9Jd"
+    },
+    "account": {
+     "role": "contract",
+     "funded_near": "5.500",
+     "full_access_key": "ed25519:2BAN4j344GxSNXHyvgCCg9CUMuHsXiRjfaUH6NXiPYyR"
+    },
+    "guests_in_tests": [
+     "1d9c5c10f6a21ca411343d56e4f12df15896a9c81c24dbda086bfd9c7ccd7b08",
+     "9ff2c1c9dca7f409786414a60d5c548ad90ed64751ff50a8d10fcc0d32d8cd44",
+     "3ae885e95a12d109f847aa53afa38a2cf16b3ed6f9fa238c35e7727ba520c026"
+    ]
+   }
+  ],
+  "config": {
+   "dao": "hat-tip-stage.sputnikv2.testnet",
+   "token": "tusd.hat-tip-stage.testnet",
+   "members_role": "members",
+   "council_role": "council",
+   "thanks_role": "thanks",
+   "genesis_ms": 1794073320000,
    "round_ms": 300000,
-   "script": "scripts/house.mjs run (seeds 20261107, 2026110713, 2026110715); flags --quiet 10 (round 12), --guest 1,2,13 (rounds 1, 4, 15), --remove 1 (round 28)",
-   "transactions": 744,
-   "failed": 6,
-   "failed_why": "check_payout with 135 Tgas attached (contract/README.md); the contract needs 140. Fixed in scripts/hat-tip-lib.mjs",
-   "payouts": 154,
+   "thanks_per_round": 100,
+   "cap_per_receiver": 25,
+   "max_receivers": 10,
+   "reciprocal_bp": 2500,
+   "quadratic": false,
+   "breadth_k": 3,
+   "breadth_bp": 2500,
+   "idle_bp": 10000,
+   "decay_bp": 750,
+   "round_budget": "120000000",
+   "min_payout": "5000000",
+   "carry_rounds": 12,
+   "reserve": "0",
+   "auto_rep_min": 200,
+   "auto_per_thanks": "60000",
+   "auto_max": "30000000",
+   "cosign_base": "14400000",
+   "cosign_per_thanks": "60000",
+   "cosign_max": "30000000",
+   "auto_share_bp": 8000,
+   "guest_seats": 6,
+   "guest_weight_bp": 5000,
+   "guest_cap_bp": 2000,
+   "max_members": 24,
+   "max_catchup": 36,
+   "log_keep": 108,
+   "note_max_bytes": 80,
+   "guest_receive_cap_bp": 800
+  },
+  "genesis_iso": "2026-11-07T17:42:00.000Z",
+  "redeploy": {
+   "when": "2026-11-07 17:39-17:42 UTC",
+   "why": "the pre-lock review changed the contract's stored records (Payout.settle_at/approved_at, HatTip.held); no upgrade or migration exists, so the account was emptied, deleted and recreated under the same name",
+   "how": "scripts/reset-contract.mjs (cleanup module, clean, DeleteAccount to the root), scripts/accounts.mjs create (contract_near 11 from sim/params.json), scripts/deploy.mjs contract --set round_ms=300000",
+   "kept": "the account name, so the DAO role thanks, the relay keys, the house keys and web/js/config.js (except its code hash) stay valid"
+  },
+  "house_run": {
+   "when": "2026-11-07 17:42-18:55 UTC, rounds 1-14 of the reviewed contract",
+   "round_ms": 300000,
+   "script": "scripts/house.mjs run (seed 2026110717): --rounds 14 --quiet 8 --guest 2,10, restarted at 17:48 with the fixed payout window (--first 2 --quiet 7 --guest 1,9)",
+   "transactions": 480,
+   "failed": 0,
+   "refused": 0,
+   "payouts": 80,
    "by_tier": {
     "1": {
-     "paid": 48
+     "paid": 6
     },
     "2": {
-     "paid": 60,
-     "rejected": 4,
-     "removed": 1
+     "paid": 35,
+     "rejected": 7
     },
     "3": {
-     "paid": 39,
+     "paid": 30,
      "rejected": 2
     }
    },
-   "strikes": 7,
-   "audit": "balanced, points_attributed, statuses_ok, filed_have_ids, carry_ok all true after round 28",
-   "event_replay": "the events of all 744 transactions rebuild every reputation exactly (11 accounts, member() compared)",
-   "evidence": "docs/testnet-stage.json (every transaction), docs/testnet-stage.md"
+   "strikes": 9,
+   "settle": "every one of the 71 paid payouts was booked on the second check of its Approved proposal; the first check (7.1 Tgas) changed nothing",
+   "audit": "balanced, points_attributed, statuses_ok, filed_have_ids, carry_ok all true after round 14",
+   "event_replay": "the events of all 480 transactions rebuild every reputation exactly (10 accounts, member() compared)",
+   "evidence": "docs/testnet-stage-2.json (every transaction), docs/testnet-stage.md"
   },
   "evidence_txs": {
-   "tier1_pay_file_vote_transfer": "G4gSufPJgvmM2EKSecj8kj4njgg3n2hXqPChhGmPZ6Vm",
-   "tier1_check_paid": "9pNwn6guBzuGdbKSS9w12i7uXXt8rPw8Z6Af7CVcgbLL",
-   "tier2_council_vote_approve": "BXaba7A14xDfBjzctzLe1SoiAtuhn6PuBffwRWbzK1VX",
-   "tier2_check_paid": "6x6KoYiQPfeySHHeRcQF5uv2KzMr3aYP2cHuLeAWXKhE",
-   "tier2_council_vote_reject": "2D2LPmDd4HL13F6UeA4zydKbmfq3AcqGH3vbjNEgb4SE",
-   "tier2_check_rejected_struck": "BYs7RPocVYTiWd6LewYDq2rVPgXfB8DSagMU8haHCtf8",
-   "tier3_council_vote_1": "GkVrTavePMekFEqWesJUq1QQm9YJTgda4FGgFqCHcPsM",
-   "tier3_council_vote_2_executes": "8eMiTd69e5svSE2ubw1bTNRgS1Y3PvbUF2FmkW97S5F3",
-   "tier3_check_paid": "9coRuPkpepjJyBFWaXidTTTg9RoTHELrmoQDMVBXhrjt",
-   "tier3_council_reject_1": "3NRAL84pZFYDsvH2cWaobFS8m36vt6F1d2pVBJjeEEBZ",
-   "tier3_council_reject_2": "73tNMcRvV6ytMLUuzqg3BHWuSUDpA3U58bxQpdpASUaV",
-   "tier3_check_rejected_struck": "5E1Qczw73TbB94XqvG3UV58EN5dpTihTwTLADkd8sjVb",
-   "council_vote_remove": "7fHFJi2e7hepzdzJkmafkgB7te2JY32dBSdLCYfPPQRY",
-   "check_removed_struck": "ARApvmDHctxbtLSfYfhL28HCm86QQaVQSmFNMB5bVpGC",
-   "close_round_with_allocations": "EVJtH5aZ56bc4gZzYmsZwUznLvQcAtGmKYZbYnAp2tHk",
-   "close_round_empty": "Bt7LW48vFgf8xo2GqBzf8u2DmCmipa2vHqDDwKLYWVip",
-   "guest_join_relayed": "8khdJg8Xr9NcJ8yLoGXhyERNvDsLPM2qvBmZzZQb4oKN",
-   "guest_allocate_relayed": "BDz2iCfGtrkJPss6jfoH7Ev6XGxEJR4xRR21HNznJwY7",
-   "guest_payout_check_paid": "AQ7AjBbwswexAN2qd4UrP1tAVaEyWFE84JxcignUK9Jd"
+   "reset_deploy_cleanup_module": "86DV6TyRbNg6zxA1ECfAwLViKkjkiTHYid3W9MvBHFL2",
+   "reset_clean_197_keys": "4kQQ7cRv9GM2GtrCXBQCnNZ5vnWXd2HCdxgdjoic6Y1m",
+   "reset_delete_account": "6LsE3HYRgQb8URHp6ENENyqpvVYWWVm7wWYTKnALDuPB",
+   "recreate_account_11_near": "4snMPofd1R9Pmj2wVaXMKYY5FimhvUgKNbPCCJWRschR",
+   "deploy_and_new": "CRSLZGxe4p4Q1vs9bZ24EhboE7yhWf5souCSXpeEJXGj",
+   "first_sync": "7cpFqdJJmJHP6bamUHg77EGEKmHU2BiU88gwuwPQRpdw",
+   "tier1_pay_file_vote_transfer": "2igd44eop8qNj9hcKNZwKNCkCq2fsGkYj65W2LeTvt1r",
+   "tier1_check_1_noted": "6zskDBBF69ShuZjUnDF847dP8VdPx8FTeM8MabzvyRxC",
+   "tier1_check_2_paid": "8gidbYNKXHuPYLbMbKN1roXBwqdLSNcxA7pTUerD9BsP",
+   "tier2_guest_council_vote": "5AuY41dNC8mHkZzkXBXdFMEwd7SueqRUDQsDKvjjJEXu",
+   "tier2_guest_check_1_noted": "FxUaRPWNXh6afyAFW4dSmN4u11dyRu2UM5h3YuQQKg2T",
+   "tier2_guest_check_2_paid": "56ei8Sj6JihvBJfY7E6gtAZ5EYJ2BW7nZv2XeGneLdd",
+   "tier2_council_vote_reject": "6mJwcrajf7SW4oTPndqbcF98eb8nBhqcf3N4sXVEQkPc",
+   "tier2_check_rejected_struck": "5seZsPZbN14Dp2PPq6PToQS8XmfQCrWd5ZSJS97rMbVv",
+   "tier3_council_vote_1": "5BMSG42zyW2teFAExnHBA4CQioPqC6M2gppmRCXnxvpt",
+   "tier3_council_vote_2_executes": "FcNCzhL2mTX6prjdQbPqaAZ4Px4oUmj3q5xBkdyiNePR",
+   "tier3_check_1_noted_block_276663973": "HXc8gSkQfCaHVqfzrDinKukcUQXkwuSGoVzSZTfbphDt",
+   "tier3_check_2_paid_block_276664075": "53e4UQHjCFuUUWNbsE7jJ6Aszt9PZQncXrK2hziPnuVm",
+   "tier3_council_reject_1": "WRhhQpmTRXTzYFzdNtRwgkF7pwFgebUVnytMkYfGqzb",
+   "tier3_council_reject_2": "31GRwg7x8XkAtmEAe7o51WWTskm8FCpVdqzDjmctaPTo",
+   "tier3_check_rejected_struck": "8Ngm4JDEpK1q8VqzzBrEmMjBRPiNcXGCYsVZ4hmjc5CT",
+   "guest_join_relayed": "Di8c2yYutH3shhqz5vuK2Ly7kHCELZLBvutgVLrugRAj"
   }
  }
 }
