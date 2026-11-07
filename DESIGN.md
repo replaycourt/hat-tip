@@ -39,7 +39,7 @@ This file is the spec in words. The contract (`contract/`, API in `contract/READ
 | rounds, allocations, notes, points, reputation, payouts and their DAO proposal ids | the `thanks` contract | nobody: the rules are fixed at init and the account has no keys |
 | the tier rules and every other parameter | `thanks` contract config, set once at init | nobody |
 
-The contract keeps a copy of the member and council lists and of the DAO's proposal bond, refreshed from `get_policy` at every close and by `sync()`. The page reads the DAO live: `get_policy`, `get_proposals`, `get_proposal`, `get_last_proposal_id`, and the DAO's tUSD balance from `ft_balance_of`.
+The contract keeps a copy of the member and council lists and of the DAO's proposal bond, refreshed from `get_policy` at every close of a round with allocations and by `sync()` (a round nobody gave in closes without reading the DAO). The page reads the DAO live: `get_policy`, `get_proposals`, `get_proposal`, `get_last_proposal_id`, and the DAO's tUSD balance from `ft_balance_of`.
 
 ## One round
 
@@ -70,7 +70,7 @@ The contract keeps a copy of the member and council lists and of the DAO's propo
 
 6. **Reputation.** For every account with a record: `R = R * (10000 - decay_bp) / 10000 + p` (rounded down; `decay_bp` *sim*). Records of guests whose reputation falls below one thanks and who have no carry and no open payout are deleted.
 
-7. **Budget.** `B = min(round_budget, dao_balance - reserve)`, at least 0, with `dao_balance` the DAO's tUSD balance read at the close. A DAO that holds less pays less; a DAO that holds nothing pays nothing, and the round still counts for reputation.
+7. **Budget.** `B = min(round_budget, dao_balance - reserve - owed)`, at least 0, with `dao_balance` the DAO's tUSD balance read at the close and `owed` what earlier rounds still owe: their payouts without a final outcome and the carries. A DAO that holds less pays less; a DAO that holds nothing pays nothing, and the round still counts for reputation. No round plans into the reserve, also while earlier payouts wait for the council.
 
 8. **Shares.** `share[j] = B * p[j] / sum p` (rounded down), then `q[j] = share[j] + carry[j]`. If `q[j] < min_payout`, it becomes the new carry; a carry older than `carry_rounds` lapses back to the DAO (event `carry_lapsed`). Otherwise a payout of `q[j]` is planned and the carry is cleared. The rounding dust is never planned: it stays in the DAO.
 
@@ -81,9 +81,9 @@ The contract keeps a copy of the member and council lists and of the DAO's propo
    - Round cap: if tier-1 payouts add up to more than `auto_share_bp` of `B`, the largest are moved to tier 2 until they do not. No round sends more than that share out without a human.
    All limits are *sim*.
 
-10. **Filing.** Anyone may call `pay(max)`; it files up to `max` planned payouts in order. For each: if the receiver is not yet registered with tUSD, the contract pays its `storage_deposit` (`registration_only`, 0.00125 NEAR) first; then it calls the DAO's `add_proposal` with the DAO's `proposal_bond` attached; the callback stores the DAO's proposal id. Tier 1: the callback then calls `act_proposal(id, VoteApprove, kind)`, and the DAO executes the transfer in the same chain. Tiers 2 and 3 wait in the DAO for the council. If `add_proposal` fails (role removed, bond changed), the payout stays planned and the contract marks itself `paused` until a later close or `sync()` sees the role again.
+10. **Filing.** Anyone may call `pay(max)`; it files up to `max` planned payouts in order. For each: if the receiver is not yet registered with tUSD, the contract pays its `storage_deposit` (`registration_only`, 0.00125 NEAR) first; then it calls the DAO's `add_proposal` with the DAO's `proposal_bond` attached; the callback stores the DAO's proposal id. Tier 1: the callback then calls `act_proposal(id, VoteApprove, kind)`, and the DAO executes the transfer in the same chain. Tiers 2 and 3 wait in the DAO for the council. If `add_proposal` fails (role removed, bond changed), the payout stays planned and the contract marks itself `paused` until `sync()` or a later close of a round with allocations sees the role again.
 
-11. **Outcome.** Anyone may call `check_payout(id)`: the contract reads the DAO proposal and records `paid` (Approved), `rejected`, `expired`, `removed` or `failed`. A council rejection or removal is a **strike**: the receiver loses that round's points, decayed to the present round, and the `struck` event names the payout. An expired proposal is finalized (`act_proposal(id, Finalize)`) so the DAO returns the bond; its amount stays in the DAO, without a strike. A failed transfer stays in the DAO and is not refiled.
+11. **Outcome.** Anyone may call `check_payout(id)`: the contract reads the DAO proposal and records `paid` (Approved), `rejected`, `expired`, `removed` or `failed`. A council rejection or removal is a **strike**: the receiver loses that round's points, decayed to the present round, and the `struck` event names the payout. An expired proposal is finalized (`act_proposal(id, Finalize)`) so the DAO returns the bond; its amount stays in the DAO, without a strike. A failed transfer (the receiver left the token) is not refiled: the contract registers the receiver again and finalizes the proposal once, which makes the DAO run the approved transfer again; a second failure is final (`failed`, the bond stays in the DAO until someone finalizes it after expiry). While that retry runs, checks change nothing. Sputnik shows `Approved` before the transfer has run and `Failed` two blocks later, so `paid` is recorded only when a check sees `Approved` a second time, asked for at least three blocks after the first.
 
 12. **Proposal text.** Short, to keep the DAO's storage small: `Hat Tip r42: 31.5 thanks from 5 -> ana.repaircafe.testnet (auto)`.
 
@@ -231,7 +231,7 @@ Target for the testnet values: in steady state roughly 70 % of payouts in tier 1
 - Collusion is dampened, not stopped; sybil resistance is DAO membership; guests are a demo device with caps.
 - Activity in the demo comes mostly from labelled house members with scripted strategies, including the colluding pair and the free rider.
 - Sputnik never deletes proposals: each payout leaves about 350 bytes (about 0.0035 NEAR) in the DAO's storage for good. That is why small shares are carried rather than paid.
-- The contract's copy of the member and council lists is as fresh as the last close or `sync()`.
+- The contract's copy of the member and council lists is as fresh as the last close of a round with allocations or `sync()`.
 - Testnet only. tUSD is a test token. Trezu's hosted app is mainnet-only; on mainnet a Trezu treasury is a Sputnik DAO (`*.sputnik-dao.near`) and the same contract works with it, but this was not run.
 - The testnet DAO code (factory default, `version()` 2.3.1) has no `get_actions_log`; the page reads proposals by id.
 

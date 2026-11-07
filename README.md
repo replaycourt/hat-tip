@@ -178,7 +178,8 @@ Before the parameters were fixed, [docs/SIMULATION.md](docs/SIMULATION.md) wrote
 - **Popular people get thanked more than quiet ones.** Peer thanks measure how the community sees the work, not the work.
 - **Guests are a demo device with caps.** One person with many tabs can take every guest seat (six a round), keep real visitors out and collect the house members' welcome thanks (about 7 % of the testnet budget, every payout behind a council vote). A member working with such a farm still moves about a sixth of the budget to himself and the farm.
 - **Every payout stays in the DAO's storage.** Sputnik never deletes a proposal (except on removal): about 385 bytes, 0.0038 NEAR each. That is why small shares are carried, not paid.
-- **The contract's copy of the member and council lists** is as fresh as the last close or `sync()`.
+- **The contract's copy of the member and council lists** is as fresh as the last close of a round with allocations or `sync()`.
+- **The contract pays for its storage, the guests' too.** It starts with 11 NEAR (code, 108 rounds of logs with every guest seat taken, the bond float); with less than 1 NEAR free it refuses guests, and anyone can send it more ([contract/README.md](contract/README.md#storage)).
 - **Trezu was not run** (its hosted app is mainnet-only), and there are no bounties (see [Fits the track](#fits-the-track)).
 - **AI-generated code.** An AI coding agent (Claude) wrote the code and documentation from a human's brief during the hackathon window. The evidence that it works: the contract's tests in a mock VM with a model of the Sputnik DAO, the golden test against the simulation, `audit()` balanced on chain, and the staging run with all three tiers. No human reviewed it line by line, and the contract has not been audited.
 
@@ -199,7 +200,7 @@ It needs Ed25519 in WebCrypto (Chrome 137+, Safari 17+, Firefox 130+) and has a 
 
 ```sh
 node --test 'web/test/*.test.mjs'      # 73 tests: counting port vs the golden vectors, giving, signing, policy checks, RPC; about 6 s
-(cd contract && cargo test)           # 72 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build about 13 minutes
+(cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build about 13 minutes
 (cd token && cargo test)              # 6 tests; cold build about 11 minutes
 python3 sim/hat_tip_sim.py --check    # the simulation reproduces the golden vectors, the replay and the launch parameters; about 2 s
 scripts/judge-checks.sh               # 14 read-only checks of the live deployment; --section staging for staging

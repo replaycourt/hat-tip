@@ -23,23 +23,34 @@ Small, and none changes a method name, an argument or a field the page or the sc
 3. **A `Failed` proposal is retried once.** The transfer of an approved proposal fails when the
    receiver is not registered with the token (probe: the bond stays locked). The first check
    that sees `Failed` calls `storage_deposit` for the receiver and then `act_proposal(Finalize)`,
-   which makes the DAO run the approved transfer again; a second `Failed` is final. DESIGN.md
-   said a failed transfer is not refiled: it is not refiled (no new proposal), only finalized.
-4. **`on_finalized` records nothing.** After any `Finalize` the outcome (`Expired` with the bond
-   back, or `Approved` / `Failed` after a retry) is read by the next `check_payout`, from the
+   which makes the DAO run the approved transfer again; a second `Failed` is final. It is not
+   refiled (no new proposal), only finalized (DESIGN.md, step 11). While the retry runs, a
+   check changes nothing (below).
+4. **`on_finalized` books nothing.** After any `Finalize` the outcome (`Expired` with the bond
+   back, or `Approved` / `Failed` after a retry) is read by a later `check_payout`, from the
    DAO's own record. An expired payout therefore takes two checks: one finalizes, one records.
 5. **The views carry more fields than the draft listed** (additive; see "Views"), and two shapes are
    spelled out: `member().history` rows are objects `{round, points, givers: [[giver, given,
    counted]]}`, and `limits` (like `tiers()`) is `{auto, cosign, reputation}`.
-6. **Gas** differs from the first budgets: every `call.then(callback)` costs about
-   19 Tgas in receipt fees on top of the static gas, and a vote that executes a transfer needs at
-   least 25 Tgas attached (probe). See "Gas".
+6. **Gas** differs from the first budgets: every `call.then(callback)` is budgeted at 20 Tgas
+   of receipt fees on top of the static gas (the SDK's mock VM charges about 19.1; on chain it
+   costs about 2.5), and a vote that executes a transfer needs at least 25 Tgas attached (probe).
+   See "Gas".
 7. **One new parameter, `guest_receive_cap_bp: u16`** (added 2026-11-07),
    the last field of `Config`, optional in JSON with default 10,000 (off): guests together
    receive at most this share of a round's points ("Counting, exactly", step 7). Without it a
    member could route its thanks to a farm of guests. The simulation models it (rule 17 of
    `sim/golden/README.md`, stage D of `docs/SIMULATION.md`), `sim/golden/receive_cap.json`
    exercises it and `launch_testnet.json` runs with it at 800.
+8. **Changes after the pre-lock review** (2026-11-07), none in a method name or a field the page
+   or the scripts read: `paid` needs two `Approved` answers at least `SETTLE_BLOCKS` (3) blocks
+   apart, and a retry in flight blocks every check ("Outcomes"); the budget leaves out what
+   earlier rounds still owe ("Counting, exactly", step 10); a payout stuck in `filing` no longer
+   holds `pay` or the pruning ("Paying", "Storage"); `close_round` stops a catch-up before its
+   logs would pass `LOG_BUDGET`; guests are refused while the contract has less than 1 NEAR free;
+   `on_checked` takes the block of its `check_payout` (`asked`); `state()` has `held_payouts`.
+   The stored records changed: a deployment of the earlier code cannot be upgraded to this one
+   (it has no upgrade method anyway) and is redeployed fresh.
 
 ## Build and check
 
@@ -96,7 +107,7 @@ milliseconds. `new` panics with the first field out of range.
 | `round_budget` | U128 | most a round pays | |
 | `min_payout` | U128 | smallest payout; less is carried | >= 1 |
 | `carry_rounds` | u16 | a carry lapses this many rounds after its first share | |
-| `reserve` | U128 | DAO balance a round never touches | |
+| `reserve` | U128 | DAO balance no round plans into (the budget also leaves out what earlier rounds still owe) | |
 | `auto_rep_min` | u32 | reputation (thanks) needed for any auto limit | |
 | `auto_per_thanks` | U128 | auto limit per thanks of reputation | |
 | `auto_max` | U128 | auto limit cap | |
@@ -109,7 +120,7 @@ milliseconds. `new` panics with the first field out of range.
 | `guest_cap_bp` | u16 | most of a round's weight all guests together steer | <= 10,000 |
 | `guest_receive_cap_bp` | u16 = 10,000 | most of a round's points all guests together receive (10,000 = off); last field, optional | <= 10,000 |
 | `max_members` | u16 | members the contract takes from the role (the first by account id) | >= 1; `max_members + guest_seats <= 64` |
-| `max_catchup` | u16 | empty rounds one `close_round` closes | >= 1 |
+| `max_catchup` | u16 | the most empty rounds one `close_round` closes (fewer when their events would pass `LOG_BUDGET`) | >= 1 |
 | `log_keep` | u32 | rounds kept in full (`round(n)`, `member().history`) | >= 2 |
 | `note_max_bytes` | u16 | longest note | <= 280 |
 
@@ -123,14 +134,15 @@ Anyone may call these; the relay's function-call keys may call `act`, `close_rou
 | `sync` | - | Promise -> `SyncOutcome {ok, members, council, bond, paused}` | `dao.get_policy()` -> `on_policy`: takes over members, council, bond, proposal period, and pauses or unpauses (below). Needs 70 Tgas. |
 | `allocate` | `round: u64, gifts: [[AccountId, u16]], note: Option<String>` | `AllocateOutcome {ok, error, given}` | a member's allocation for the clock's round; replaces the member's earlier one; `[]` withdraws it; the optional note is posted in the same call. Refused: not the clock's round, round 1 not started, caller not a member (last synced list), more than `max_receivers`, a receiver named twice, the caller as receiver, a gift outside 1..=`cap_per_receiver`, a receiver neither a member nor a guest seated in the round, more than `thanks_per_round` in all, a bad note. A refusal changes nothing and logs nothing. |
 | `note` | `round: u64, text: String` | - | a member's note for the clock's round; `""` deletes it. Panics on refusal. |
-| `act` | `pubkey: String, nonce: u64, action: String, signature: String` | `ActOutcome {ok, error, nonce, round}` | a guest's signed action (below) |
+| `act` | `pubkey: String, nonce: u64, action: String, signature: String` | `ActOutcome {ok, error, nonce, round}` | a guest's signed action (below); refused while the contract has less than 1 NEAR free (`GUEST_FLOOR`) |
 | `close_round` | - | `CloseOutcome {closed, last_closed, waiting, error}` or Promise -> `on_close`'s `CloseOutcome` | closes due rounds in order (below) |
 | `pay` | `max: u8` | `PayOutcome {filing: [u64], error}` | files up to `max` planned payouts, oldest first (below) |
 | `check_payout` | `payout: u64` | `CheckOutcome {payout, status, changed}` or Promise -> the same | reads a filed payout's DAO proposal and records its outcome (below). Panics for an unknown or pruned id. |
 
 Callbacks, all `#[private]`: `on_policy()`, `on_close(round)`, `on_registered(payout)`,
-`on_filed(payout)`, `on_voted(payout)`, `on_checked(payout)`, `on_finalized(payout)`. A callback
-for a payout that is no longer in the state it expects changes nothing.
+`on_filed(payout)`, `on_voted(payout)`, `on_checked(payout, asked)` (`asked`: the block of the
+`check_payout`), `on_finalized(payout)`. A callback for a payout that is no longer in the state
+it expects changes nothing.
 
 ### Guests: `act`
 
@@ -152,19 +164,23 @@ key's last accepted nonce. Actions (JSON, at most 2,048 bytes):
 
 A bad signature, a used nonce, a nonce out of range or malformed JSON **fail the call**. A
 refused action returns `ok: false` with `error` and changes nothing except the nonce of a guest
-that already has a record. Any accepted action takes one of the round's `guest_seats` seats if
-the guest has none (first come; `joined` event); a seat lasts one round. A guest gives to members
-only, under the same rules as a member.
+that already has a record. Every guest action takes storage, which the contract pays: while the
+contract has less than 1 NEAR free above its storage, `act` refuses them ("the contract has less
+than 1 NEAR free: guests can act once <contract> gets NEAR"); anyone can send it NEAR. Any
+accepted action takes one of the round's `guest_seats` seats if the guest has none (first come;
+`joined` event); a seat lasts one round. A guest gives to members only, under the same rules as a
+member.
 
 ### Closing: `close_round`
 
 Round `r` runs from `genesis_ms + (r - 1) * round_ms` to `genesis_ms + r * round_ms`. Due rounds
-close in order. A round without allocations closes at once (up to `max_catchup` per call): no
-budget, no payouts; reputation decays and old carries lapse. The first due round with
-allocations is counted after the DAO answers: the call returns
+close in order. A round without allocations closes at once (up to `max_catchup` per call, and no
+more than fit in one receipt's logs: the call stops before `LOG_BUDGET` and the next one goes
+on): no budget, no payouts; reputation decays and old carries lapse. It does not read the DAO.
+The first due round with allocations is counted after the DAO answers: the call returns
 `get_policy()` and `token.ft_balance_of(dao)`, joined, then `on_close(round)`; one such round per
-call. While that answer is pending (up to 2 minutes) another call does not start a second one.
-If either answer fails, nothing closes and `error` says to call again. A close with allocations
+call. While that answer is pending (up to 2 minutes) another call does not start a second one. If
+either answer fails, nothing closes and `error` says to call again. A close with allocations
 needs 255 Tgas attached; with less, `error` says so and nothing starts.
 
 `on_close` takes over the policy just read (as `sync` does), counts the round, plans the payouts
@@ -172,8 +188,9 @@ and logs the events. The arithmetic is "Counting, exactly" below.
 
 ### Paying: `pay(max)`
 
-Refused while paused. For each planned payout, oldest id first, while the attached gas and the
-contract's balance allow (the contract keeps 0.05 NEAR free above its storage):
+Refused while paused. For each planned payout, oldest id first (from the pay cursor, the first
+planned payout, up to 64 ids), while the attached gas and the contract's balance allow (the
+contract keeps 0.05 NEAR free above its storage):
 
 1. If the contract has not registered the receiver with the token yet:
    `token.storage_deposit({account_id, registration_only: true})` with 0.00125 NEAR ->
@@ -183,10 +200,13 @@ contract's balance allow (the contract keeps 0.05 NEAR free above its storage):
 3. Tier 1 only: `dao.act_proposal({id, action: "VoteApprove", proposal: kind})` -> `on_voted`.
    The role `thanks` has `transfer` 1 of 1, so the DAO executes the transfer in this chain.
 
-Failures: a failed `storage_deposit` or `add_proposal` puts the payout back to `planned` and
-pauses the contract; a failed vote leaves the payout `filed` (it then needs the council
-majority, like tier 3) and pauses the contract. `sync()` or the next close unpauses it when the
-policy shows the role fit again.
+Failures: a failed `storage_deposit` or `add_proposal` puts the payout back to `planned` (and
+the pay cursor back to it) and pauses the contract; a failed vote leaves the payout `filed` (it
+then needs the council majority, like tier 3) and pauses the contract. `sync()` or the next close
+of a round with allocations (the only closes that read the policy) unpauses it when the policy
+shows the role fit again. A payout whose chain is lost (a callback that never lands) stays
+`filing`; it holds neither `pay`, which moves past every payout that is not planned, nor the
+pruning ("Storage").
 
 ### The proposals
 
@@ -209,12 +229,16 @@ contract is paused with that reason.
 ### Outcomes: `check_payout(payout)`
 
 For a payout that has a proposal id and no final status: `dao.get_proposals({from_index: id,
-limit: 1})` -> `on_checked(payout)`:
+limit: 1})` -> `on_checked(payout, asked)`. An answer asked for while a retry of this payout is in
+flight (from the check that starts it until `SETTLE_BLOCKS` after its `on_finalized`, or
+`RETRY_BLOCKS` = 100 blocks if that never lands), or before the last `Finalize` settled, changes
+nothing; otherwise:
 
 | The DAO says | Recorded | Strike |
 |---|---|---|
 | `[]` (Sputnik deleted it) | `removed` | yes |
-| `Approved` | `paid` | |
+| `Approved`, first time | nothing yet: the block is noted (Sputnik shows `Approved` before the transfer has run, and `Failed` two blocks later if it fails) | |
+| `Approved` again, asked for at least `SETTLE_BLOCKS` (3) blocks after the first was noted | `paid` | |
 | `Rejected` | `rejected` | yes |
 | `Removed` | `removed` | yes |
 | `Expired` | `expired` | |
@@ -225,6 +249,10 @@ limit: 1})` -> `on_checked(payout)`:
 
 A strike takes the round's points back, decayed to the last closed round with the per-round
 floors: `R = R - min(R, strike)`. Needs 140 Tgas attached (with less it panics `this call needs 140 Tgas`).
+A keeper therefore checks a payout the DAO shows `Approved` twice, a few blocks apart (the house
+script checks every open payout on each of its rounds, so it does). A payout whose transfer
+failed for good stays `failed` with its bond in the DAO; the council can finalize the proposal
+after `proposal_period`, which returns the bond to the contract.
 
 ## Views
 
@@ -234,7 +262,7 @@ state() -> {name, round, round_ends_ms, oldest_unclosed, due, closing: Option<u6
             members: [AccountId], council: [AccountId], guests_seated: [AccountId],
             paused: bool, pause_reason: Option<String>, last_sync_ms, bond: U128,
             proposal_period_ns: U64, planned, open_payouts, next_payout, oldest_payout,
-            totals: Totals}
+            held_payouts: [u64], totals: Totals}
 round(n) -> Option<{n, closed, starts_ms, ends_ms, dao_balance: U128, budget: U128, dust: U128,
             notes: [[AccountId, String]], seats: [AccountId],
             gifts: [[giver, receiver, given: u16, counted: U128]], points: [[AccountId, U128]],
@@ -243,7 +271,7 @@ member(account_id) -> {account, kind: "member"|"guest"|"other", reputation: U128
             carry_since, limits: {auto, cosign, reputation}, strikes, open_payouts,
             history: [{round, points: U128, givers: [[giver, given, counted: U128]]}],
             payouts: [PayoutView]}
-payouts(from: u64, limit: u64) -> [PayoutView]      // limit at most 100, pruned ids skipped
+payouts(from: u64, limit: u64) -> [PayoutView]      // ids from..from+limit (limit at most 100), pruned ids skipped
 PayoutView = {id, round, receiver, amount: U128, tier: 1|2|3,
               status: "planned"|"filing"|"filed"|"approved"|"paid"|"rejected"|"expired"|"removed"|"failed",
               dao_proposal: Option<u64>, kind: "transfer"|"function_call", points: U128, givers}
@@ -260,9 +288,11 @@ Totals = {rounds_closed, budgets, planned, carry, lapsed, dust, points, attribut
 round. `limits` and `tiers()` are the limits the next close applies (from that reputation).
 `audit()`: `balanced` is `budgets = planned + carry + lapsed + dust`; `points_attributed` that
 the points equal the sum of their counted gifts, in total and in every kept round; `statuses_ok`
-that the payouts by status add up to every payout planned; `filed_have_ids` that every kept
-payout past filing has a DAO proposal id; `carry_ok` that the accounts' carries add up to the
-carry total.
+that the payouts by status add up to every payout planned and the kept records agree, including
+the amounts of the payouts without a final status (`totals.planned` less the five final totals);
+`filed_have_ids` that every kept payout past filing has a DAO proposal id; `carry_ok` that the
+accounts' carries add up to the carry total. `oldest_payout`: payouts below it are pruned, except
+`held_payouts`, older than `log_keep` rounds without a final status (`payouts()` lists them too).
 
 Payout statuses: `planned` (waits for `pay`), `filing` (chain running), `filed` (in the DAO
 with an id), `approved` (tier 1: the contract's vote passed; the DAO executes), then one final
@@ -291,9 +321,11 @@ table. Amounts are decimal strings; rounds, ids, thanks and points are numbers.
 | `paid`, `rejected`, `expired`, `removed`, `failed` | `payout`, `proposal`, `receiver`, `amount` |
 | `struck` | `payout`, `round`, `account`, `points` (the round's), `strike` (decayed), `reputation` (after) |
 
-`synced` is logged by every `sync`, and by a close when anything changed. A close keeps its logs
-below 15,000 bytes (NEAR fails a receipt above 16 KiB): `detail` 2 logs everything; 1 drops the
-per-giver lists from `points` (the `round(n)` view still has them); 0 logs only `round_closed`.
+`synced` is logged by every `sync`, and by a close when anything changed. Every close keeps its
+logs below `LOG_BUDGET` = 15,000 bytes (NEAR fails a receipt above 16 KiB): `on_close` by its
+`detail` (2 logs everything; 1 drops the per-giver lists from `points`, which the `round(n)` view
+still has; 0 logs only `round_closed`), and `close_round` by closing no more empty rounds than fit
+(one empty round always fits: at most 64 carries lapse in it).
 The demo's largest round (24 members, 6 guests, 10 gifts each) logs at `detail` 2. With detail
 2 or 1 the events alone rebuild every reputation (`round_closed` decays, `points` adds, `struck`
 subtracts) and every payout status; `tests/invariant.rs` does exactly that.
@@ -323,7 +355,11 @@ round with entries `T[i][j]`, every division rounding down:
 9. Reputation: `R0` = after the previous close and any strikes since. Each close decays every
    record once, `R * (10000 - decay_bp) / 10000` (applied lazily, round by round with its own
    floor), then adds `p`. A guest's reputation below 1,000 becomes 0.
-10. Budget `B = min(round_budget, max(0, dao_balance - reserve))`, 0 if the points sum to 0.
+10. Budget `B = min(round_budget, max(0, dao_balance - reserve - owed))`, 0 if the points sum to 0.
+    `owed` is what earlier rounds still owe: the amounts of the payouts without a final status
+    (`totals.planned` less `paid`, `rejected`, `expired`, `removed` and `failed`) and the carries
+    (`totals.carry`), both as they stand before this round. (Added after the pre-lock review; with
+    a DAO that holds far more than the budget, as in the demo, it changes nothing.)
 11. In account order: `share = B * p / sum p`, `q = share + carry`; `0 < q < min_payout` becomes
     the carry (stamped with the round it began), else a payout of `q` is planned. `dust = B -
     sum shares`.
@@ -338,18 +374,37 @@ Payout ids are assigned in receiver account order. Steps 1-7 are the pure functi
 
 ## Storage
 
-The contract pays its own storage. Per round it keeps one record (accounts, seats, notes, gifts
-with their counted points, budget, points, payout ids) and deletes it when the round is
-`log_keep` rounds old. Account records keep reputation (lazily decayed), carry, open payouts,
-the guest's nonce and seat, and the rounds with points still in the log. Guest records with
-nothing left (reputation 0, no carry, no open payout, no seat) are deleted by a sweep at each
-close (8 per close); final payouts older than `log_keep` rounds are pruned (16 per close).
-Neither changes any number.
+The contract pays its own storage, the guests' too. Per round it keeps one record (accounts,
+seats, notes, gifts with their counted points, budget, points, payout ids) and deletes it when
+the round is `log_keep` rounds old. Account records keep reputation (lazily decayed), carry, open
+payouts, the guest's nonce and seat, and the rounds with points still in the log.
+
+A sweep runs after every `on_close` and after every `close_round` that closed empty rounds
+without starting a count (not per closed round). It looks at up to 8 guest records and deletes
+those with nothing left (reputation 0, no carry, no open payout, no seat), and at up to 64
+payout records from the oldest kept one (as many as one round can plan): a final payout older
+than `log_keep` rounds is deleted; one that old without a final status (filed and never voted
+on, or `filing` with its chain lost) is held (`state().held_payouts`, at most 64) and deleted the
+moment it gets one, so no single payout can stop the pruning. It stops early when the gas left
+falls to 15 Tgas. Neither changes any number.
+
+**Funding.** At deployment the contract account needs at least **11 NEAR** (`contract_near` in
+the `testnet` block of `sim/params.json`): about 3.5 for the code, about 2.5 for the house's
+rounds in the 108-round log, about 3.5 more when someone takes all six guest seats every round
+(a full demo round writes 13.5-17 KB, 4.9 KB of it from guests), about 0.5 for the bond float and
+the receivers' token registrations, and the 1 NEAR below which `act` refuses guests. With all 24
+members active the log can take up to about 15 NEAR. Short of NEAR, `pay` stops at its 0.05 NEAR
+cushion and a close can fail for lack of balance for its state; nothing is lost, and anyone can
+send NEAR to the keyless account (the keeper's report says `LOW` first).
 
 ## Gas
 
-Static gas each receipt gets (`src/config.rs`); `GAS_LINK` (20 Tgas) is the receipt fee of one
-`call.then(callback)`, which the creator pays on top:
+Static gas each receipt gets (`src/config.rs`). `GAS_LINK` (20 Tgas) is what the contract budgets
+for the receipt fees of one `call.then(callback)` (two function-call receipts and a data
+receipt), which the creator pays on top of the gas it attaches. The SDK's mock VM charges the old
+fees for a link, about 19.1 Tgas (function call 2.32 Tgas per send and per execution, data receipt
+4.7), and fails a receipt that attaches more than it has; on chain, since protocol 66 (function
+call 0.2 + 0.78), a link costs about 2.5 Tgas, so each one leaves its creator about 17 Tgas spare.
 
 | Step | Tgas |
 |---|---|
@@ -357,40 +412,76 @@ Static gas each receipt gets (`src/config.rs`); `GAS_LINK` (20 Tgas) is the rece
 | `on_policy`, `on_close` | 20, 180 |
 | `storage_deposit`, `add_proposal`, `act_proposal` | 10, 15, 30 |
 | `on_registered` | 5 + the filing link |
-| `on_filed` | 5; tier 1: 5 + 20 + 30 + `on_voted` 5 = 60 |
+| `on_filed` | tiers 2 and 3: 10 (`GAS_ON_FILED`); tier 1: 5 + 20 + 30 + `on_voted` 10 = 65 |
+| `on_voted`, `on_finalized` | 10, 5 |
 | `on_checked` | 5 + 2 x 20 + 10 + 30 + 5 = 90 |
 
 Attach: `sync` 70, `close_round` 255 (when a round with allocations is due), `check_payout`
-140, `pay` 40 to 130 per payout (tier 3 already registered to tier 1 with registration), plus
-15 for itself. The first three are what the contract asks for itself (`this call needs N Tgas`):
-the gas it attaches, one `GAS_LINK` per link, the 15 Tgas it keeps (`GAS_MARGIN`) and 5 for its
-own work before the check: `sync` 20 + 10 + 20 + 15 + 5 = 70, `close_round` 2 x 20 + 10 + 5 + 180
-+ 15 + 5 = 255, `check_payout` 20 + 10 + 90 + 15 + 5 = 140. The mock-VM tests fail any receipt
-that attaches more gas than it has.
+140, `pay` 45 to 135 per payout (tier 2 or 3 already registered: 20 + 15 + 10; tier 1 with
+registration: 20 + 10 + 5 + 20 + 15 + 65), plus 15 for itself. The first three are what the
+contract asks for itself (`this call needs N Tgas`): the gas it attaches, one `GAS_LINK` per
+link, the 15 Tgas it keeps (`GAS_MARGIN`) and 5 for its own work before the check: `sync` 20 + 10
++ 20 + 15 + 5 = 70, `close_round` 2 x 20 + 10 + 5 + 180 + 15 + 5 = 255, `check_payout` 20 + 10 +
+90 + 15 + 5 = 140. The mock-VM tests fail any receipt that attaches more gas than it has.
 
-Measured in the mock VM (`tests/gas.rs`; host calls only: storage, logs, promises, not wasm
-instructions; storage writes flushed inside the call):
+No callback's work grows with the state beyond what the launch parameters bound. `on_filed` no
+longer moves the pay cursor: it did, reading one payout per id filed after it, and with 5 Tgas a
+backlog of about 40 ran it out of gas and left its payout `filing` for good (pre-lock review,
+finding 1); `pay` moves the cursor, with ample gas. `on_filed` (tiers 2 and 3), `on_voted` and
+`on_finalized` create no promise, so their static gas is all their own work: the wasm load
+(0.38 Tgas for 350 KB), the contract's root record, a payout or two, an event. The 5 Tgas of
+`on_finalized` are fixed by the 140 of `check_payout`; were it ever to run out, the retry it
+ends would count as in flight for 100 blocks and no longer. A receipt whose callback fails
+changes nothing else: every chain was built so that a lost callback leaves a state the next
+call can go on from.
 
-| Receipt | Host gas | Logs |
+Measured in the mock VM (`tests/gas.rs`) with a cold contract: the harness loads the contract
+from storage for every receipt, as the chain does, so every storage read and write is metered.
+(Until the pre-lock review one contract object served every receipt, and its collection caches
+hid the reads: the same backlog scan measured 0.14 Tgas warm and 4.4 cold.) Host calls only:
+storage, logs, promises with the gas they attach and the mock's link fees; not wasm instructions,
+trie nodes or the wasm load.
+
+| Receipt | Host gas, cold | Gets |
 |---|---|---|
-| `on_close`, the demo's largest round: 24 members and 6 guests, 10 gifts each (300 entries), every rule on | 10.5 Tgas | 9,647 bytes, detail 2 |
-| `on_close`, the worst: 58 members with 64-character names and 6 guests, 640 entries | 16.6 Tgas | 13,827 bytes, detail 1 |
-| `on_close`, an 8-member round | 3.0 Tgas | 2,283 bytes |
-| `on_registered`, `on_filed` (tier 1) | 39.3, 54.3 Tgas (almost all of it the gas they attach to the next step) | |
-| `on_voted`, `on_checked`, `on_policy` | 0.1-0.2 Tgas | |
+| `on_close`, the demo's largest round: 24 members and 6 guests, 10 gifts each (300 entries), every rule on | 11.8 Tgas; logs 9,647 bytes, detail 2 | 180 |
+| `on_close`, the worst: 58 members with 64-character names and 6 guests, 640 entries | 18.3 Tgas; logs 13,827 bytes, detail 1 | 180 |
+| `on_close`, an 8-member round | 3.3 Tgas; logs 2,283 bytes | 180 |
 
-`on_close` gets 180 Tgas, so the counting itself (wasm: the pipeline, JSON of the policy and the
-events, borsh of the round) has more than 160 Tgas at the worst size. On the staging deployment
-`on_close` burnt 5.0-8.4 Tgas for 8 members, and a whole close 12.2-15.8 (`docs/testnet-stage.md`,
-"Gas, measured"). `pay` with 300 Tgas files 3 first payouts (with registration).
+In the largest state the launch parameters allow
+(`every_callback_fits_its_gas_cold_in_the_largest_launch_state`: the testnet column of
+`sim/params.json`, 24 members with 64-character names, six fresh guests a round for 14 rounds who
+each keep a carry, notes of 80 bytes, approvals, rejections and retries on the way):
+
+| Callback | Host gas, cold | Gets | of which links and attached gas |
+|---|---|---|---|
+| `on_filed`, tiers 2 and 3 | 0.72 | 10 | none |
+| `on_filed`, tier 1 | 59.95 | 65 | 1 link + 40 attached |
+| `on_registered` | 44.76 | 50 | 1 link + 25 attached |
+| `on_voted` | 0.79 | 10 | none |
+| `on_checked` (the retry, the dearest path) | 79.10 | 90 | 2 links + 45 attached |
+| `on_finalized` | 0.66 | 5 | none |
+| `on_policy` | 0.61 | 20 | none |
+| `on_close` (with the sweep) | 25.09 | 180 | none |
+
+The test requires a callback without a promise to use at most a quarter of its gas here, and one
+with promises to keep at least 4 Tgas (on chain about 17 more per link). On the staging
+deployment `on_filed` burnt 2.00 Tgas in all (with the receipt's execution fee and a short cursor
+walk, 8 members), `on_close` 5.0-8.4 for 8 members and a whole close 12.2-15.8
+(`docs/testnet-stage.md`, "Gas, measured"). `pay` with 300 Tgas files 3 first payouts (with
+registration). On the cold measurement `on_filed` stays at 0.44 Tgas however many payouts were
+filed after it (`on_filed_does_not_grow_with_the_payouts_filed_after_it`; the code before the
+review used 4.4 Tgas there for 57).
 
 ## Tests
 
-`cargo test`: 72 tests, all through the real contract in the SDK's mock VM except the unit tests
+`cargo test`: 82 tests, all through the real contract in the SDK's mock VM except the unit tests
 of the pure arithmetic. `tests/common` holds a model of the Sputnik v2 DAO (2.3.1: bond, per-kind
 permissions, role thresholds, execution, removal deletes the proposal, Finalize expires or
 re-runs) and of the token; it executes every receipt the contract creates and feeds the answers
-(or failures) back into the callbacks, with the gas each receipt attached.
+(or failures) back into the callbacks, with the gas each receipt attached. Every receipt runs on
+the contract freshly loaded from storage, as on chain, and at its own block height (a call takes
+the next block, the receipts it creates run one block later).
 
 | File | Tests | What |
 |---|---|---|
@@ -399,10 +490,11 @@ re-runs) and of the token; it executes every receipt the contract creates and fe
 | `guests.rs` | 9 | signatures, nonces, malformed actions, seats, guest weight and both guest caps, no tier 1 for guests, record cleanup |
 | `counting.rs` | 6 | reciprocity, quadratic attribution, breadth, idle, eligibility at the close, the `points` event, contract = `math::count` on random rounds with every rule on |
 | `reputation.rs` | 6 | lazy decay = per-round decay, tiers from the reputation before the round, the round cap, strike arithmetic, batch closes of empty rounds, a newcomer reaching tier 1 |
-| `carry.rs` | 5 | carry, carry paid with the next share, lapse, budget capped by the DAO and the reserve, rounding dust |
+| `carry.rs` | 6 | carry, carry paid with the next share, lapse, budget capped by the DAO and the reserve and by what earlier rounds still owe, rounding dust |
 | `dao.rs` | 14 | the three tiers end to end, reject and remove (strikes), expiry and the bond, the failed-transfer retry, add_proposal / vote / registration failures and the pause, role and permission checks, member list rules, gas and balance limits of `pay`, stale callbacks, a close that waits or retries |
 | `flow.rs` | 1 | one round from thanks to a paid DAO proposal |
-| `gas.rs` | 4 | the largest and the worst close within gas and the log limit, every payout chain within its attached gas |
+| `gas.rs` | 6 | the largest and the worst close within gas and the log limit, every payout chain within its attached gas, every callback cold in the largest launch state, `on_filed` flat however many payouts were filed after it |
+| `liveness.rs` | 7 | the pre-lock review's regressions: a payout stuck in `filing` stops no later payout, pruning moves past payouts that are not final, a check racing a retry and an `Approved` read before the transfer failed book nothing, a lost retry holds a payout only for 100 blocks, a long catch-up spreads its logs over several calls, guests wait while the contract is low on NEAR |
 | `init.rs` | 6 | parameter checks, defaults, paused before the first sync, views before genesis, pruning, both launch columns of `sim/params.json` accepted |
 | `invariant.rs` | 2 | 600 random rounds (members joining and leaving, guests, a DAO running low and failing, council votes): `audit()` after every round, and the events alone rebuild every reputation and payout status |
 | `golden.rs` | 1 | every `sim/golden/*.json` (6 vectors, 61 rounds) to the unit; skipped with a message when there are none |

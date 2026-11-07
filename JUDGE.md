@@ -100,7 +100,7 @@ Measured on a 4-core Intel laptop (macOS 15): <!-- FINAL: re-measure before subm
 
 ```sh
 node --test 'web/test/*.test.mjs'      # 73 tests; Node 20+, no install; about 6 seconds
-(cd contract && cargo test)           # 72 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build 13 minutes, tests under 1 second
+(cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build 13 minutes, tests under 1 second
 (cd token && cargo test)              # 6 tests (NEP-141, storage, fixed supply); cold build 11 minutes
 python3 sim/hat_tip_sim.py --check    # golden vectors, replay and launch parameters reproduced; about 2 seconds
 scripts/judge-checks.sh               # 14 read-only checks of the live deployment; about 10 seconds
