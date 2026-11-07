@@ -119,3 +119,41 @@ fn rounding_dust_stays_in_the_dao_and_in_the_books() {
     assert_eq!(a.budgets.0, a.planned.0 + a.dust.0);
     w.assert_audit();
 }
+
+#[test]
+fn what_earlier_rounds_still_owe_comes_off_the_budget() {
+    let mut c = cfg();
+    c.reserve = near_sdk::json_types::U128(10 * USD);
+    c.min_payout = near_sdk::json_types::U128(5 * USD);
+    let mut w = World::with(c);
+    let m = members();
+    // Round 1: m1 117 tUSD (tier 3, waits for the council), m2 3 (carried).
+    w.at(1, 100);
+    w.allocate(&m[0], &[(&m[1], 39), (&m[2], 1)]);
+    w.close_through(1);
+    let p1 = w.round_payouts(1);
+    assert_eq!(p1.iter().map(|x| (x.amount.0, x.tier)).collect::<Vec<_>>(), vec![(117 * USD, 3)]);
+    assert_eq!(w.member(&m[2]).carry.0, 3 * USD);
+    w.pay_all();
+    // The DAO holds 150: 117 still owed to m1, 3 carried for m2, 10 reserve, 20 free.
+    w.dao.balances.insert(DAO.into(), 150 * USD);
+    w.at(2, 100);
+    w.allocate(&m[0], &[(&m[3], 30)]);
+    w.close_through(2);
+    assert_eq!(w.round(2).unwrap().budget.0, 20 * USD);
+    assert_eq!(w.round_payouts(2)[0].amount.0, 20 * USD);
+    // Both paid and booked: only the carry is still owed.
+    w.pay_all();
+    for p in [p1[0].id, w.round_payouts(2)[0].id] {
+        w.vote(&council()[0], p, "VoteApprove").unwrap();
+        w.vote(&council()[1], p, "VoteApprove").unwrap();
+        assert_eq!(w.check(p), hat_tip::types::Status::Paid);
+    }
+    assert_eq!(w.dao.balance(DAO), 13 * USD);
+    w.dao.balances.insert(DAO.into(), 100 * USD);
+    w.at(3, 100);
+    w.allocate(&m[0], &[(&m[4], 30)]);
+    w.close_through(3);
+    assert_eq!(w.round(3).unwrap().budget.0, 87 * USD);
+    w.assert_audit();
+}

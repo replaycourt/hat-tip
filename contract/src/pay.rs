@@ -5,18 +5,22 @@ use crate::dao::{self, Seen};
 use crate::events::*;
 use crate::math;
 use crate::types::*;
-use crate::{HatTip, HatTipExt};
+use crate::{HatTip, HatTipExt, free_balance, remaining_gas};
 use near_sdk::json_types::U128;
-use near_sdk::serde_json::json;
+use near_sdk::serde_json::{Value, json};
 use near_sdk::{Gas, NearToken, Promise, PromiseOrValue, env, near};
 
-fn callback(method: &str, payout: u64, gas: Gas) -> Promise {
+fn callback_with(method: &str, args: Value, gas: Gas) -> Promise {
     Promise::new(env::current_account_id()).function_call(
         method,
-        json!({ "payout": payout }).to_string().into_bytes(),
+        args.to_string().into_bytes(),
         NearToken::from_yoctonear(0),
         gas,
     )
+}
+
+fn callback(method: &str, payout: u64, gas: Gas) -> Promise {
+    callback_with(method, json!({ "payout": payout }), gas)
 }
 
 /// `on_filed`: its own work, and for tier 1 the vote and its callback.
@@ -24,7 +28,7 @@ pub fn gas_on_filed(tier: u8) -> Gas {
     if tier == 1 {
         GAS_OWN.saturating_add(GAS_LINK).saturating_add(GAS_ACT_PROPOSAL).saturating_add(GAS_ON_VOTED)
     } else {
-        GAS_OWN
+        GAS_ON_FILED
     }
 }
 
@@ -49,16 +53,6 @@ pub fn gas_on_checked() -> Gas {
         .saturating_add(GAS_STORAGE_DEPOSIT)
         .saturating_add(GAS_ACT_PROPOSAL)
         .saturating_add(GAS_ON_FINALIZED)
-}
-
-/// Balance above the storage the contract's state needs.
-fn free_balance() -> u128 {
-    let locked = env::storage_usage() as u128 * env::storage_byte_cost().as_yoctonear();
-    env::account_balance().as_yoctonear().saturating_sub(locked)
-}
-
-fn remaining_gas() -> Gas {
-    env::prepaid_gas().saturating_sub(env::used_gas())
 }
 
 #[near]
@@ -122,14 +116,14 @@ impl HatTip {
         let Some(p) = self.payouts.get(&payout).cloned().filter(|p| p.status == Status::Filing) else { return };
         let mut logs = Logs::new();
         if !ok {
-            self.set_status(payout, Status::Planned);
+            self.replan(payout);
             self.pause("storage_deposit on the token failed", &mut logs);
         } else {
             if let Some(a) = self.accounts.get_mut(&p.receiver) {
                 a.registered = true;
             }
             if free_balance() < self.bond + FLOAT_MIN.as_yoctonear() {
-                self.set_status(payout, Status::Planned);
+                self.replan(payout);
             } else {
                 self.file(payout, &p).detach();
             }
@@ -137,6 +131,9 @@ impl HatTip {
         logs.emit();
     }
 
+    /// Its work does not grow with the state: tiers 2 and 3 give it only `GAS_ON_FILED`. (It
+    /// used to move the pay cursor too, reading one payout per id filed after this one: a long
+    /// backlog ran it out of gas and left the payout `filing` for good.)
     #[private]
     pub fn on_filed(&mut self, payout: u64) {
         let id = env::promise_result_checked(0, 64).ok().and_then(|b| near_sdk::serde_json::from_slice::<u64>(&b).ok());
@@ -144,7 +141,7 @@ impl HatTip {
         let mut logs = Logs::new();
         match id {
             None => {
-                self.set_status(payout, Status::Planned);
+                self.replan(payout);
                 self.pause("add_proposal failed: the DAO role, the bond or the policy changed", &mut logs);
             }
             Some(id) => {
@@ -170,7 +167,6 @@ impl HatTip {
                 }
             }
         }
-        self.advance_pay_cursor();
         logs.emit();
     }
 
@@ -188,9 +184,10 @@ impl HatTip {
         logs.emit();
     }
 
-    /// Reads a filed payout's DAO proposal and records the outcome: `paid` (Approved),
-    /// `rejected` or `removed` (both a strike), `failed`, or `expired` (after finalizing it in
-    /// the DAO, which returns the bond). A payout still in progress stays as it is.
+    /// Reads a filed payout's DAO proposal and records the outcome: `paid` (Approved, seen
+    /// twice at least `SETTLE_BLOCKS` apart), `rejected` or `removed` (both a strike), `failed`,
+    /// or `expired` (after finalizing it in the DAO, which returns the bond). A payout still in
+    /// progress stays as it is.
     pub fn check_payout(&mut self, payout: u64) -> PromiseOrValue<CheckOutcome> {
         let p = self.payouts.get(&payout).cloned().unwrap_or_else(|| env::panic_str("no such payout (or pruned)"));
         let (Some(id), false) = (p.proposal, p.status.is_final()) else {
@@ -209,19 +206,29 @@ impl HatTip {
                     NearToken::from_yoctonear(0),
                     GAS_GET_PROPOSAL,
                 )
-                .then(callback("on_checked", payout, gas_on_checked())),
+                .then(callback_with(
+                    "on_checked",
+                    json!({"payout": payout, "asked": env::block_height()}),
+                    gas_on_checked(),
+                )),
         )
     }
 
+    /// `asked`: the block of the `check_payout` that read the proposal.
     #[private]
-    pub fn on_checked(&mut self, payout: u64) -> PromiseOrValue<CheckOutcome> {
+    pub fn on_checked(&mut self, payout: u64, asked: u64) -> PromiseOrValue<CheckOutcome> {
         let answer = env::promise_result_checked(0, MAX_RESULT_BYTES).ok();
         let Some(p) = self.payouts.get(&payout).cloned() else {
             env::panic_str("no such payout");
         };
         let same = PromiseOrValue::Value(CheckOutcome { payout, status: p.status, changed: false });
         let (Some(id), false) = (p.proposal, p.status.is_final()) else { return same };
+        // A retry is in flight, or the answer was read before the last Finalize settled.
+        if asked < p.settle_at {
+            return same;
+        }
         let Some(seen) = answer.and_then(|b| dao::parse_proposals(&b, id)) else { return same };
+        let now = env::block_height();
         let finalize = |s: &Self| {
             let kind = dao::proposal_kind(p.tier, &s.cfg.token, &p.receiver, p.amount);
             Promise::new(s.cfg.dao.clone()).function_call(
@@ -234,7 +241,18 @@ impl HatTip {
         let to = match &seen {
             Seen::Missing => Status::Removed,
             Seen::Found { status, submission_ns } => match status.as_str() {
-                "Approved" => Status::Paid,
+                // Sputnik shows Approved while the transfer still runs; a failed transfer turns
+                // it Failed in a later block. Paid on a second Approved, asked for at least
+                // SETTLE_BLOCKS after the first was seen.
+                "Approved" if p.approved_at > 0 && asked >= p.approved_at.saturating_add(SETTLE_BLOCKS) => Status::Paid,
+                "Approved" => {
+                    if p.approved_at == 0 {
+                        let mut q = p.clone();
+                        q.approved_at = now;
+                        self.payouts.insert(payout, q);
+                    }
+                    return same;
+                }
                 "Rejected" => Status::Rejected,
                 "Removed" => Status::Removed,
                 "Expired" => Status::Expired,
@@ -247,8 +265,11 @@ impl HatTip {
                 "Failed" => {
                     // The transfer failed, most likely because the receiver left the token. Register
                     // it again and finalize: the DAO re-runs an approved proposal (once).
+                    // Until on_finalized lands (or RETRY_BLOCKS pass), answers change nothing.
                     let mut q = p.clone();
                     q.retried = true;
+                    q.approved_at = 0;
+                    q.settle_at = now.saturating_add(RETRY_BLOCKS);
                     self.payouts.insert(payout, q);
                     let chain = Promise::new(self.cfg.token.clone())
                         .function_call(
@@ -279,10 +300,16 @@ impl HatTip {
     }
 
     /// After the contract's `Finalize` (of an expired proposal, or of a failed one it retries).
-    /// The outcome is read by the next `check_payout`, from the DAO's own record.
+    /// Ends the retry in flight; the outcome is read by a `check_payout` asked for at least
+    /// `SETTLE_BLOCKS` later (the DAO's own callback runs after this one), from the DAO's record.
     #[private]
     pub fn on_finalized(&mut self, payout: u64) -> CheckOutcome {
         let p = self.payouts.get(&payout).cloned().unwrap_or_else(|| env::panic_str("no such payout"));
+        if !p.status.is_final() {
+            let mut q = p.clone();
+            q.settle_at = env::block_height().saturating_add(SETTLE_BLOCKS);
+            self.payouts.insert(payout, q);
+        }
         CheckOutcome { payout, status: p.status, changed: false }
     }
 }
@@ -314,12 +341,19 @@ impl HatTip {
         self.payouts.insert(payout, p);
     }
 
-    /// Moves the pay cursor past the payouts that are neither planned nor filing.
+    /// Puts a payout whose filing surely did not happen back to planned, for the next `pay`.
+    fn replan(&mut self, payout: u64) {
+        self.set_status(payout, Status::Planned);
+        self.pay_cursor = self.pay_cursor.min(payout);
+    }
+
+    /// Moves the pay cursor to the first planned payout. Only `pay` calls it, with ample gas: a
+    /// payout that stays filing (its chain lost) cannot hold the cursor, and nothing behind it.
     fn advance_pay_cursor(&mut self) {
         let end = self.next_payout.min(self.pay_cursor.saturating_add(PAY_SCAN));
         while self.pay_cursor < end {
             match self.payouts.get(&self.pay_cursor) {
-                Some(p) if matches!(p.status, Status::Planned | Status::Filing) => break,
+                Some(p) if p.status == Status::Planned => break,
                 _ => self.pay_cursor += 1,
             }
         }
@@ -341,6 +375,11 @@ impl HatTip {
             _ => &mut self.totals.failed,
         };
         slot.0 += p.amount;
+        // A payout the prune moved past (held) is pruned as soon as it is final.
+        if let Some(i) = self.held.iter().position(|x| *x == payout) {
+            self.held.swap_remove(i);
+            self.payouts.remove(&payout);
+        }
         let mut logs = Logs::new();
         let proposal = p.proposal.unwrap_or(0);
         let kind = match to {

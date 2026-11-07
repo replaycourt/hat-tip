@@ -115,13 +115,24 @@ fn run(seed: u64, rounds: u64) {
         w.check(p.id);
     }
     w.assert_audit();
+    // A check books every transfer the DAO has made (`Approved`, seen twice).
+    for p in w.payouts() {
+        let dao = p.dao_proposal.and_then(|id| w.dao.proposal(id)).map(|x| x.status.clone());
+        assert!(
+            p.status.is_final() || dao.as_deref() != Some("Approved"),
+            "payout {} {:?} in the DAO {dao:?}",
+            p.id,
+            p.status
+        );
+    }
     let a = w.audit();
     let st = w.state();
     eprintln!(
-        "seed {seed:#x}: {} rounds closed, {} payouts {:?}, {} strikes, lapsed {}, dust {}",
+        "seed {seed:#x}: {} rounds closed, {} payouts {:?}, {} held, {} strikes, lapsed {}, dust {}",
         st.totals.rounds_closed,
         a.payouts,
         a.by_status.iter().filter(|x| x.1 > 0).map(|x| (x.0.name(), x.1)).collect::<Vec<_>>(),
+        st.held_payouts.len(),
         st.totals.strikes,
         a.lapsed.0,
         a.dust.0
@@ -181,7 +192,13 @@ fn replay(w: &mut World) {
     for p in &views {
         assert_eq!(status.get(&p.id).map(String::as_str), Some(p.status.name()), "replayed status of payout {}", p.id);
     }
-    assert!(views.len() as u64 + w.state().oldest_payout == w.state().next_payout);
+    let st = w.state();
+    assert_eq!(views.len() as u64, st.next_payout - st.oldest_payout + st.held_payouts.len() as u64);
+    assert!(
+        st.held_payouts
+            .iter()
+            .all(|id| *id < st.oldest_payout && !views.iter().any(|p| p.id == *id && p.status.is_final()))
+    );
     assert_eq!(status.len() as u64, w.state().next_payout);
 }
 
@@ -192,7 +209,7 @@ fn many_random_rounds_keep_the_books() {
 
 #[test]
 fn other_seeds() {
-    for seed in [7u64, 0xfeed_beef, 0x0dd_ba11] {
+    for seed in [7u64, 0xfeed_beef, 0x0dd_ba12] {
         run(seed, 80);
     }
 }

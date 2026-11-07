@@ -519,6 +519,12 @@ pub fn created_calls() -> Vec<Call> {
 pub struct World {
     pub c: HatTip,
     pub now_ms: u64,
+    /// The block height: a top-level call takes the next block, and every batch of receipts it
+    /// creates runs one block later.
+    pub height: u64,
+    /// Reload the contract from storage for every receipt (the default), as on chain: no
+    /// collection cache survives from one receipt to the next, so every storage read is metered.
+    pub cold: bool,
     pub dao: Dao,
     pub logs: Vec<String>,
     pub last_logs: Vec<String>,
@@ -535,6 +541,9 @@ pub struct World {
     pub auto_run: bool,
     /// The most host gas and log bytes any execution of a method used, by method.
     pub metered: BTreeMap<String, (u64, usize)>,
+    /// Every callback executed: `(method, payout argument, host gas used)`.
+    pub gas_log: Vec<(String, u64, u64)>,
+    last_gas: u64,
 }
 
 impl World {
@@ -564,6 +573,8 @@ impl World {
         let mut w = Self {
             c,
             now_ms,
+            height: 1,
+            cold: true,
             dao: Dao::new(1_000_000 * USD),
             logs: Vec::new(),
             last_logs: Vec::new(),
@@ -575,6 +586,8 @@ impl World {
             last_check: None,
             auto_run: true,
             metered: BTreeMap::new(),
+            gas_log: Vec::new(),
+            last_gas: 0,
         };
         w.gather_logs();
         w
@@ -591,6 +604,7 @@ impl World {
             .predecessor_account_id(who.clone())
             .signer_account_id(who.clone())
             .block_timestamp(self.now_ms * 1_000_000)
+            .block_height(self.height)
             .attached_deposit(NearToken::from_yoctonear(deposit))
             .account_balance(NearToken::from_yoctonear(self.balance))
             .prepaid_gas(Gas::from_gas(gas));
@@ -619,10 +633,21 @@ impl World {
         results: Vec<PromiseResult>,
         f: impl FnOnce(&mut HatTip) -> R,
     ) -> R {
+        if self.cold {
+            self.c.flush();
+            near_sdk::env::state_write(&self.c);
+        }
         self.context(who, 0, gas, results);
+        if self.cold {
+            self.c = near_sdk::env::state_read().expect("the contract's state");
+        }
         let r = f(&mut self.c);
         self.c.flush();
+        if self.cold {
+            near_sdk::env::state_write(&self.c);
+        }
         let used = near_sdk::env::used_gas().as_gas();
+        self.last_gas = used;
         self.gather_logs();
         let bytes: usize = self.last_logs.iter().map(|l| l.len()).sum();
         if !name.is_empty() {
@@ -637,6 +662,7 @@ impl World {
     }
 
     pub fn call<R>(&mut self, who: &AccountId, f: impl FnOnce(&mut HatTip) -> R) -> R {
+        self.height += 1;
         let gas = Gas::from_tgas(self.gas_tgas).as_gas();
         let r = self.exec(who, gas, Vec::new(), f);
         if self.auto_run {
@@ -653,7 +679,14 @@ impl World {
     /// Executes queued receipts until none are left: DAO and token calls in the model,
     /// callbacks in the contract with the answers they depend on.
     pub fn run(&mut self) {
-        while let Some(batch) = self.queue.pop_front() {
+        while self.step() {}
+    }
+
+    /// Executes the oldest batch of queued receipts (the ones one receipt created); false if
+    /// there was none.
+    pub fn step(&mut self) -> bool {
+        if let Some(batch) = self.queue.pop_front() {
+            self.height += 1;
             let mut results: BTreeMap<u64, Option<Vec<u8>>> = BTreeMap::new();
             for call in batch {
                 self.executed.push(call.clone());
@@ -682,11 +715,24 @@ impl World {
                 };
                 results.insert(call.index, r);
             }
+            true
+        } else {
+            false
         }
     }
 
     pub fn queued(&self) -> usize {
         self.queue.iter().map(|b| b.len()).sum()
+    }
+
+    /// Drops every queued receipt, as if they never ran (a chain lost to a failed callback).
+    pub fn drop_queue(&mut self) {
+        self.queue.clear();
+    }
+
+    /// Lets `n` blocks pass.
+    pub fn blocks(&mut self, n: u64) {
+        self.height += n;
     }
 
     fn callback(&mut self, call: &Call, results: Vec<PromiseResult>) {
@@ -708,7 +754,8 @@ impl World {
             "on_filed" => self.exec_named(&name, &me, gas, results, |c| c.on_filed(p)),
             "on_voted" => self.exec_named(&name, &me, gas, results, |c| c.on_voted(p)),
             "on_checked" => {
-                let out = self.exec_named(&name, &me, gas, results, |c| value(c.on_checked(p)));
+                let asked = args["asked"].as_u64().unwrap();
+                let out = self.exec_named(&name, &me, gas, results, |c| value(c.on_checked(p, asked)));
                 if let Some(o) = out {
                     self.last_check = Some(o);
                 }
@@ -719,6 +766,7 @@ impl World {
             }
             other => panic!("unexpected callback {other}"),
         }
+        self.gas_log.push((call.method.clone(), p, self.last_gas));
     }
 
     // ---- clock ---------------------------------------------------------------------------
@@ -822,13 +870,39 @@ impl World {
         }
     }
 
-    pub fn check(&mut self, id: u64) -> Status {
+    /// One `check_payout`.
+    pub fn check_once(&mut self, id: u64) -> Status {
         self.last_check = None;
         let out = self.call(&acc("anyone.testnet"), |c| value(c.check_payout(id)));
         if let Some(o) = out {
             self.last_check = Some(o);
         }
-        self.payout(id).status
+        // A held payout is pruned the moment it is final; its outcome is the last one seen.
+        match self.view(|c| c.payouts(id, 1)).pop() {
+            Some(p) => p.status,
+            None => self.last_check.as_ref().expect("payout").status,
+        }
+    }
+
+    /// `check_payout` as a keeper does it, a few blocks after whatever happened before; and
+    /// while the DAO shows the proposal `Approved` and the contract has not booked it yet, again
+    /// `SETTLE_BLOCKS` later (the contract books `paid` only on a second `Approved`).
+    pub fn check(&mut self, id: u64) -> Status {
+        self.blocks(SETTLE_BLOCKS);
+        let mut s = self.check_once(id);
+        for _ in 0..3 {
+            if s.is_final() {
+                break;
+            }
+            let approved =
+                self.payout(id).dao_proposal.and_then(|p| self.dao.proposal(p)).is_some_and(|p| p.status == "Approved");
+            if !approved {
+                break;
+            }
+            self.blocks(SETTLE_BLOCKS);
+            s = self.check_once(id);
+        }
+        s
     }
 
     /// A council member votes in the DAO on the payout's proposal.

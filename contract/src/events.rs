@@ -32,6 +32,27 @@ pub enum Kind {
     Struck,
 }
 
+const KINDS: [Kind; 18] = [
+    Kind::Synced,
+    Kind::Paused,
+    Kind::Joined,
+    Kind::Note,
+    Kind::Allocated,
+    Kind::RoundClosed,
+    Kind::Points,
+    Kind::PayoutPlanned,
+    Kind::Carry,
+    Kind::CarryLapsed,
+    Kind::Filed,
+    Kind::Approved,
+    Kind::Paid,
+    Kind::Rejected,
+    Kind::Expired,
+    Kind::Removed,
+    Kind::Failed,
+    Kind::Struck,
+];
+
 pub const NAMES: [&str; 18] = [
     "synced",
     "paused",
@@ -97,6 +118,15 @@ impl Logs {
         self.bytes += if self.entries[i].is_empty() { head(i).len() + TAIL.len() } else { 1 };
         self.bytes += entry.len();
         self.entries[i].push(entry);
+    }
+
+    /// Moves every entry of `other` into these logs.
+    pub fn append(&mut self, other: Logs) {
+        for (i, list) in other.entries.into_iter().enumerate() {
+            for e in list {
+                self.push_raw(KINDS[i], e);
+            }
+        }
     }
 
     pub fn emit(self) {

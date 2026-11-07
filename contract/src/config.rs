@@ -37,10 +37,18 @@ pub const LOG_BUDGET: usize = 15_000;
 pub const CLOSE_RETRY_MS: u64 = 120_000;
 /// Planned payouts `pay` looks at per call.
 pub const PAY_SCAN: u64 = 64;
-/// Guest records the cleanup sweep looks at per close.
+/// Guest records the cleanup sweep looks at per sweep.
 pub const GUEST_SWEEP: u32 = 8;
-/// Final payout records pruned per close once they are older than `log_keep` rounds.
-pub const PAYOUT_PRUNE: u32 = 16;
+/// Payout records the prune looks at per sweep: as many as one round can plan.
+pub const PAYOUT_PRUNE: u32 = MAX_PARTICIPANTS;
+/// Payouts older than `log_keep` rounds without a final status that the prune moves past and
+/// keeps (`state().held_payouts`); with this many held, pruning waits for one to finish.
+pub const PAYOUT_HELD: usize = 64;
+/// Blocks between a DAO answer and the next one that may book `paid`, and after a `Finalize`
+/// before an answer counts again (Sputnik turns `Approved` into `Failed` two blocks after the vote).
+pub const SETTLE_BLOCKS: u64 = 3;
+/// How long a retry of a failed transfer counts as in flight if its `on_finalized` never lands.
+pub const RETRY_BLOCKS: u64 = 100;
 /// Payout ids kept in an account record for `member()`.
 pub const MEMBER_PAYOUTS_KEEP: usize = 32;
 
@@ -49,10 +57,15 @@ pub const MEMBER_PAYOUTS_KEEP: usize = 32;
 pub const REGISTRATION_DEPOSIT: NearToken = NearToken::from_yoctonear(1_250_000_000_000_000_000_000);
 /// Balance the contract keeps free above its storage before it attaches a bond or a deposit.
 pub const FLOAT_MIN: NearToken = NearToken::from_millinear(50);
+/// Free balance below which guest actions (which take storage the contract pays) are refused.
+pub const GUEST_FLOOR: NearToken = NearToken::from_near(1);
 
-// Gas. A callback gets exactly its static gas. Creating `call.then(callback)` costs about 19 Tgas
-// in receipt fees (two function-call receipts and one data receipt, send and execution), which
-// the creator pays on top of the static gas it attaches; `GAS_LINK` is that fee per link.
+// Gas. A callback gets exactly its static gas. Creating `call.then(callback)` costs receipt fees
+// (two function-call receipts and one data receipt, send and execution) that the creator pays on
+// top of the static gas it attaches; `GAS_LINK` is that fee per link. On chain it is about 2.5
+// Tgas (function call 0.2 + 0.78, since protocol 66); the SDK's mock VM charges the old fees,
+// about 19.1 Tgas, and fails a receipt that attaches more than it has, so the constant covers
+// those. On chain every link therefore leaves its creator about 17 Tgas more than it needs.
 pub const GAS_LINK: Gas = Gas::from_tgas(20);
 /// A small callback's own work (storage, events).
 pub const GAS_OWN: Gas = Gas::from_tgas(5);
@@ -64,7 +77,11 @@ pub const GAS_STORAGE_DEPOSIT: Gas = Gas::from_tgas(10);
 pub const GAS_ADD_PROPOSAL: Gas = Gas::from_tgas(15);
 /// A vote that executes the transfer needs at least 25 Tgas attached (testnet probe).
 pub const GAS_ACT_PROPOSAL: Gas = Gas::from_tgas(30);
-pub const GAS_ON_VOTED: Gas = Gas::from_tgas(5);
+/// `on_voted` and `on_filed` of tiers 2 and 3 create no promise: their gas is all their own
+/// work (a cold contract load, a few storage reads and writes, an event), about 2 Tgas on chain
+/// in the largest launch state; `tests/gas.rs` measures their host part cold.
+pub const GAS_ON_VOTED: Gas = Gas::from_tgas(10);
+pub const GAS_ON_FILED: Gas = Gas::from_tgas(10);
 pub const GAS_GET_PROPOSAL: Gas = Gas::from_tgas(10);
 pub const GAS_ON_FINALIZED: Gas = Gas::from_tgas(5);
 /// Gas the DAO gets to run the tier-2 `ft_transfer` it calls on the token.

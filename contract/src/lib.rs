@@ -47,10 +47,13 @@ pub struct HatTip {
     /// A round waiting for the DAO's answer, and since when.
     pub(crate) closing: Option<(u64, u64)>,
     pub(crate) next_payout: u64,
-    /// No payout below this id is planned or filing.
+    /// No payout below this id is planned (a payout put back to planned moves it back).
     pub(crate) pay_cursor: u64,
-    /// Payouts below this id are pruned.
+    /// Payouts below this id are pruned, except the ones in `held`.
     pub(crate) prune_cursor: u64,
+    /// Payouts below `prune_cursor` without a final status yet (at most `PAYOUT_HELD`); each is
+    /// pruned when it gets one.
+    pub(crate) held: Vec<u64>,
     pub(crate) guest_cursor: u32,
     pub(crate) totals: Totals,
     /// Accounts with a carry.
@@ -60,6 +63,16 @@ pub struct HatTip {
     pub(crate) payouts: LookupMap<u64, Payout>,
     /// Guest records, for the cleanup sweep.
     pub(crate) guests: Vector<AccountId>,
+}
+
+/// Balance above the storage the contract's state needs.
+pub(crate) fn free_balance() -> u128 {
+    let locked = env::storage_usage() as u128 * env::storage_byte_cost().as_yoctonear();
+    env::account_balance().as_yoctonear().saturating_sub(locked)
+}
+
+pub(crate) fn remaining_gas() -> near_sdk::Gas {
+    env::prepaid_gas().saturating_sub(env::used_gas())
 }
 
 /// The exact text a browser key signs for `act`.
@@ -88,6 +101,7 @@ impl HatTip {
             next_payout: 0,
             pay_cursor: 0,
             prune_cursor: 0,
+            held: Vec::new(),
             guest_cursor: 0,
             totals: Totals::default(),
             carries: Vec::new(),
@@ -285,6 +299,11 @@ impl HatTip {
     fn guest_action(&mut self, guest: &AccountId, action: Action, logs: &mut Logs) -> Result<(), String> {
         let round = action.round();
         let mut log = self.round_gate(round)?;
+        // Every guest action takes storage, which the contract pays.
+        if free_balance() < GUEST_FLOOR.as_yoctonear() {
+            let me = env::current_account_id();
+            return Err(format!("the contract has less than 1 NEAR free: guests can act once {me} gets NEAR"));
+        }
         // Check everything before the seat is taken, so a refused action leaves no seat behind.
         let given = match &action {
             Action::Join { note, .. } => {

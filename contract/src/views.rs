@@ -33,8 +33,11 @@ pub struct StateView {
     /// Payouts filing, filed or approved (in the DAO, no final status yet).
     pub open_payouts: u64,
     pub next_payout: u64,
-    /// Payouts below this id are pruned from storage.
+    /// Payouts below this id are pruned from storage, except `held_payouts`.
     pub oldest_payout: u64,
+    /// Payouts older than `log_keep` rounds without a final status yet, kept until they have
+    /// one (`payouts()` lists them too).
+    pub held_payouts: Vec<u64>,
     pub totals: Totals,
 }
 
@@ -114,7 +117,8 @@ pub struct AuditView {
     pub balanced: bool,
     /// Points equal the sum of their attributions, in total and in every kept round.
     pub points_attributed: bool,
-    /// The payouts by status add up to every payout planned, and the kept ones agree.
+    /// The payouts by status add up to every payout planned, the kept ones agree, and the ones
+    /// without a final status add up to what the totals leave open.
     pub statuses_ok: bool,
     /// Every kept payout past filing has a DAO proposal id.
     pub filed_have_ids: bool,
@@ -199,6 +203,7 @@ impl HatTip {
             open_payouts: s[Status::Filing as usize] + s[Status::Filed as usize] + s[Status::Approved as usize],
             next_payout: self.next_payout,
             oldest_payout: self.prune_cursor,
+            held_payouts: self.held.clone(),
             totals: self.totals.clone(),
         }
     }
@@ -273,10 +278,14 @@ impl HatTip {
         }
     }
 
-    /// Payouts from id `from`, at most `limit` (up to 100), skipping pruned ones.
+    /// Payouts with ids from `from` to `from + limit` (up to 100), skipping pruned ones.
     pub fn payouts(&self, from: u64, limit: u64) -> Vec<PayoutView> {
         let end = self.next_payout.min(from.saturating_add(limit.min(100)));
-        (from.max(self.prune_cursor)..end).filter_map(|id| self.payout_view(id)).collect()
+        let mut ids: Vec<u64> =
+            self.held.iter().copied().filter(|id| *id >= from && *id < end && *id < self.prune_cursor).collect();
+        ids.sort_unstable();
+        ids.extend(from.max(self.prune_cursor)..end);
+        ids.into_iter().filter_map(|id| self.payout_view(id)).collect()
     }
 
     /// The account's auto and co-sign limits for the next close.
@@ -308,14 +317,20 @@ impl HatTip {
         let mut statuses_ok = counted == self.next_payout;
         let mut filed_have_ids = true;
         let mut kept = [0u64; 9];
-        for id in self.prune_cursor..self.next_payout {
+        let mut open = 0u128;
+        for id in self.held.iter().copied().chain(self.prune_cursor..self.next_payout) {
             if let Some(p) = self.payouts.get(&id) {
                 kept[p.status as usize] += 1;
+                if !p.status.is_final() {
+                    open += p.amount;
+                }
                 if !matches!(p.status, Status::Planned | Status::Filing) {
                     filed_have_ids &= p.proposal.is_some();
                 }
             }
         }
+        // What the payouts without a final status add up to, from the records and the totals.
+        statuses_ok &= open == t.open();
         for (i, s) in Status::ALL.iter().enumerate() {
             // Pruned payouts are final; every non-final one is still kept.
             if !s.is_final() {

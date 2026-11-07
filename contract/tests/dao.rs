@@ -2,6 +2,7 @@
 mod common;
 
 use common::*;
+use hat_tip::config::SETTLE_BLOCKS;
 use hat_tip::types::Status;
 use near_sdk::AccountId;
 use near_sdk::base64::Engine;
@@ -156,10 +157,15 @@ fn a_failed_transfer_is_retried_once_after_registering_the_receiver() {
     w.vote(&council()[1], t3, "VoteApprove").unwrap();
     assert_eq!(prop(&mut w, t3).status, "Failed");
     w.dao.calls.clear();
-    assert_eq!(w.check(t3), Status::Filed, "retried: registered again and finalized");
+    assert_eq!(w.check_once(t3), Status::Filed, "retried: registered again and finalized");
     assert_eq!(w.dao.calls, vec!["get_proposals", "storage_deposit", "act_proposal"]);
     assert_eq!(prop(&mut w, t3).status, "Approved");
-    assert_eq!(w.check(t3), Status::Paid);
+    assert_eq!(w.check_once(t3), Status::Filed, "asked before the Finalize settled: no answer counts");
+    w.blocks(SETTLE_BLOCKS);
+    assert_eq!(w.check_once(t3), Status::Filed, "the first Approved is only noted");
+    assert_eq!(w.check_once(t3), Status::Filed, "a second one too soon changes nothing");
+    w.blocks(SETTLE_BLOCKS);
+    assert_eq!(w.check_once(t3), Status::Paid);
     assert_eq!(w.dao.balance(m[2].as_str()), 48 * USD);
 }
 

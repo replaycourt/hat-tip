@@ -5,7 +5,7 @@ use crate::dao::{self, PolicyFacts};
 use crate::events::*;
 use crate::math::{self, Entry, Role, Rules};
 use crate::types::*;
-use crate::{HatTip, HatTipExt};
+use crate::{HatTip, HatTipExt, remaining_gas};
 use near_sdk::json_types::{U64, U128};
 use near_sdk::serde_json::{self, json};
 use near_sdk::{AccountId, NearToken, Promise, PromiseOrValue, env, near};
@@ -58,9 +58,10 @@ impl HatTip {
     }
 
     /// Closes due rounds in order. Rounds nobody gave in close at once (up to `max_catchup` per
-    /// call). The first due round with allocations is counted after the DAO answers: the call
-    /// then returns the promise of `get_policy` and `ft_balance_of(dao)`, joined into
-    /// `on_close(round)`, whose `CloseOutcome` becomes the call's result.
+    /// call, and no more than fit below `LOG_BUDGET` in the call's logs). The first due round
+    /// with allocations is counted after the DAO answers: the call then returns the promise of
+    /// `get_policy` and `ft_balance_of(dao)`, joined into `on_close(round)`, whose
+    /// `CloseOutcome` becomes the call's result.
     pub fn close_round(&mut self) -> PromiseOrValue<CloseOutcome> {
         let now = env::block_timestamp_ms();
         let mut logs = Logs::new();
@@ -115,13 +116,17 @@ impl HatTip {
                 promise = Some(policy.and(balance).then(cb));
                 break;
             }
-            if closed >= self.cfg.max_catchup as u32 {
+            if closed >= self.cfg.max_catchup as u32 || (closed > 0 && remaining_gas() < GAS_MARGIN) {
                 break;
             }
-            self.close_empty(r, &mut logs);
+            // The next call closes the rest when one more round would not fit in the logs.
+            if !self.close_empty(r, &mut logs, closed == 0) {
+                break;
+            }
             closed += 1;
         }
-        if closed > 0 {
+        // With `on_close` scheduled the call keeps only GAS_MARGIN; `on_close` sweeps.
+        if closed > 0 && promise.is_none() {
             self.sweep();
         }
         logs.emit();
@@ -224,8 +229,44 @@ impl HatTip {
     }
 
     /// Closes a round nobody gave in: no budget, no payouts; reputation decays (lazily) and
-    /// carries may lapse.
-    fn close_empty(&mut self, r: u64, logs: &mut Logs) {
+    /// carries may lapse. Unless it is the call's `first` round, it changes nothing and returns
+    /// false when its events would take `logs` past `LOG_BUDGET`. (One round always fits: at
+    /// most `MAX_PARTICIPANTS` carries lapse in one; else it would log `round_closed` alone.)
+    fn close_empty(&mut self, r: u64, logs: &mut Logs, first: bool) -> bool {
+        let keep = self.cfg.carry_rounds as u64;
+        let mut due = Vec::new();
+        for a in &self.carries {
+            if let Some(acct) = self.accounts.get(a)
+                && acct.carry > 0
+                && r.saturating_sub(acct.carry_since) >= keep
+            {
+                due.push((a.clone(), acct.carry, acct.carry_since));
+            }
+        }
+        let event = |detail: u8| RoundClosedEvent {
+            round: r,
+            empty: true,
+            members: self.members.len() as u32,
+            dao_balance: U128(0),
+            budget: U128(0),
+            points: 0,
+            dust: U128(0),
+            payouts: 0,
+            carries: 0,
+            detail,
+        };
+        let mut trial = Logs::new();
+        trial.push(Kind::RoundClosed, &event(2));
+        for (a, amount, since) in &due {
+            trial.push(Kind::CarryLapsed, &CarryEvent { round: r, account: a, amount: U128(*amount), since: *since });
+        }
+        if logs.bytes() + trial.bytes() > LOG_BUDGET {
+            if !first {
+                return false;
+            }
+            trial = Logs::new();
+            trial.push(Kind::RoundClosed, &event(0));
+        }
         let mut lapses = Vec::new();
         self.lapse_carries(r, &mut lapses);
         if let Some(mut log) = self.rounds.get(&r).cloned() {
@@ -233,24 +274,8 @@ impl HatTip {
             self.rounds.insert(r, log);
         }
         self.finish_round(r);
-        logs.push(
-            Kind::RoundClosed,
-            &RoundClosedEvent {
-                round: r,
-                empty: true,
-                members: self.members.len() as u32,
-                dao_balance: U128(0),
-                budget: U128(0),
-                points: 0,
-                dust: U128(0),
-                payouts: 0,
-                carries: 0,
-                detail: 2,
-            },
-        );
-        for (a, amount, since) in &lapses {
-            logs.push(Kind::CarryLapsed, &CarryEvent { round: r, account: a, amount: U128(*amount), since: *since });
-        }
+        logs.append(trial);
+        true
     }
 
     fn finish_round(&mut self, r: u64) {
@@ -318,8 +343,14 @@ impl HatTip {
         }
         let total: u128 = points.iter().sum();
 
-        // 7. Budget.
-        let budget = if total == 0 { 0 } else { c.round_budget.0.min(dao_balance.saturating_sub(c.reserve.0)) };
+        // 7. Budget: what the DAO holds beyond the reserve and beyond what earlier rounds still
+        // owe (payouts without a final status, and carries).
+        let owed = self.totals.open().saturating_add(self.totals.carry.0);
+        let budget = if total == 0 {
+            0
+        } else {
+            c.round_budget.0.min(dao_balance.saturating_sub(c.reserve.0).saturating_sub(owed))
+        };
 
         // 6, 8, 9. Reputation, shares, carry and tiers, receiver by receiver in account order.
         let mut order: Vec<usize> = (0..k).filter(|&i| points[i] > 0).collect();
@@ -393,6 +424,8 @@ impl HatTip {
                     points: p.points,
                     givers: p.givers,
                     retried: false,
+                    settle_at: 0,
+                    approved_at: 0,
                 },
             );
             self.totals.by_status[0] += 1;
@@ -516,11 +549,13 @@ impl HatTip {
     }
 
     /// Storage hygiene after a close: deletes guest records with nothing left in them and final
-    /// payouts older than `log_keep` rounds. Neither changes any number.
+    /// payouts older than `log_keep` rounds. Neither changes any number. A payout that old
+    /// without a final status (one whose chain was lost stays `filing` for good) is held, not
+    /// waited for. Stops early when the gas left falls to `GAS_MARGIN`.
     pub(crate) fn sweep(&mut self) {
         let d = self.cfg.decay_bp as u128;
         let mut looked = 0;
-        while looked < GUEST_SWEEP && !self.guests.is_empty() {
+        while looked < GUEST_SWEEP && !self.guests.is_empty() && remaining_gas() > GAS_MARGIN {
             looked += 1;
             if self.guest_cursor >= self.guests.len() {
                 self.guest_cursor = 0;
@@ -542,18 +577,25 @@ impl HatTip {
             }
         }
         let keep = self.cfg.log_keep as u64;
-        let mut pruned = 0;
-        while pruned < PAYOUT_PRUNE && self.prune_cursor < self.pay_cursor {
+        let mut looked = 0;
+        while looked < PAYOUT_PRUNE && self.prune_cursor < self.pay_cursor && remaining_gas() > GAS_MARGIN {
             let id = self.prune_cursor;
             match self.payouts.get(&id) {
-                Some(p) if p.status.is_final() && p.round + keep <= self.last_closed => {
+                // Ids follow the rounds: every later payout is as young.
+                Some(p) if p.round + keep > self.last_closed => break,
+                Some(p) if p.status.is_final() => {
                     self.payouts.remove(&id);
                 }
-                Some(_) => break,
+                Some(_) => {
+                    if self.held.len() >= PAYOUT_HELD {
+                        break;
+                    }
+                    self.held.push(id);
+                }
                 None => {}
             }
             self.prune_cursor += 1;
-            pruned += 1;
+            looked += 1;
         }
     }
 }

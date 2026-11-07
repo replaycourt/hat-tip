@@ -153,6 +153,15 @@ pub struct Payout {
     /// The DAO reported the proposal `Failed` once and the contract re-registered the receiver
     /// and finalized it (which re-runs the transfer); a second `Failed` is final.
     pub retried: bool,
+    /// A DAO answer asked for (by `check_payout`) before this block height changes nothing: set
+    /// to `RETRY_BLOCKS` ahead when a retry starts, and by `on_finalized` to `SETTLE_BLOCKS`
+    /// after the `Finalize`, so neither a check that races the retry nor one that read the
+    /// proposal before the retry ran can book an outcome.
+    pub settle_at: u64,
+    /// Block height of the `on_checked` that first saw the proposal `Approved` (0: not seen).
+    /// Sputnik shows `Approved` before the transfer has run and `Failed` a few blocks later, so
+    /// `paid` needs a second `Approved` asked for `SETTLE_BLOCKS` or more after this one.
+    pub approved_at: u64,
 }
 
 /// Running totals since init.
@@ -175,6 +184,14 @@ pub struct Totals {
     pub strikes: u64,
     /// Payouts by status, in the order of `Status::ALL`.
     pub by_status: [u64; 9],
+}
+
+impl Totals {
+    /// What the payouts without a final status add up to (planned, filing, filed, approved).
+    pub fn open(&self) -> u128 {
+        let done = self.paid.0 + self.rejected.0 + self.expired.0 + self.removed.0 + self.failed.0;
+        self.planned.0 - done
+    }
 }
 
 /// What a guest signs and sends through `act`.
