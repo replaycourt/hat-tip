@@ -1,0 +1,53 @@
+# Keeps the Hat Tip demo community alive while nobody visits: the labelled house members post notes
+# and hand out thanks, the house council votes on tier-2 and tier-3 payouts in the DAO, and the
+# keeper closes rounds, files payouts and records their outcomes (scripts/house.mjs; the published
+# strategies are in sim/params.json, "house"). Each run lasts just under six hours and the schedule
+# starts the next one, so the runs follow each other with short gaps (Bonfire's fire.yml pattern).
+#
+# The keys come only from the repository secret HOUSE_KEYS: JSON with one function-call key per house
+# member (allocate and note on the contract), per council member (act_proposal on the DAO) and for
+# the keeper (the relay methods on the contract), for the deployment named in it. The script checks
+# every key on chain and refuses a full-access key. Without the secret the job logs "no house keys,
+# nothing to do" and succeeds. It reads nothing else secret and writes nothing to the repository.
+name: House
+
+on:
+  schedule:
+    - cron: '41 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: How long to run, in minutes (1 to 350)
+        default: '350'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: house
+  cancel-in-progress: false
+
+jobs:
+  house:
+    name: House members, council and keeper
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No install: the scripts use only Node's standard library.
+      - name: Run the house
+        env:
+          HOUSE_KEYS: ${{ secrets.HOUSE_KEYS }}
+          MINUTES: ${{ github.event.inputs.minutes || '350' }}
+          SEED: ${{ github.run_id }}
+        run: |
+          if [ -z "$HOUSE_KEYS" ]; then echo "no house keys, nothing to do"; exit 0; fi
+          case "$MINUTES" in ''|*[!0-9]*) echo "minutes must be a whole number"; exit 64;; esac
+          if [ "$MINUTES" -lt 1 ]; then echo "minutes must be at least 1"; exit 64; fi
+          if [ "$MINUTES" -gt 350 ]; then MINUTES=350; fi
+          SECTION=$(node -e 'console.log(JSON.parse(process.env.HOUSE_KEYS).section || "final")')
+          case "$SECTION" in final|staging) ;; *) echo "unknown section in HOUSE_KEYS"; exit 64;; esac
+          node scripts/house.mjs run --section "$SECTION" --minutes "$MINUTES" --seed "$SEED"
