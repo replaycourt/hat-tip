@@ -1,0 +1,375 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="c" width="1000" height="420" viewBox="0 0 1000 420" role="img" aria-labelledby="title desc"><title id="title">Payouts per round by tier, testnet demo</title><desc id="desc">Stacked bars, one per 20-minute round over 48 hours: the number of payouts approved automatically (tier 1), by one council vote (tier 2) and by a council majority (tier 3). A dashed line marks the round the newcomer joins.</desc><style>
+.c{--bg:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6e69;--grid:#e1e0d9;--axis:#c3c2b7;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ctx:#b5b4ad}
+@media (prefers-color-scheme: dark){.c{--bg:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;
+--grid:#2c2c2a;--axis:#4a4a46;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ctx:#5c5b56}}
+.bg{fill:var(--bg)}
+text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--ink2);font-size:12px}
+.t{fill:var(--ink);font-size:18px;font-weight:600}
+.st{fill:var(--ink2);font-size:13px}
+.ax{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.axt{fill:var(--ink2);font-size:12px}
+.pt{fill:var(--ink);font-size:13px;font-weight:600}
+.val{fill:var(--ink2);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{stroke:var(--grid);stroke-width:1;fill:none}
+.axis{stroke:var(--axis);stroke-width:1;fill:none}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;fill:none}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.fc{fill:var(--ctx)}
+.l1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linejoin:round}
+.l2{stroke:var(--s2);stroke-width:2;fill:none;stroke-linejoin:round}
+.l3{stroke:var(--s3);stroke-width:2;fill:none;stroke-linejoin:round}
+.lc{stroke:var(--ctx);stroke-width:1.5;fill:none;stroke-linejoin:round}
+.dot{stroke:var(--bg);stroke-width:2}
+</style><rect class="bg" width="1000" height="420" rx="8"/><text x="32.0" y="40.0" class="t" text-anchor="start">Payouts per round by tier, testnet demo</text>
+<text x="32.0" y="62.0" class="st" text-anchor="start">House community with visitors and a newcomer, launch values, seed 1, 144 rounds of 20 minutes.</text>
+<rect x="32.0" y="80.0" width="12.0" height="12.0" rx="2" class="f1"></rect>
+<text x="50.0" y="90.0" class="" text-anchor="start">Tier 1: automatic</text>
+<rect x="181.0" y="80.0" width="12.0" height="12.0" rx="2" class="f2"></rect>
+<text x="199.0" y="90.0" class="" text-anchor="start">Tier 2: one council vote</text>
+<rect x="379.0" y="80.0" width="12.0" height="12.0" rx="2" class="f3"></rect>
+<text x="397.0" y="90.0" class="" text-anchor="start">Tier 3: council majority</text>
+<line x1="70.0" y1="360.0" x2="960.0" y2="360.0" class="grid"/>
+<text x="62.0" y="364.0" class="ax" text-anchor="end">0</text>
+<line x1="70.0" y1="312.0" x2="960.0" y2="312.0" class="grid"/>
+<text x="62.0" y="316.0" class="ax" text-anchor="end">2</text>
+<line x1="70.0" y1="264.0" x2="960.0" y2="264.0" class="grid"/>
+<text x="62.0" y="268.0" class="ax" text-anchor="end">4</text>
+<line x1="70.0" y1="216.0" x2="960.0" y2="216.0" class="grid"/>
+<text x="62.0" y="220.0" class="ax" text-anchor="end">6</text>
+<line x1="70.0" y1="168.0" x2="960.0" y2="168.0" class="grid"/>
+<text x="62.0" y="172.0" class="ax" text-anchor="end">8</text>
+<line x1="70.0" y1="120.0" x2="960.0" y2="120.0" class="grid"/>
+<text x="62.0" y="124.0" class="ax" text-anchor="end">10</text>
+<text x="70.0" y="378.0" class="ax" text-anchor="middle">0</text>
+<text x="144.2" y="378.0" class="ax" text-anchor="middle">12</text>
+<text x="218.3" y="378.0" class="ax" text-anchor="middle">24</text>
+<text x="292.5" y="378.0" class="ax" text-anchor="middle">36</text>
+<text x="366.7" y="378.0" class="ax" text-anchor="middle">48</text>
+<text x="440.8" y="378.0" class="ax" text-anchor="middle">60</text>
+<text x="515.0" y="378.0" class="ax" text-anchor="middle">72</text>
+<text x="589.2" y="378.0" class="ax" text-anchor="middle">84</text>
+<text x="663.3" y="378.0" class="ax" text-anchor="middle">96</text>
+<text x="737.5" y="378.0" class="ax" text-anchor="middle">108</text>
+<text x="811.7" y="378.0" class="ax" text-anchor="middle">120</text>
+<text x="885.8" y="378.0" class="ax" text-anchor="middle">132</text>
+<text x="960.0" y="378.0" class="ax" text-anchor="middle">144</text>
+<text x="515.0" y="404.0" class="axt" text-anchor="middle">Round (20 minutes each; 72 rounds = 24 hours)</text>
+<text x="24.0" y="240.0" class="axt" text-anchor="middle" transform="rotate(-90 24.0 240.0)">Payouts</text>
+<rect x="70.5" y="289.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 1: tier 2, 3 payouts</title></rect>
+<rect x="70.5" y="193.0" width="4.7" height="95.0" rx="0" class="f3"><title>round 1: tier 3, 4 payouts</title></rect>
+<rect x="76.7" y="289.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 2: tier 2, 3 payouts</title></rect>
+<rect x="76.7" y="193.0" width="4.7" height="95.0" rx="0" class="f3"><title>round 2: tier 3, 4 payouts</title></rect>
+<rect x="82.9" y="313.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 3: tier 2, 2 payouts</title></rect>
+<rect x="82.9" y="241.0" width="4.7" height="71.0" rx="0" class="f3"><title>round 3: tier 3, 3 payouts</title></rect>
+<rect x="89.0" y="217.0" width="4.7" height="143.0" rx="0" class="f2"><title>round 4: tier 2, 6 payouts</title></rect>
+<rect x="89.0" y="169.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 4: tier 3, 2 payouts</title></rect>
+<rect x="95.2" y="193.0" width="4.7" height="167.0" rx="0" class="f2"><title>round 5: tier 2, 7 payouts</title></rect>
+<rect x="95.2" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 5: tier 3, 1 payouts</title></rect>
+<rect x="101.4" y="337.0" width="4.7" height="23.0" rx="0" class="f1"><title>round 6: tier 1, 1 payouts</title></rect>
+<rect x="101.4" y="265.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 6: tier 2, 3 payouts</title></rect>
+<rect x="101.4" y="217.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 6: tier 3, 2 payouts</title></rect>
+<rect x="107.6" y="265.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 7: tier 2, 4 payouts</title></rect>
+<rect x="107.6" y="241.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 7: tier 3, 1 payouts</title></rect>
+<rect x="113.8" y="313.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 8: tier 2, 2 payouts</title></rect>
+<rect x="113.8" y="241.0" width="4.7" height="71.0" rx="0" class="f3"><title>round 8: tier 3, 3 payouts</title></rect>
+<rect x="119.9" y="313.0" width="4.7" height="47.0" rx="0" class="f1"><title>round 9: tier 1, 2 payouts</title></rect>
+<rect x="119.9" y="169.0" width="4.7" height="143.0" rx="0" class="f2"><title>round 9: tier 2, 6 payouts</title></rect>
+<rect x="126.1" y="217.0" width="4.7" height="143.0" rx="0" class="f2"><title>round 10: tier 2, 6 payouts</title></rect>
+<rect x="132.3" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 11: tier 1, 3 payouts</title></rect>
+<rect x="132.3" y="217.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 11: tier 2, 3 payouts</title></rect>
+<rect x="138.5" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 12: tier 1, 3 payouts</title></rect>
+<rect x="138.5" y="193.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 12: tier 2, 4 payouts</title></rect>
+<rect x="138.5" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 12: tier 3, 1 payouts</title></rect>
+<rect x="144.7" y="313.0" width="4.7" height="47.0" rx="0" class="f1"><title>round 13: tier 1, 2 payouts</title></rect>
+<rect x="144.7" y="193.0" width="4.7" height="119.0" rx="0" class="f2"><title>round 13: tier 2, 5 payouts</title></rect>
+<rect x="150.8" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 14: tier 1, 4 payouts</title></rect>
+<rect x="150.8" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 14: tier 2, 2 payouts</title></rect>
+<rect x="157.0" y="313.0" width="4.7" height="47.0" rx="0" class="f1"><title>round 15: tier 1, 2 payouts</title></rect>
+<rect x="157.0" y="265.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 15: tier 2, 2 payouts</title></rect>
+<rect x="157.0" y="217.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 15: tier 3, 2 payouts</title></rect>
+<rect x="163.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 16: tier 1, 4 payouts</title></rect>
+<rect x="163.2" y="193.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 16: tier 2, 3 payouts</title></rect>
+<rect x="169.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 17: tier 1, 5 payouts</title></rect>
+<rect x="169.4" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 17: tier 2, 1 payouts</title></rect>
+<rect x="175.6" y="313.0" width="4.7" height="47.0" rx="0" class="f1"><title>round 18: tier 1, 2 payouts</title></rect>
+<rect x="175.6" y="241.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 18: tier 2, 3 payouts</title></rect>
+<rect x="181.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 19: tier 1, 6 payouts</title></rect>
+<rect x="181.8" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 19: tier 2, 2 payouts</title></rect>
+<rect x="187.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 20: tier 1, 5 payouts</title></rect>
+<rect x="187.9" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 20: tier 2, 2 payouts</title></rect>
+<rect x="194.1" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 21: tier 1, 5 payouts</title></rect>
+<rect x="194.1" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 21: tier 3, 1 payouts</title></rect>
+<rect x="200.3" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 22: tier 1, 3 payouts</title></rect>
+<rect x="200.3" y="241.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 22: tier 2, 2 payouts</title></rect>
+<rect x="200.3" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 22: tier 3, 1 payouts</title></rect>
+<rect x="206.5" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 23: tier 1, 3 payouts</title></rect>
+<rect x="206.5" y="241.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 23: tier 2, 2 payouts</title></rect>
+<rect x="212.7" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 24: tier 1, 4 payouts</title></rect>
+<rect x="212.7" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 24: tier 2, 2 payouts</title></rect>
+<rect x="218.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 25: tier 1, 5 payouts</title></rect>
+<rect x="218.8" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 25: tier 2, 2 payouts</title></rect>
+<rect x="225.0" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 26: tier 1, 4 payouts</title></rect>
+<rect x="225.0" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 26: tier 2, 1 payouts</title></rect>
+<rect x="225.0" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 26: tier 3, 1 payouts</title></rect>
+<rect x="231.2" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 27: tier 1, 3 payouts</title></rect>
+<rect x="231.2" y="241.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 27: tier 3, 2 payouts</title></rect>
+<rect x="237.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 28: tier 1, 5 payouts</title></rect>
+<rect x="237.4" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 28: tier 2, 1 payouts</title></rect>
+<rect x="243.6" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 29: tier 1, 3 payouts</title></rect>
+<rect x="243.6" y="217.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 29: tier 2, 3 payouts</title></rect>
+<rect x="249.7" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 30: tier 1, 5 payouts</title></rect>
+<rect x="249.7" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 30: tier 2, 2 payouts</title></rect>
+<rect x="255.9" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 31: tier 1, 6 payouts</title></rect>
+<rect x="255.9" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 31: tier 2, 2 payouts</title></rect>
+<rect x="262.1" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 32: tier 1, 3 payouts</title></rect>
+<rect x="262.1" y="217.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 32: tier 2, 3 payouts</title></rect>
+<rect x="268.3" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 33: tier 1, 5 payouts</title></rect>
+<rect x="268.3" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 33: tier 2, 1 payouts</title></rect>
+<rect x="274.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 34: tier 1, 4 payouts</title></rect>
+<rect x="274.5" y="193.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 34: tier 2, 3 payouts</title></rect>
+<rect x="280.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 35: tier 1, 5 payouts</title></rect>
+<rect x="280.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 35: tier 2, 2 payouts</title></rect>
+<rect x="286.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 36: tier 1, 5 payouts</title></rect>
+<rect x="286.8" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 36: tier 2, 1 payouts</title></rect>
+<rect x="286.8" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 36: tier 3, 1 payouts</title></rect>
+<rect x="293.0" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 37: tier 1, 4 payouts</title></rect>
+<rect x="293.0" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 37: tier 2, 2 payouts</title></rect>
+<rect x="299.2" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 38: tier 1, 3 payouts</title></rect>
+<rect x="299.2" y="241.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 38: tier 2, 2 payouts</title></rect>
+<rect x="299.2" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 38: tier 3, 1 payouts</title></rect>
+<rect x="305.4" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 39: tier 1, 6 payouts</title></rect>
+<rect x="305.4" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 39: tier 2, 1 payouts</title></rect>
+<rect x="311.5" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 40: tier 1, 6 payouts</title></rect>
+<rect x="311.5" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 40: tier 2, 2 payouts</title></rect>
+<rect x="317.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 41: tier 1, 6 payouts</title></rect>
+<rect x="317.7" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 41: tier 3, 1 payouts</title></rect>
+<rect x="323.9" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 42: tier 1, 6 payouts</title></rect>
+<rect x="323.9" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 42: tier 2, 1 payouts</title></rect>
+<rect x="330.1" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 43: tier 1, 4 payouts</title></rect>
+<rect x="330.1" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 43: tier 2, 2 payouts</title></rect>
+<rect x="336.3" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 44: tier 1, 5 payouts</title></rect>
+<rect x="336.3" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 44: tier 2, 2 payouts</title></rect>
+<rect x="342.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 45: tier 1, 5 payouts</title></rect>
+<rect x="342.4" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 45: tier 2, 2 payouts</title></rect>
+<rect x="348.6" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 46: tier 1, 6 payouts</title></rect>
+<rect x="348.6" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 46: tier 2, 1 payouts</title></rect>
+<rect x="354.8" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 47: tier 1, 4 payouts</title></rect>
+<rect x="354.8" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 47: tier 2, 1 payouts</title></rect>
+<rect x="354.8" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 47: tier 3, 1 payouts</title></rect>
+<rect x="361.0" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 48: tier 1, 6 payouts</title></rect>
+<rect x="361.0" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 48: tier 3, 1 payouts</title></rect>
+<rect x="367.2" y="337.0" width="4.7" height="23.0" rx="0" class="f1"><title>round 49: tier 1, 1 payouts</title></rect>
+<rect x="367.2" y="289.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 49: tier 2, 2 payouts</title></rect>
+<rect x="367.2" y="241.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 49: tier 3, 2 payouts</title></rect>
+<rect x="373.3" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 50: tier 1, 5 payouts</title></rect>
+<rect x="373.3" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 50: tier 3, 1 payouts</title></rect>
+<rect x="379.5" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 51: tier 1, 5 payouts</title></rect>
+<rect x="379.5" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 51: tier 2, 1 payouts</title></rect>
+<rect x="385.7" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 52: tier 1, 5 payouts</title></rect>
+<rect x="385.7" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 52: tier 2, 1 payouts</title></rect>
+<rect x="391.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 53: tier 1, 5 payouts</title></rect>
+<rect x="391.9" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 53: tier 2, 2 payouts</title></rect>
+<rect x="398.1" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 54: tier 1, 4 payouts</title></rect>
+<rect x="398.1" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 54: tier 2, 2 payouts</title></rect>
+<rect x="404.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 55: tier 1, 4 payouts</title></rect>
+<rect x="404.2" y="241.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 55: tier 3, 1 payouts</title></rect>
+<rect x="410.4" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 56: tier 1, 4 payouts</title></rect>
+<rect x="410.4" y="169.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 56: tier 2, 4 payouts</title></rect>
+<rect x="416.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 57: tier 1, 5 payouts</title></rect>
+<rect x="416.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 57: tier 2, 2 payouts</title></rect>
+<rect x="422.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 58: tier 1, 5 payouts</title></rect>
+<rect x="422.8" y="169.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 58: tier 2, 3 payouts</title></rect>
+<rect x="429.0" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 59: tier 1, 5 payouts</title></rect>
+<rect x="429.0" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 59: tier 3, 1 payouts</title></rect>
+<rect x="435.2" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 60: tier 1, 5 payouts</title></rect>
+<rect x="435.2" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 60: tier 2, 2 payouts</title></rect>
+<rect x="441.3" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 61: tier 1, 5 payouts</title></rect>
+<rect x="441.3" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 61: tier 2, 1 payouts</title></rect>
+<rect x="441.3" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 61: tier 3, 1 payouts</title></rect>
+<rect x="447.5" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 62: tier 1, 6 payouts</title></rect>
+<rect x="447.5" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 62: tier 2, 3 payouts</title></rect>
+<rect x="453.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 63: tier 1, 6 payouts</title></rect>
+<rect x="453.7" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 63: tier 2, 3 payouts</title></rect>
+<rect x="459.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 64: tier 1, 5 payouts</title></rect>
+<rect x="459.9" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 64: tier 2, 2 payouts</title></rect>
+<rect x="466.1" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 65: tier 1, 6 payouts</title></rect>
+<rect x="466.1" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 65: tier 2, 2 payouts</title></rect>
+<rect x="472.2" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 66: tier 1, 5 payouts</title></rect>
+<rect x="472.2" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 66: tier 2, 1 payouts</title></rect>
+<rect x="472.2" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 66: tier 3, 1 payouts</title></rect>
+<rect x="478.4" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 67: tier 1, 7 payouts</title></rect>
+<rect x="478.4" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 67: tier 2, 2 payouts</title></rect>
+<rect x="484.6" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 68: tier 1, 4 payouts</title></rect>
+<rect x="484.6" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 68: tier 2, 2 payouts</title></rect>
+<rect x="490.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 69: tier 1, 6 payouts</title></rect>
+<rect x="490.8" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 69: tier 2, 3 payouts</title></rect>
+<rect x="497.0" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 70: tier 1, 3 payouts</title></rect>
+<rect x="497.0" y="265.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 70: tier 2, 1 payouts</title></rect>
+<rect x="497.0" y="217.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 70: tier 3, 2 payouts</title></rect>
+<rect x="503.1" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 71: tier 1, 5 payouts</title></rect>
+<rect x="503.1" y="169.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 71: tier 2, 3 payouts</title></rect>
+<rect x="509.3" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 72: tier 1, 4 payouts</title></rect>
+<rect x="509.3" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 72: tier 2, 2 payouts</title></rect>
+<rect x="515.5" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 73: tier 1, 7 payouts</title></rect>
+<rect x="515.5" y="121.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 73: tier 2, 3 payouts</title></rect>
+<rect x="521.7" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 74: tier 1, 5 payouts</title></rect>
+<rect x="521.7" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 74: tier 2, 2 payouts</title></rect>
+<rect x="527.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 75: tier 1, 5 payouts</title></rect>
+<rect x="527.9" y="169.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 75: tier 2, 3 payouts</title></rect>
+<rect x="534.0" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 76: tier 1, 5 payouts</title></rect>
+<rect x="534.0" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 76: tier 2, 1 payouts</title></rect>
+<rect x="540.2" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 77: tier 1, 7 payouts</title></rect>
+<rect x="540.2" y="169.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 77: tier 2, 1 payouts</title></rect>
+<rect x="546.4" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 78: tier 1, 7 payouts</title></rect>
+<rect x="546.4" y="169.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 78: tier 2, 1 payouts</title></rect>
+<rect x="546.4" y="145.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 78: tier 3, 1 payouts</title></rect>
+<rect x="552.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 79: tier 1, 5 payouts</title></rect>
+<rect x="552.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 79: tier 2, 2 payouts</title></rect>
+<rect x="558.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 80: tier 1, 6 payouts</title></rect>
+<rect x="558.8" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 80: tier 3, 1 payouts</title></rect>
+<rect x="564.9" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 81: tier 1, 7 payouts</title></rect>
+<rect x="564.9" y="121.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 81: tier 2, 3 payouts</title></rect>
+<rect x="571.1" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 82: tier 1, 4 payouts</title></rect>
+<rect x="571.1" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 82: tier 2, 1 payouts</title></rect>
+<rect x="571.1" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 82: tier 3, 1 payouts</title></rect>
+<rect x="577.3" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 83: tier 1, 4 payouts</title></rect>
+<rect x="577.3" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 83: tier 2, 1 payouts</title></rect>
+<rect x="583.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 84: tier 1, 4 payouts</title></rect>
+<rect x="583.5" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 84: tier 2, 2 payouts</title></rect>
+<rect x="589.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 85: tier 1, 6 payouts</title></rect>
+<rect x="589.7" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 85: tier 2, 2 payouts</title></rect>
+<rect x="595.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 86: tier 1, 6 payouts</title></rect>
+<rect x="595.8" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 86: tier 2, 1 payouts</title></rect>
+<rect x="602.0" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 87: tier 1, 3 payouts</title></rect>
+<rect x="602.0" y="265.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 87: tier 2, 1 payouts</title></rect>
+<rect x="602.0" y="241.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 87: tier 3, 1 payouts</title></rect>
+<rect x="608.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 88: tier 1, 4 payouts</title></rect>
+<rect x="608.2" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 88: tier 2, 2 payouts</title></rect>
+<rect x="614.4" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 89: tier 1, 6 payouts</title></rect>
+<rect x="614.4" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 89: tier 3, 1 payouts</title></rect>
+<rect x="620.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 90: tier 1, 5 payouts</title></rect>
+<rect x="620.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 90: tier 2, 2 payouts</title></rect>
+<rect x="626.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 91: tier 1, 6 payouts</title></rect>
+<rect x="626.8" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 91: tier 2, 2 payouts</title></rect>
+<rect x="632.9" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 92: tier 1, 6 payouts</title></rect>
+<rect x="632.9" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 92: tier 2, 1 payouts</title></rect>
+<rect x="639.1" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 93: tier 1, 5 payouts</title></rect>
+<rect x="639.1" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 93: tier 2, 1 payouts</title></rect>
+<rect x="645.3" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 94: tier 1, 3 payouts</title></rect>
+<rect x="645.3" y="241.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 94: tier 2, 2 payouts</title></rect>
+<rect x="645.3" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 94: tier 3, 1 payouts</title></rect>
+<rect x="651.5" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 95: tier 1, 5 payouts</title></rect>
+<rect x="651.5" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 95: tier 2, 2 payouts</title></rect>
+<rect x="657.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 96: tier 1, 6 payouts</title></rect>
+<rect x="657.7" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 96: tier 2, 1 payouts</title></rect>
+<rect x="663.8" y="337.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 97: tier 2, 1 payouts</title></rect>
+<rect x="663.8" y="265.0" width="4.7" height="71.0" rx="0" class="f3"><title>round 97: tier 3, 3 payouts</title></rect>
+<rect x="670.0" y="313.0" width="4.7" height="47.0" rx="0" class="f1"><title>round 98: tier 1, 2 payouts</title></rect>
+<rect x="670.0" y="241.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 98: tier 2, 3 payouts</title></rect>
+<rect x="676.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 99: tier 1, 4 payouts</title></rect>
+<rect x="676.2" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 99: tier 2, 1 payouts</title></rect>
+<rect x="676.2" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 99: tier 3, 1 payouts</title></rect>
+<rect x="682.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 100: tier 1, 5 payouts</title></rect>
+<rect x="682.4" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 100: tier 2, 2 payouts</title></rect>
+<rect x="688.6" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 101: tier 1, 5 payouts</title></rect>
+<rect x="688.6" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 101: tier 2, 2 payouts</title></rect>
+<rect x="694.7" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 102: tier 1, 4 payouts</title></rect>
+<rect x="694.7" y="169.0" width="4.7" height="95.0" rx="0" class="f2"><title>round 102: tier 2, 4 payouts</title></rect>
+<rect x="700.9" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 103: tier 1, 5 payouts</title></rect>
+<rect x="700.9" y="169.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 103: tier 2, 3 payouts</title></rect>
+<rect x="707.1" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 104: tier 1, 6 payouts</title></rect>
+<rect x="707.1" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 104: tier 2, 3 payouts</title></rect>
+<rect x="713.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 105: tier 1, 7 payouts</title></rect>
+<rect x="713.3" y="121.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 105: tier 2, 3 payouts</title></rect>
+<rect x="719.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 106: tier 1, 4 payouts</title></rect>
+<rect x="719.5" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 106: tier 2, 1 payouts</title></rect>
+<rect x="719.5" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 106: tier 3, 1 payouts</title></rect>
+<rect x="725.6" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 107: tier 1, 7 payouts</title></rect>
+<rect x="725.6" y="121.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 107: tier 2, 3 payouts</title></rect>
+<rect x="731.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 108: tier 1, 5 payouts</title></rect>
+<rect x="731.8" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 108: tier 2, 2 payouts</title></rect>
+<rect x="738.0" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 109: tier 1, 6 payouts</title></rect>
+<rect x="738.0" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 109: tier 2, 1 payouts</title></rect>
+<rect x="738.0" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 109: tier 3, 1 payouts</title></rect>
+<rect x="744.2" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 110: tier 1, 5 payouts</title></rect>
+<rect x="744.2" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 110: tier 2, 1 payouts</title></rect>
+<rect x="750.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 111: tier 1, 5 payouts</title></rect>
+<rect x="750.4" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 111: tier 2, 2 payouts</title></rect>
+<rect x="756.5" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 112: tier 1, 6 payouts</title></rect>
+<rect x="756.5" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 112: tier 2, 1 payouts</title></rect>
+<rect x="762.7" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 113: tier 1, 5 payouts</title></rect>
+<rect x="762.7" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 113: tier 3, 1 payouts</title></rect>
+<rect x="768.9" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 114: tier 1, 6 payouts</title></rect>
+<rect x="768.9" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 114: tier 2, 3 payouts</title></rect>
+<rect x="775.1" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 115: tier 1, 6 payouts</title></rect>
+<rect x="775.1" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 115: tier 2, 1 payouts</title></rect>
+<rect x="781.3" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 116: tier 1, 6 payouts</title></rect>
+<rect x="781.3" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 116: tier 2, 1 payouts</title></rect>
+<rect x="781.3" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 116: tier 3, 1 payouts</title></rect>
+<rect x="787.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 117: tier 1, 5 payouts</title></rect>
+<rect x="787.4" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 117: tier 2, 2 payouts</title></rect>
+<rect x="793.6" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 118: tier 1, 6 payouts</title></rect>
+<rect x="793.6" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 118: tier 2, 2 payouts</title></rect>
+<rect x="799.8" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 119: tier 1, 3 payouts</title></rect>
+<rect x="799.8" y="265.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 119: tier 2, 1 payouts</title></rect>
+<rect x="799.8" y="241.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 119: tier 3, 1 payouts</title></rect>
+<rect x="806.0" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 120: tier 1, 4 payouts</title></rect>
+<rect x="806.0" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 120: tier 2, 1 payouts</title></rect>
+<rect x="806.0" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 120: tier 3, 1 payouts</title></rect>
+<rect x="812.2" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 121: tier 1, 5 payouts</title></rect>
+<rect x="812.2" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 121: tier 2, 2 payouts</title></rect>
+<rect x="818.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 122: tier 1, 7 payouts</title></rect>
+<rect x="818.3" y="169.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 122: tier 2, 1 payouts</title></rect>
+<rect x="824.5" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 123: tier 1, 4 payouts</title></rect>
+<rect x="824.5" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 123: tier 2, 2 payouts</title></rect>
+<rect x="824.5" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 123: tier 3, 1 payouts</title></rect>
+<rect x="830.7" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 124: tier 1, 6 payouts</title></rect>
+<rect x="830.7" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 124: tier 2, 1 payouts</title></rect>
+<rect x="836.9" y="289.0" width="4.7" height="71.0" rx="0" class="f1"><title>round 125: tier 1, 3 payouts</title></rect>
+<rect x="836.9" y="241.0" width="4.7" height="47.0" rx="0" class="f3"><title>round 125: tier 3, 2 payouts</title></rect>
+<rect x="843.1" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 126: tier 1, 5 payouts</title></rect>
+<rect x="843.1" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 126: tier 2, 2 payouts</title></rect>
+<rect x="849.2" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 127: tier 1, 4 payouts</title></rect>
+<rect x="849.2" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 127: tier 2, 1 payouts</title></rect>
+<rect x="855.4" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 128: tier 1, 4 payouts</title></rect>
+<rect x="855.4" y="217.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 128: tier 2, 2 payouts</title></rect>
+<rect x="861.6" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 129: tier 1, 6 payouts</title></rect>
+<rect x="861.6" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 129: tier 3, 1 payouts</title></rect>
+<rect x="867.8" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 130: tier 1, 5 payouts</title></rect>
+<rect x="867.8" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 130: tier 3, 1 payouts</title></rect>
+<rect x="874.0" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 131: tier 1, 5 payouts</title></rect>
+<rect x="874.0" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 131: tier 2, 1 payouts</title></rect>
+<rect x="880.2" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 132: tier 1, 5 payouts</title></rect>
+<rect x="880.2" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 132: tier 2, 2 payouts</title></rect>
+<rect x="880.2" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 132: tier 3, 1 payouts</title></rect>
+<rect x="886.3" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 133: tier 1, 5 payouts</title></rect>
+<rect x="886.3" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 133: tier 2, 1 payouts</title></rect>
+<rect x="892.5" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 134: tier 1, 7 payouts</title></rect>
+<rect x="892.5" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 134: tier 2, 2 payouts</title></rect>
+<rect x="892.5" y="121.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 134: tier 3, 1 payouts</title></rect>
+<rect x="898.7" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 135: tier 1, 5 payouts</title></rect>
+<rect x="898.7" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 135: tier 2, 2 payouts</title></rect>
+<rect x="904.9" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 136: tier 1, 6 payouts</title></rect>
+<rect x="904.9" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 136: tier 2, 2 payouts</title></rect>
+<rect x="911.1" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 137: tier 1, 5 payouts</title></rect>
+<rect x="911.1" y="217.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 137: tier 2, 1 payouts</title></rect>
+<rect x="911.1" y="193.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 137: tier 3, 1 payouts</title></rect>
+<rect x="917.2" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 138: tier 1, 6 payouts</title></rect>
+<rect x="917.2" y="169.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 138: tier 2, 2 payouts</title></rect>
+<rect x="923.4" y="241.0" width="4.7" height="119.0" rx="0" class="f1"><title>round 139: tier 1, 5 payouts</title></rect>
+<rect x="923.4" y="193.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 139: tier 2, 2 payouts</title></rect>
+<rect x="929.6" y="265.0" width="4.7" height="95.0" rx="0" class="f1"><title>round 140: tier 1, 4 payouts</title></rect>
+<rect x="929.6" y="241.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 140: tier 2, 1 payouts</title></rect>
+<rect x="929.6" y="217.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 140: tier 3, 1 payouts</title></rect>
+<rect x="935.8" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 141: tier 1, 6 payouts</title></rect>
+<rect x="935.8" y="193.0" width="4.7" height="23.0" rx="0" class="f2"><title>round 141: tier 2, 1 payouts</title></rect>
+<rect x="935.8" y="169.0" width="4.7" height="23.0" rx="0" class="f3"><title>round 141: tier 3, 1 payouts</title></rect>
+<rect x="942.0" y="217.0" width="4.7" height="143.0" rx="0" class="f1"><title>round 142: tier 1, 6 payouts</title></rect>
+<rect x="942.0" y="145.0" width="4.7" height="71.0" rx="0" class="f2"><title>round 142: tier 2, 3 payouts</title></rect>
+<rect x="948.1" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 143: tier 1, 7 payouts</title></rect>
+<rect x="948.1" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 143: tier 2, 2 payouts</title></rect>
+<rect x="954.3" y="193.0" width="4.7" height="167.0" rx="0" class="f1"><title>round 144: tier 1, 7 payouts</title></rect>
+<rect x="954.3" y="145.0" width="4.7" height="47.0" rx="0" class="f2"><title>round 144: tier 2, 2 payouts</title></rect>
+<line x1="70.0" y1="360.0" x2="960.0" y2="360.0" class="axis"/>
+<line x1="440.8" y1="106.0" x2="440.8" y2="360.0" class="ref"/>
+<text x="444.8" y="114.0" class="ax" text-anchor="start">newcomer joins</text></svg>

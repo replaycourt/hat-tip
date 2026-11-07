@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="c" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-labelledby="title desc"><title id="title">Payout share against work share, per member</title><desc id="desc">Two scatter panels, one per rule set, the same community and seed. Each dot is a member: share of the work on the x-axis, share of the planned payouts on the y-axis, both in percent. The dashed diagonal is payout equal to work.</desc><style>
+.c{--bg:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6e69;--grid:#e1e0d9;--axis:#c3c2b7;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ctx:#b5b4ad}
+@media (prefers-color-scheme: dark){.c{--bg:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;
+--grid:#2c2c2a;--axis:#4a4a46;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ctx:#5c5b56}}
+.bg{fill:var(--bg)}
+text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--ink2);font-size:12px}
+.t{fill:var(--ink);font-size:18px;font-weight:600}
+.st{fill:var(--ink2);font-size:13px}
+.ax{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.axt{fill:var(--ink2);font-size:12px}
+.pt{fill:var(--ink);font-size:13px;font-weight:600}
+.val{fill:var(--ink2);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{stroke:var(--grid);stroke-width:1;fill:none}
+.axis{stroke:var(--axis);stroke-width:1;fill:none}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;fill:none}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.fc{fill:var(--ctx)}
+.l1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linejoin:round}
+.l2{stroke:var(--s2);stroke-width:2;fill:none;stroke-linejoin:round}
+.l3{stroke:var(--s3);stroke-width:2;fill:none;stroke-linejoin:round}
+.lc{stroke:var(--ctx);stroke-width:1.5;fill:none;stroke-linejoin:round}
+.dot{stroke:var(--bg);stroke-width:2}
+</style><rect class="bg" width="1000" height="560" rx="8"/><text x="32.0" y="40.0" class="t" text-anchor="start">Payout share against work share, per member</text>
+<text x="32.0" y="62.0" class="st" text-anchor="start">Mixed community (honest members, two free riders, a colluding pair), seed 1, 52 rounds. Dashed: payout share equal to work share.</text>
+<rect x="32.0" y="80.0" width="12.0" height="12.0" rx="2" class="f1"></rect>
+<text x="50.0" y="90.0" class="" text-anchor="start">Honest member</text>
+<rect x="153.0" y="80.0" width="12.0" height="12.0" rx="2" class="f2"></rect>
+<text x="171.0" y="90.0" class="" text-anchor="start">Colluder</text>
+<rect x="239.0" y="80.0" width="12.0" height="12.0" rx="2" class="f3"></rect>
+<text x="257.0" y="90.0" class="" text-anchor="start">Free rider</text>
+<text x="50.0" y="124.0" class="pt" text-anchor="start">No dampening (cap 50)</text>
+<line x1="90.0" y1="500.0" x2="470.0" y2="500.0" class="grid"/>
+<text x="82.0" y="504.0" class="ax" text-anchor="end">0</text>
+<text x="90.0" y="518.0" class="ax" text-anchor="middle">0</text>
+<line x1="90.0" y1="410.0" x2="470.0" y2="410.0" class="grid"/>
+<text x="82.0" y="414.0" class="ax" text-anchor="end">5</text>
+<text x="185.0" y="518.0" class="ax" text-anchor="middle">5</text>
+<line x1="90.0" y1="320.0" x2="470.0" y2="320.0" class="grid"/>
+<text x="82.0" y="324.0" class="ax" text-anchor="end">10</text>
+<text x="280.0" y="518.0" class="ax" text-anchor="middle">10</text>
+<line x1="90.0" y1="230.0" x2="470.0" y2="230.0" class="grid"/>
+<text x="82.0" y="234.0" class="ax" text-anchor="end">15</text>
+<text x="375.0" y="518.0" class="ax" text-anchor="middle">15</text>
+<line x1="90.0" y1="140.0" x2="470.0" y2="140.0" class="grid"/>
+<text x="82.0" y="144.0" class="ax" text-anchor="end">20</text>
+<text x="470.0" y="518.0" class="ax" text-anchor="middle">20</text>
+<line x1="90.0" y1="500.0" x2="470.0" y2="500.0" class="axis"/>
+<line x1="90.0" y1="500.0" x2="470.0" y2="140.0" class="ref"/>
+<text x="280.0" y="540.0" class="axt" text-anchor="middle">Share of the work (%)</text>
+<text x="52.0" y="320.0" class="axt" text-anchor="middle" transform="rotate(-90 52.0 320.0)">Share of payouts (%)</text>
+<circle cx="120.6" cy="468.2" r="5" class="f1 dot"><title>m01 (honest): work 1.6 %, payouts 1.8 %</title></circle>
+<circle cx="172.4" cy="365.5" r="5" class="f1 dot"><title>m02 (honest): work 4.3 %, payouts 7.5 %</title></circle>
+<circle cx="143.3" cy="461.4" r="5" class="f1 dot"><title>m03 (honest): work 2.8 %, payouts 2.1 %</title></circle>
+<circle cx="121.9" cy="491.6" r="5" class="f1 dot"><title>m04 (honest): work 1.7 %, payouts 0.5 %</title></circle>
+<circle cx="160.4" cy="412.7" r="5" class="f1 dot"><title>m05 (honest): work 3.7 %, payouts 4.8 %</title></circle>
+<circle cx="132.6" cy="469.0" r="5" class="f1 dot"><title>m06 (honest): work 2.2 %, payouts 1.7 %</title></circle>
+<circle cx="107.9" cy="495.4" r="5" class="f1 dot"><title>m07 (honest): work 0.9 %, payouts 0.3 %</title></circle>
+<circle cx="226.7" cy="366.9" r="5" class="f1 dot"><title>m08 (honest): work 7.2 %, payouts 7.4 %</title></circle>
+<circle cx="166.2" cy="443.1" r="5" class="f1 dot"><title>m09 (honest): work 4.0 %, payouts 3.2 %</title></circle>
+<circle cx="166.8" cy="453.4" r="5" class="f1 dot"><title>m10 (honest): work 4.0 %, payouts 2.6 %</title></circle>
+<circle cx="156.2" cy="397.9" r="5" class="f1 dot"><title>m11 (honest): work 3.5 %, payouts 5.7 %</title></circle>
+<circle cx="399.3" cy="271.0" r="5" class="f1 dot"><title>m12 (honest): work 16.3 %, payouts 12.7 %</title></circle>
+<circle cx="239.5" cy="350.7" r="5" class="f1 dot"><title>m13 (honest): work 7.9 %, payouts 8.3 %</title></circle>
+<circle cx="287.0" cy="268.6" r="5" class="f1 dot"><title>m14 (honest): work 10.4 %, payouts 12.9 %</title></circle>
+<circle cx="165.7" cy="463.0" r="5" class="f1 dot"><title>m15 (honest): work 4.0 %, payouts 2.1 %</title></circle>
+<circle cx="204.6" cy="416.6" r="5" class="f1 dot"><title>m16 (honest): work 6.0 %, payouts 4.6 %</title></circle>
+<circle cx="156.1" cy="407.4" r="5" class="f1 dot"><title>m17 (honest): work 3.5 %, payouts 5.1 %</title></circle>
+<circle cx="167.2" cy="451.3" r="5" class="f1 dot"><title>m18 (honest): work 4.1 %, payouts 2.7 %</title></circle>
+<circle cx="227.2" cy="385.9" r="5" class="f1 dot"><title>m19 (honest): work 7.2 %, payouts 6.3 %</title></circle>
+<circle cx="130.5" cy="482.3" r="5" class="f1 dot"><title>new (honest): work 2.1 %, payouts 1.0 %</title></circle>
+<circle cx="90.0" cy="491.4" r="5" class="f3 dot"><title>fr1 (free_rider): work 0.0 %, payouts 0.5 %</title></circle>
+<circle cx="90.0" cy="497.3" r="5" class="f3 dot"><title>fr2 (free_rider): work 0.0 %, payouts 0.1 %</title></circle>
+<circle cx="105.5" cy="444.9" r="5" class="f2 dot"><title>c1 (colluder): work 0.8 %, payouts 3.1 %</title></circle>
+<circle cx="122.4" cy="444.6" r="5" class="f2 dot"><title>c2 (colluder): work 1.7 %, payouts 3.1 %</title></circle>
+<text x="530.0" y="124.0" class="pt" text-anchor="start">Launch rules: cap 25, R 25 %, B 3 at 25 %</text>
+<line x1="570.0" y1="500.0" x2="950.0" y2="500.0" class="grid"/>
+<text x="562.0" y="504.0" class="ax" text-anchor="end">0</text>
+<text x="570.0" y="518.0" class="ax" text-anchor="middle">0</text>
+<line x1="570.0" y1="410.0" x2="950.0" y2="410.0" class="grid"/>
+<text x="562.0" y="414.0" class="ax" text-anchor="end">5</text>
+<text x="665.0" y="518.0" class="ax" text-anchor="middle">5</text>
+<line x1="570.0" y1="320.0" x2="950.0" y2="320.0" class="grid"/>
+<text x="562.0" y="324.0" class="ax" text-anchor="end">10</text>
+<text x="760.0" y="518.0" class="ax" text-anchor="middle">10</text>
+<line x1="570.0" y1="230.0" x2="950.0" y2="230.0" class="grid"/>
+<text x="562.0" y="234.0" class="ax" text-anchor="end">15</text>
+<text x="855.0" y="518.0" class="ax" text-anchor="middle">15</text>
+<line x1="570.0" y1="140.0" x2="950.0" y2="140.0" class="grid"/>
+<text x="562.0" y="144.0" class="ax" text-anchor="end">20</text>
+<text x="950.0" y="518.0" class="ax" text-anchor="middle">20</text>
+<line x1="570.0" y1="500.0" x2="950.0" y2="500.0" class="axis"/>
+<line x1="570.0" y1="500.0" x2="950.0" y2="140.0" class="ref"/>
+<text x="760.0" y="540.0" class="axt" text-anchor="middle">Share of the work (%)</text>
+<text x="532.0" y="320.0" class="axt" text-anchor="middle" transform="rotate(-90 532.0 320.0)">Share of payouts (%)</text>
+<circle cx="600.6" cy="485.7" r="5" class="f1 dot"><title>m01 (honest): work 1.6 %, payouts 0.8 %</title></circle>
+<circle cx="652.4" cy="374.8" r="5" class="f1 dot"><title>m02 (honest): work 4.3 %, payouts 7.0 %</title></circle>
+<circle cx="623.3" cy="460.7" r="5" class="f1 dot"><title>m03 (honest): work 2.8 %, payouts 2.2 %</title></circle>
+<circle cx="601.9" cy="492.2" r="5" class="f1 dot"><title>m04 (honest): work 1.7 %, payouts 0.4 %</title></circle>
+<circle cx="640.4" cy="415.0" r="5" class="f1 dot"><title>m05 (honest): work 3.7 %, payouts 4.7 %</title></circle>
+<circle cx="612.6" cy="470.9" r="5" class="f1 dot"><title>m06 (honest): work 2.2 %, payouts 1.6 %</title></circle>
+<circle cx="587.9" cy="498.3" r="5" class="f1 dot"><title>m07 (honest): work 0.9 %, payouts 0.1 %</title></circle>
+<circle cx="706.7" cy="361.7" r="5" class="f1 dot"><title>m08 (honest): work 7.2 %, payouts 7.7 %</title></circle>
+<circle cx="646.2" cy="436.1" r="5" class="f1 dot"><title>m09 (honest): work 4.0 %, payouts 3.5 %</title></circle>
+<circle cx="646.8" cy="451.7" r="5" class="f1 dot"><title>m10 (honest): work 4.0 %, payouts 2.7 %</title></circle>
+<circle cx="636.2" cy="391.3" r="5" class="f1 dot"><title>m11 (honest): work 3.5 %, payouts 6.0 %</title></circle>
+<circle cx="879.3" cy="260.4" r="5" class="f1 dot"><title>m12 (honest): work 16.3 %, payouts 13.3 %</title></circle>
+<circle cx="719.5" cy="345.8" r="5" class="f1 dot"><title>m13 (honest): work 7.9 %, payouts 8.6 %</title></circle>
+<circle cx="767.0" cy="256.6" r="5" class="f1 dot"><title>m14 (honest): work 10.4 %, payouts 13.5 %</title></circle>
+<circle cx="645.7" cy="459.1" r="5" class="f1 dot"><title>m15 (honest): work 4.0 %, payouts 2.3 %</title></circle>
+<circle cx="684.6" cy="377.3" r="5" class="f1 dot"><title>m16 (honest): work 6.0 %, payouts 6.8 %</title></circle>
+<circle cx="636.1" cy="387.3" r="5" class="f1 dot"><title>m17 (honest): work 3.5 %, payouts 6.3 %</title></circle>
+<circle cx="647.2" cy="448.8" r="5" class="f1 dot"><title>m18 (honest): work 4.1 %, payouts 2.8 %</title></circle>
+<circle cx="707.2" cy="372.2" r="5" class="f1 dot"><title>m19 (honest): work 7.2 %, payouts 7.1 %</title></circle>
+<circle cx="610.5" cy="483.2" r="5" class="f1 dot"><title>new (honest): work 2.1 %, payouts 0.9 %</title></circle>
+<circle cx="570.0" cy="492.6" r="5" class="f3 dot"><title>fr1 (free_rider): work 0.0 %, payouts 0.4 %</title></circle>
+<circle cx="570.0" cy="497.9" r="5" class="f3 dot"><title>fr2 (free_rider): work 0.0 %, payouts 0.1 %</title></circle>
+<circle cx="585.5" cy="489.7" r="5" class="f2 dot"><title>c1 (colluder): work 0.8 %, payouts 0.6 %</title></circle>
+<circle cx="602.4" cy="490.8" r="5" class="f2 dot"><title>c2 (colluder): work 1.7 %, payouts 0.5 %</title></circle></svg>

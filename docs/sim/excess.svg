@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="c" width="1000" height="546" viewBox="0 0 1000 546" role="img" aria-labelledby="title desc"><title id="title">Colluders' excess payout share by rule set</title><desc id="desc">Horizontal grouped bars. For each rule set, the colluders' share of planned payouts minus their share of the work, in percentage points, for a colluding pair, a ring of three and a ring of four, each playing its best response. Medians over 8 seeds, 52 weekly rounds of a 24-member community.</desc><style>
+.c{--bg:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6e69;--grid:#e1e0d9;--axis:#c3c2b7;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ctx:#b5b4ad}
+@media (prefers-color-scheme: dark){.c{--bg:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;
+--grid:#2c2c2a;--axis:#4a4a46;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ctx:#5c5b56}}
+.bg{fill:var(--bg)}
+text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--ink2);font-size:12px}
+.t{fill:var(--ink);font-size:18px;font-weight:600}
+.st{fill:var(--ink2);font-size:13px}
+.ax{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.axt{fill:var(--ink2);font-size:12px}
+.pt{fill:var(--ink);font-size:13px;font-weight:600}
+.val{fill:var(--ink2);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{stroke:var(--grid);stroke-width:1;fill:none}
+.axis{stroke:var(--axis);stroke-width:1;fill:none}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;fill:none}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.fc{fill:var(--ctx)}
+.l1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linejoin:round}
+.l2{stroke:var(--s2);stroke-width:2;fill:none;stroke-linejoin:round}
+.l3{stroke:var(--s3);stroke-width:2;fill:none;stroke-linejoin:round}
+.lc{stroke:var(--ctx);stroke-width:1.5;fill:none;stroke-linejoin:round}
+.dot{stroke:var(--bg);stroke-width:2}
+</style><rect class="bg" width="1000" height="546" rx="8"/><text x="32.0" y="40.0" class="t" text-anchor="start">Colluders' excess payout share, by rule set</text>
+<text x="32.0" y="62.0" class="st" text-anchor="start">Payout share minus work share, percentage points; colluders play their best response. Median of 8 seeds, 52 rounds, 24 members.</text>
+<rect x="32.0" y="80.0" width="12.0" height="12.0" rx="2" class="f1"></rect>
+<text x="50.0" y="90.0" class="" text-anchor="start">Colluding pair</text>
+<rect x="160.0" y="80.0" width="12.0" height="12.0" rx="2" class="f2"></rect>
+<text x="178.0" y="90.0" class="" text-anchor="start">Ring of three</text>
+<rect x="281.0" y="80.0" width="12.0" height="12.0" rx="2" class="f3"></rect>
+<text x="299.0" y="90.0" class="" text-anchor="start">Ring of four</text>
+<line x1="330.0" y1="106.0" x2="330.0" y2="490.0" class="grid"/>
+<text x="330.0" y="508.0" class="ax" text-anchor="middle">-5</text>
+<line x1="452.0" y1="106.0" x2="452.0" y2="490.0" class="grid"/>
+<text x="452.0" y="508.0" class="ax" text-anchor="middle">0</text>
+<line x1="574.0" y1="106.0" x2="574.0" y2="490.0" class="grid"/>
+<text x="574.0" y="508.0" class="ax" text-anchor="middle">5</text>
+<line x1="696.0" y1="106.0" x2="696.0" y2="490.0" class="grid"/>
+<text x="696.0" y="508.0" class="ax" text-anchor="middle">10</text>
+<line x1="818.0" y1="106.0" x2="818.0" y2="490.0" class="grid"/>
+<text x="818.0" y="508.0" class="ax" text-anchor="middle">15</text>
+<line x1="940.0" y1="106.0" x2="940.0" y2="490.0" class="grid"/>
+<text x="940.0" y="508.0" class="ax" text-anchor="middle">20</text>
+<line x1="452.0" y1="106.0" x2="452.0" y2="490.0" class="axis"/>
+<text x="635.0" y="530.0" class="axt" text-anchor="middle">Excess payout share (percentage points)</text>
+<text x="318.0" y="132.0" class="" text-anchor="end">No dampening (cap 50)</text>
+<rect x="452.0" y="118.0" width="85.5" height="12.0" rx="2" class="f1"><title>No dampening (cap 50), Colluding pair: +3.50 pp</title></rect>
+<text x="543.5" y="128.0" class="val" text-anchor="start">+3.5</text>
+<rect x="452.0" y="132.0" width="335.6" height="12.0" rx="2" class="f2"><title>No dampening (cap 50), Ring of three: +13.75 pp</title></rect>
+<text x="793.6" y="142.0" class="val" text-anchor="start">+13.8</text>
+<rect x="452.0" y="146.0" width="436.4" height="12.0" rx="2" class="f3"><title>No dampening (cap 50), Ring of four: +17.88 pp</title></rect>
+<text x="894.4" y="156.0" class="val" text-anchor="start">+17.9</text>
+<text x="318.0" y="186.0" class="" text-anchor="end">Cap 25 only</text>
+<rect x="452.0" y="172.0" width="30.3" height="12.0" rx="2" class="f1"><title>Cap 25 only, Colluding pair: +1.24 pp</title></rect>
+<rect x="452.0" y="186.0" width="166.6" height="12.0" rx="2" class="f2"><title>Cap 25 only, Ring of three: +6.83 pp</title></rect>
+<rect x="452.0" y="200.0" width="338.1" height="12.0" rx="2" class="f3"><title>Cap 25 only, Ring of four: +13.86 pp</title></rect>
+<text x="318.0" y="240.0" class="" text-anchor="end">Cap 25 + reciprocity 25 %</text>
+<rect x="449.9" y="226.0" width="2.1" height="12.0" rx="2" class="f1"><title>Cap 25 + reciprocity 25 %, Colluding pair: -0.09 pp</title></rect>
+<rect x="452.0" y="240.0" width="90.5" height="12.0" rx="2" class="f2"><title>Cap 25 + reciprocity 25 %, Ring of three: +3.71 pp</title></rect>
+<rect x="452.0" y="254.0" width="192.0" height="12.0" rx="2" class="f3"><title>Cap 25 + reciprocity 25 %, Ring of four: +7.87 pp</title></rect>
+<text x="318.0" y="294.0" class="" text-anchor="end">Cap 25 + breadth 3 at 25 %</text>
+<rect x="452.0" y="280.0" width="20.5" height="12.0" rx="2" class="f1"><title>Cap 25 + breadth 3 at 25 %, Colluding pair: +0.84 pp</title></rect>
+<rect x="452.0" y="294.0" width="133.2" height="12.0" rx="2" class="f2"><title>Cap 25 + breadth 3 at 25 %, Ring of three: +5.46 pp</title></rect>
+<rect x="452.0" y="308.0" width="343.4" height="12.0" rx="2" class="f3"><title>Cap 25 + breadth 3 at 25 %, Ring of four: +14.07 pp</title></rect>
+<text x="318.0" y="348.0" class="" text-anchor="end">Cap 25 + quadratic</text>
+<text x="318.0" y="364.0" class="ax" text-anchor="end">fails: honest pair loses too much</text>
+<rect x="412.1" y="334.0" width="39.9" height="12.0" rx="2" class="f1"><title>Cap 25 + quadratic, Colluding pair: -1.64 pp</title></rect>
+<rect x="452.0" y="348.0" width="44.9" height="12.0" rx="2" class="f2"><title>Cap 25 + quadratic, Ring of three: +1.84 pp</title></rect>
+<rect x="452.0" y="362.0" width="146.3" height="12.0" rx="2" class="f3"><title>Cap 25 + quadratic, Ring of four: +6.00 pp</title></rect>
+<text x="318.0" y="402.0" class="" text-anchor="end">Cap 25 + idle 50 %</text>
+<rect x="452.0" y="388.0" width="43.1" height="12.0" rx="2" class="f1"><title>Cap 25 + idle 50 %, Colluding pair: +1.77 pp</title></rect>
+<rect x="452.0" y="402.0" width="192.6" height="12.0" rx="2" class="f2"><title>Cap 25 + idle 50 %, Ring of three: +7.89 pp</title></rect>
+<rect x="452.0" y="416.0" width="373.4" height="12.0" rx="2" class="f3"><title>Cap 25 + idle 50 %, Ring of four: +15.30 pp</title></rect>
+<text x="318.0" y="456.0" class="pt" text-anchor="end">Launch: cap 25, R 25 %, B 3 at 25 %</text>
+<rect x="434.2" y="442.0" width="17.8" height="12.0" rx="2" class="f1"><title>Launch: cap 25, R 25 %, B 3 at 25 %, Colluding pair: -0.73 pp</title></rect>
+<text x="458.0" y="452.0" class="val" text-anchor="start">-0.7</text>
+<rect x="452.0" y="456.0" width="48.6" height="12.0" rx="2" class="f2"><title>Launch: cap 25, R 25 %, B 3 at 25 %, Ring of three: +1.99 pp</title></rect>
+<text x="506.6" y="466.0" class="val" text-anchor="start">+2.0</text>
+<rect x="452.0" y="470.0" width="131.8" height="12.0" rx="2" class="f3"><title>Launch: cap 25, R 25 %, B 3 at 25 %, Ring of four: +5.40 pp</title></rect>
+<text x="589.8" y="480.0" class="val" text-anchor="start">+5.4</text></svg>

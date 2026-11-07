@@ -1198,3 +1198,1697 @@ def selftest():
     d5 = docs["dampening"]["rounds"][4]["expected"]
     assert d5["strikes"][0][3] == str(int(dict(d3["points"])[HUGO]) * 9_500 // 10_000)
     return True
+
+
+# ---------------------------------------------------------------------------
+# Measures
+# ---------------------------------------------------------------------------
+
+def ranks(xs):
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    rk = [0.0] * len(xs)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and xs[order[j + 1]] == xs[order[i]]:
+            j += 1
+        for k in range(i, j + 1):
+            rk[order[k]] = (i + j) / 2 + 1
+        i = j + 1
+    return rk
+
+
+def spearman(xs, ys):
+    if len(xs) < 3:
+        return float("nan")
+    rx, ry = ranks(xs), ranks(ys)
+    mx, my = statistics.mean(rx), statistics.mean(ry)
+    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
+    den = math.sqrt(sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry))
+    return num / den if den else float("nan")
+
+
+def med(xs):
+    return statistics.median(xs) if xs else float("nan")
+
+
+HONEST_KINDS = ("honest", "honest_pair", "newcomer")
+
+
+# ---------------------------------------------------------------------------
+# Configurations
+# ---------------------------------------------------------------------------
+
+# DESIGN.md "Launch parameters": the values that are not *sim*.
+COMMUNITY_FIXED = {
+    "dao": None, "token": None, "members_role": "members", "council_role": "council",
+    "thanks_role": "thanks", "genesis_ms": None, "round_ms": 604_800_000,
+    "thanks_per_round": 100, "max_receivers": 10,
+    "round_budget": 500 * U, "min_payout": 5 * U, "carry_rounds": 8, "reserve": 0,
+    "guest_seats": 0, "guest_weight_bp": 0, "guest_cap_bp": 0,
+    "max_members": 48, "max_catchup": 8, "log_keep": 52, "note_max_bytes": 80,
+}
+TESTNET_FIXED = {
+    "dao": None, "token": None, "members_role": "members", "council_role": "council",
+    "thanks_role": "thanks", "genesis_ms": None, "round_ms": 1_200_000,
+    "thanks_per_round": 100, "max_receivers": 10,
+    "carry_rounds": 12, "reserve": 0, "guest_seats": 6,
+    "max_members": 24, "max_catchup": 36, "log_keep": 108, "note_max_bytes": 80,
+}
+# First guesses for the *sim* values (DESIGN.md's "about" values where it gives one).
+RULES_OFF = {"cap_per_receiver": 50, "reciprocal_bp": BP, "quadratic": False,
+             "breadth_k": 0, "breadth_bp": BP, "idle_bp": BP}
+TIER_GUESS = {"decay_bp": 500, "auto_rep_min": 200, "auto_per_thanks_bp": 2,
+              "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 800,
+              "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000}
+TESTNET_GUESS = {"round_budget": 120, "min_payout": 2, "guest_weight_bp": 5000,
+                 "guest_cap_bp": 2000}
+
+
+def tier_values(tiers, budget):
+    """Tier knobs relative to the budget (basis points of B, per thanks where noted) in
+    contract units."""
+    return {
+        "decay_bp": tiers["decay_bp"],
+        "auto_rep_min": tiers["auto_rep_min"],
+        "auto_per_thanks": budget * tiers["auto_per_thanks_bp"] // BP,
+        "auto_max": budget * tiers["auto_max_bp"] // BP,
+        "auto_share_bp": tiers["auto_share_bp"],
+        "cosign_base": budget * tiers["cosign_base_bp"] // BP,
+        "cosign_per_thanks": budget * tiers["cosign_per_thanks_bp"] // BP,
+        "cosign_max": budget * tiers["cosign_max_bp"] // BP,
+    }
+
+
+def community_config(rules, tiers=TIER_GUESS):
+    cfg = dict(COMMUNITY_FIXED)
+    cfg.update(rules)
+    cfg.update(tier_values(tiers, cfg["round_budget"]))
+    return cfg
+
+
+def testnet_config(rules, budget=TESTNET_GUESS, tiers=TIER_GUESS):
+    cfg = dict(TESTNET_FIXED)
+    cfg.update(rules)
+    cfg["round_budget"] = budget["round_budget"] * U
+    cfg["min_payout"] = budget["min_payout"] * U
+    cfg["guest_weight_bp"] = budget["guest_weight_bp"]
+    cfg["guest_cap_bp"] = budget["guest_cap_bp"]
+    cfg.update(tier_values(tiers, cfg["round_budget"]))
+    return cfg
+
+
+# ---------------------------------------------------------------------------
+# Stage A: the collusion rules
+# ---------------------------------------------------------------------------
+
+A_GRID = {
+    "cap_per_receiver": [25, 34, 40, 50],
+    "reciprocal_bp": [10_000, 7_500, 5_000, 2_500],
+    "quadratic": [False, True],
+    "breadth": [(0, 10_000), (2, 5_000), (3, 5_000), (4, 5_000), (3, 2_500)],
+    "idle_bp": [10_000, 7_500, 5_000, 2_500],
+}
+A_SCENARIOS = ["honest", "free_riders", "pair", "ring3", "ring4"]
+A_COLLUSION = ["pair", "ring3", "ring4"]
+A_SEEDS = list(range(1, 9))
+A_TIE_PP = 0.25
+
+
+def rule_key(rules):
+    return (rules["cap_per_receiver"], rules["reciprocal_bp"], rules["quadratic"],
+            rules["breadth_k"], rules["breadth_bp"], rules["idle_bp"])
+
+
+def rules_from_key(k):
+    return {"cap_per_receiver": k[0], "reciprocal_bp": k[1], "quadratic": k[2],
+            "breadth_k": k[3], "breadth_bp": k[4], "idle_bp": k[5]}
+
+
+def staged_totals(cfg, script, combos):
+    """Planned payouts per account for many rule combinations at once: steps 1-2 once per
+    round, reciprocity once per reciprocal_bp, aggregation once per (reciprocal_bp,
+    quadratic), breadth and idle per combination. Same integer steps as count_round (the
+    sweep checks that on samples). combos: [(rbp, quad, bk, bbp, ibp)]."""
+    base_cfg = dict(cfg, reciprocal_bp=BP, quadratic=False, breadth_k=0, breadth_bp=BP,
+                    idle_bp=BP)
+    rbps = sorted({c[0] for c in combos})
+    quads = sorted({c[1] for c in combos})
+    state = {c: ({}, {}) for c in combos}     # combo -> (carry, totals)
+    min_payout, keep = cfg["min_payout"], cfg["carry_rounds"]
+    members_cache = {}
+    for row in script:
+        r = row["round"]
+        allocs = {g: a for g, a in row["allocs"].items() if a}
+        if not allocs:
+            for carry, _ in state.values():
+                for acc in [a for a, v in carry.items() if r - v[1] >= keep]:
+                    del carry[acc]
+            continue
+        key = tuple(row["members"])
+        members = members_cache.get(key)
+        if members is None:
+            members = members_cache[key] = named_members(row["members"])
+        base = count_round(base_cfg, members, set(row["seats"]), allocs)
+        rows, w = base["rows"], base["weight"]
+        n = len(rows)
+        recv = [rr for _, rr, _ in rows]
+        idle_r = [rr in members and rr not in allocs for rr in recv]
+        index = {(g, rr): k for k, (g, rr, t) in enumerate(rows)}
+        for rbp in rbps:
+            w3 = list(w)
+            if rbp < BP:
+                for k, (g, rr, t) in enumerate(rows):
+                    j = index.get((rr, g))
+                    if j is not None and g < rr:
+                        d = min(w[k], w[j]) * (BP - rbp) // BP
+                        w3[k] -= d
+                        w3[j] -= d
+            for quad in quads:
+                if quad:
+                    v = [math.isqrt(x * SQRT_SCALE) for x in w3]
+                    s = {}
+                    for k in range(n):
+                        s[recv[k]] = s.get(recv[k], 0) + v[k]
+                    big_w = sum(w3)
+                    big_q = sum(x * x for x in s.values())
+                    a4 = [big_w * v[k] * s[recv[k]] // big_q if big_q else 0 for k in range(n)]
+                else:
+                    a4 = w3
+                support, shares_of, plain = {}, {}, {}
+                for k in range(n):
+                    rk = recv[k]
+                    if a4[k] > 0:
+                        support[rk] = support.get(rk, 0) + 1
+                    shares_of.setdefault(rk, []).append(a4[k])
+                    plain[rk] = plain.get(rk, 0) + a4[k]
+                idle_set = {recv[k] for k in range(n) if idle_r[k]}
+                receivers = sorted(plain)
+                for c in combos:
+                    if c[0] != rbp or c[1] != quad:
+                        continue
+                    bk, bbp, ibp = c[2], c[3], c[4]
+                    p = {}
+                    for rk in receivers:
+                        f1 = bbp if (bk > 0 and bbp < BP and support.get(rk, 0) < bk) else BP
+                        f2 = ibp if (ibp < BP and rk in idle_set) else BP
+                        if f1 == BP and f2 == BP:
+                            x = plain[rk]
+                        else:
+                            x = sum((a * f1 // BP) * f2 // BP for a in shares_of[rk])
+                        if x > 0:
+                            p[rk] = x
+                    total_p = sum(p.values())
+                    budget = min(cfg["round_budget"], BIG_BALANCE - cfg["reserve"]) if total_p else 0
+                    carry, totals = state[c]
+                    for acc in p:
+                        old = carry.get(acc)
+                        q = budget * p[acc] // total_p + (old[0] if old else 0)
+                        if q < min_payout:
+                            if q > 0:
+                                carry[acc] = (q, old[1] if old else r)
+                        elif q > 0:
+                            carry.pop(acc, None)
+                            totals[acc] = totals.get(acc, 0) + q
+                    for acc in [a for a, v in carry.items() if r - v[1] >= keep]:
+                        del carry[acc]
+    return {c: st[1] for c, st in state.items()}
+
+
+def _task_a(args):
+    scenario, seed, cap, strategy = args
+    pop, script = community_script(scenario, seed, cap, strategy)
+    combos = [(rbp, q, bk, bbp, ibp) for rbp in A_GRID["reciprocal_bp"]
+              for q in A_GRID["quadratic"] for (bk, bbp) in A_GRID["breadth"]
+              for ibp in A_GRID["idle_bp"]]
+    cfg = community_config(dict(RULES_OFF, cap_per_receiver=cap))
+    totals = staged_totals(cfg, script, combos)
+    # check the staged evaluation against the model on two combinations
+    rng = random.Random(_h("check", scenario, seed, cap, strategy))
+    for c in rng.sample(combos, 2):
+        full = payout_totals(dict(cfg, reciprocal_bp=c[0], quadratic=c[1], breadth_k=c[2],
+                                  breadth_bp=c[3], idle_bp=c[4]), script)
+        assert full == totals[c], ("staged evaluation differs", scenario, seed, cap, c)
+    work = {}
+    for row in script:
+        for name, x in row["work"].items():
+            work[name] = work.get(name, 0.0) + x
+    kinds = {m.name: m.kind for m in pop}
+    total_work = sum(work.values())
+    coll_work = sum(work.get(n, 0) for n, k in kinds.items() if k == "colluder")
+    honest = [n for n, k in kinds.items() if k in HONEST_KINDS]
+    out = {}
+    for c, tot in totals.items():
+        total_pay = sum(tot.values())
+        coll = sum(tot.get(n, 0) for n, k in kinds.items() if k == "colluder")
+        fr = sum(tot.get(n, 0) for n, k in kinds.items() if k == "free_rider")
+        pair = sum(tot.get(n, 0) for n, k in kinds.items() if k == "honest_pair")
+        rho = spearman([tot.get(n, 0) for n in honest], [work.get(n, 0) for n in honest])
+        out[(cap,) + c] = (coll, fr, pair, total_pay, rho)
+    return (scenario, seed, strategy), {"coll_work": coll_work, "total_work": total_work,
+                                        "fr_work": 0.0}, out
+
+
+def run_pool(fn, tasks, workers):
+    if workers <= 1:
+        return [fn(t) for t in tasks]
+    with Pool(workers) as pool:
+        return pool.map(fn, tasks, chunksize=1)
+
+
+def stage_a(workers, seeds=A_SEEDS, log=print):
+    tasks = []
+    for cap in A_GRID["cap_per_receiver"]:
+        for sc in A_SCENARIOS:
+            strategies = ["mutual", "one_way"] if sc in A_COLLUSION else ["mutual"]
+            for seed in seeds:
+                for st in strategies:
+                    tasks.append((sc, seed, cap, st))
+    log("stage A: %d runs of %d rule sets each" % (len(tasks), len(tasks) and 160))
+    results = run_pool(_task_a, tasks, workers)
+    # data[scenario][seed][strategy] = (work, {combo: metrics})
+    data = {}
+    for (sc, seed, st), wk, out in results:
+        d = data.setdefault(sc, {}).setdefault(seed, {}).setdefault(st, [wk, {}])
+        d[1].update(out)
+    keys = sorted(next(iter(data["honest"].values()))["mutual"][1])
+    base_key = rule_key(RULES_OFF)
+    rows = []
+    for k in keys:
+        row = {"key": k, "scenarios": {}}
+        for sc in A_SCENARIOS:
+            ex, rho, fr_ex, pair_loss, strat = [], [], [], [], {}
+            for seed in seeds:
+                runs = data[sc][seed]
+                # colluders' best response: the strategy that pays them more
+                st = max(sorted(runs), key=lambda s: runs[s][1][k][0])
+                strat[st] = strat.get(st, 0) + 1
+                wk, m = runs[st][0], runs[st][1][k]
+                coll, fr, pair, total, r_ = m
+                ex.append(100 * (coll / total - wk["coll_work"] / wk["total_work"]) if total else 0)
+                fr_ex.append(100 * fr / total if total else 0)
+                rho.append(r_)
+                if sc == "honest":
+                    bpair = runs["mutual"][1][base_key][2]
+                    pair_loss.append(100 * (1 - pair / bpair) if bpair else 0)
+            row["scenarios"][sc] = {"excess": med(ex), "rho": med(rho), "fr_excess": med(fr_ex),
+                                    "pair_loss": med(pair_loss) if pair_loss else None,
+                                    "strategy": strat, "excess_all": ex}
+        row["objective"] = statistics.mean(row["scenarios"][s]["excess"] for s in A_COLLUSION)
+        rows.append(row)
+    base = next(r for r in rows if r["key"] == base_key)
+    for row in rows:
+        fails = []
+        for sc in A_SCENARIOS:
+            if row["scenarios"][sc]["rho"] < base["scenarios"][sc]["rho"] - 0.05:
+                fails.append("tracking (%s)" % sc)
+        if row["scenarios"]["honest"]["pair_loss"] > 15:
+            fails.append("honest pair")
+        row["fails"] = fails
+    passing = [r for r in rows if not r["fails"]]
+    best = min(r["objective"] for r in passing)
+    tied = [r for r in passing if r["objective"] <= best + A_TIE_PP]
+
+    def n_rules(k):
+        return (k[1] < BP) + bool(k[2]) + (k[3] > 0 and k[4] < BP) + (k[5] < BP)
+
+    def offness(k):
+        return (A_GRID["reciprocal_bp"].index(k[1]) + int(k[2])
+                + A_GRID["breadth"].index((k[3], k[4])) + A_GRID["idle_bp"].index(k[5]))
+
+    tied.sort(key=lambda r: (n_rules(r["key"]), r["scenarios"]["free_riders"]["fr_excess"],
+                             -r["key"][0], offness(r["key"])))
+    pick = tied[0]
+    log("stage A pick %s objective %.2f pp (best %.2f, %d pass, %d tied)"
+        % (pick["key"], pick["objective"], best, len(passing), len(tied)))
+    return {"rows": rows, "base": base, "pick": pick, "best": best, "n_pass": len(passing),
+            "n_tied": len(tied)}
+
+
+# ---------------------------------------------------------------------------
+# Stage C: budget and minimum payout (testnet demo)
+# ---------------------------------------------------------------------------
+
+C_GRID = {"round_budget": [100, 120, 150], "min_payout": [1, 2, 3, 5]}
+C_SEEDS = list(range(1, 7))
+C_MAX_PAYOUTS = 7.0
+C_MIN_VISITORS_PAID = 75.0
+C_MAX_LAPSED = 2.0
+
+
+def visitor_stats(script, res):
+    """Visitors thanked by at least three house members (over their visit), and how many
+    of them got a payout."""
+    house = {n for n, _, _ in HOUSE} | {HOUSE_NEWCOMER[0]}
+    welcomed = {}
+    for row in script:
+        for g, gifts in row["allocs"].items():
+            if g in house:
+                for recv, _ in gifts:
+                    if is_implicit(recv):
+                        welcomed.setdefault(recv, set()).add(g)
+    many = [v for v, s in welcomed.items() if len(s) >= 3]
+    paid = [v for v in many if res["acc"].get(v, {}).get("n", 0) > 0]
+    return len(many), len(paid)
+
+
+def _task_c(args):
+    seed, rules = args
+    cfg0 = testnet_config(rules)
+    _, script = house_script(seed, cfg0)
+    out = {}
+    for b in C_GRID["round_budget"]:
+        for mp in C_GRID["min_payout"]:
+            cfg = testnet_config(rules, dict(TESTNET_GUESS, round_budget=b, min_payout=mp))
+            res = play(cfg, script)
+            n = sum(r["n"] for r in res["rounds"])
+            budget = sum(r["budget"] for r in res["rounds"])
+            lapsed = sum(r["lapsed"] for r in res["rounds"])
+            many, paid = visitor_stats(script, res)
+            out[(b, mp)] = {"per_round": n / len(script), "lapsed": 100 * lapsed / budget,
+                            "visitors": many, "visitors_paid": paid}
+    return seed, out
+
+
+def stage_c(rules, workers, seeds=C_SEEDS, log=print):
+    results = run_pool(_task_c, [(s, rules) for s in seeds], workers)
+    rows = []
+    for b in C_GRID["round_budget"]:
+        for mp in C_GRID["min_payout"]:
+            ms = [o[(b, mp)] for _, o in results]
+            many = sum(m["visitors"] for m in ms)
+            row = {"key": (b, mp), "per_round": med([m["per_round"] for m in ms]),
+                   "lapsed": med([m["lapsed"] for m in ms]),
+                   "visitors_paid": 100 * sum(m["visitors_paid"] for m in ms) / many if many else 0,
+                   "visitors": many}
+            fails = []
+            if row["per_round"] > C_MAX_PAYOUTS:
+                fails.append("payouts per round")
+            if row["visitors_paid"] < C_MIN_VISITORS_PAID:
+                fails.append("visitors paid")
+            if row["lapsed"] > C_MAX_LAPSED:
+                fails.append("lapsed carry")
+            row["fails"] = fails
+            rows.append(row)
+
+    def steps(k):
+        return (abs(C_GRID["round_budget"].index(k[0]) - C_GRID["round_budget"].index(120))
+                + abs(C_GRID["min_payout"].index(k[1]) - C_GRID["min_payout"].index(2)))
+
+    passing = [r for r in rows if not r["fails"]]
+    pool = passing or rows
+    pick = min(pool, key=lambda r: (steps(r["key"]), r["key"][1], -r["key"][0]))
+    log("stage C pick %s (%d pass)" % (pick["key"], len(passing)))
+    return {"rows": rows, "pick": pick, "n_pass": len(passing)}
+
+
+# ---------------------------------------------------------------------------
+# Stage B: tier limits and decay
+# ---------------------------------------------------------------------------
+
+B_GRID = {
+    "decay_bp": [300, 500, 750, 1000],
+    "auto_rep_min": [100, 200, 300, 500],
+    "auto_per_thanks_bp": [0.5, 1, 2, 5],      # basis points of B per thanks of reputation
+    "auto_max_bp": [800, 1200, 1600, 2500],
+    "auto_share_bp": [5000, 6000, 7000, 8000],
+    "cosign_base_bp": [400, 800, 1200, 1600],
+    "cosign_per_thanks_bp": [1, 2, 5, 10],
+    "cosign_max_bp": [2500, 4000, 6000, 8000],
+}
+B_GROUPS = [["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+            ["auto_max_bp", "auto_share_bp"],
+            ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"]]
+B_SEEDS = list(range(1, 7))
+B_TARGET = (70.0, 25.0, 5.0)
+B_BANDS = ((60, 80), (15, 35), (2, 10))
+B_NEWCOMER = (6, 10)
+COMMUNITY_B_ROUNDS = 104
+
+
+def tier_values(tiers, budget):   # noqa: F811 (fractional basis points allowed)
+    def part(bp):
+        return int(budget * bp) // BP
+    return {
+        "decay_bp": tiers["decay_bp"],
+        "auto_rep_min": tiers["auto_rep_min"],
+        "auto_per_thanks": part(tiers["auto_per_thanks_bp"]),
+        "auto_max": part(tiers["auto_max_bp"]),
+        "auto_share_bp": tiers["auto_share_bp"],
+        "cosign_base": part(tiers["cosign_base_bp"]),
+        "cosign_per_thanks": part(tiers["cosign_per_thanks_bp"]),
+        "cosign_max": part(tiers["cosign_max_bp"]),
+    }
+
+
+def tier_metrics(res, steady_from, newcomer, join):
+    t = [0, 0, 0, 0]
+    bound = 0
+    for rec in res["rounds"]:
+        if rec["round"] >= steady_from:
+            for k in (1, 2, 3):
+                t[k] += rec["tiers"][k]
+            bound += rec["moved"] > 0
+    n = sum(t)
+    share = [100 * t[k] / n if n else 0 for k in (1, 2, 3)]
+    first = next((r for r, tier in res["acc"].get(newcomer, new_acc())["tier_rounds"]
+                  if tier == 1), None)
+    to_t1 = first - join + 1 if first is not None else 99
+    return {"share": share, "newcomer": to_t1, "cap_rounds": bound,
+            "steady_rounds": sum(1 for r in res["rounds"] if r["round"] >= steady_from)}
+
+
+def _setting_script(setting, seed, ctx):
+    if setting == "testnet":
+        cfg = ctx["testnet_cfg"]
+        _, script = house_script(seed, cfg)
+        return script, "ivy", HOUSE_NEWCOMER_JOIN
+    _, script = community_script("mixed", seed, ctx["rules"]["cap_per_receiver"],
+                                 ctx["strategy"], rounds=COMMUNITY_B_ROUNDS,
+                                 newcomer_join=STEADY_FROM["community"])
+    return script, "new", STEADY_FROM["community"]
+
+
+def _setting_config(setting, ctx, tiers):
+    if setting == "testnet":
+        return testnet_config(ctx["rules"], ctx["budget"], tiers)
+    return community_config(ctx["rules"], tiers)
+
+
+def _task_b(args):
+    setting, seed, ctx, tier_list = args
+    script, newcomer, join = _setting_script(setting, seed, ctx)
+    out = []
+    for tiers in tier_list:
+        res = play(_setting_config(setting, ctx, tiers), script)
+        out.append(tier_metrics(res, STEADY_FROM[setting], newcomer, join))
+    return out
+
+
+def b_score(share, newcomer):
+    d = sum(abs(s - t) for s, t in zip(share, B_TARGET))
+    lo, hi = B_NEWCOMER
+    off = max(0, lo - newcomer, newcomer - hi)
+    return d + 5 * off
+
+
+def b_passes(share, newcomer):
+    return (all(lo <= s <= hi for s, (lo, hi) in zip(share, B_BANDS))
+            and B_NEWCOMER[0] <= newcomer <= B_NEWCOMER[1])
+
+
+def eval_tiers(setting, ctx, tier_list, workers, seeds=B_SEEDS):
+    tasks = [(setting, s, ctx, tier_list) for s in seeds]
+    results = run_pool(_task_b, tasks, workers)
+    agg = []
+    for i in range(len(tier_list)):
+        ms = [res[i] for res in results]
+        share = [med([m["share"][k] for m in ms]) for k in range(3)]
+        newcomer = med([m["newcomer"] for m in ms])
+        agg.append({"share": share, "newcomer": newcomer,
+                    "cap_rounds": med([m["cap_rounds"] for m in ms]),
+                    "steady_rounds": ms[0]["steady_rounds"],
+                    "score": b_score(share, newcomer), "pass": b_passes(share, newcomer)})
+    return agg
+
+
+def stage_b(setting, ctx, workers, log=print, max_passes=4):
+    cur = dict(TIER_GUESS)
+    history = []
+    for npass in range(max_passes):
+        changed = False
+        for group in B_GROUPS:
+            combos = [dict()]
+            for k in group:
+                combos = [dict(c, **{k: v}) for c in combos for v in B_GRID[k]]
+            tier_list = [dict(cur, **c) for c in combos]
+            agg = eval_tiers(setting, ctx, tier_list, workers)
+
+            def steps(t):
+                return sum(abs(B_GRID[k].index(t[k]) - B_GRID[k].index(cur[k])) for k in group)
+
+            best = min(a["score"] for a in agg)
+            cands = [(steps(t), a["score"], i) for i, (t, a) in enumerate(zip(tier_list, agg))
+                     if a["score"] <= best + 1]
+            i = min(cands)[2]
+            new = tier_list[i]
+            history.append({"pass": npass + 1, "group": group, "tiers": dict(new),
+                            "metrics": agg[i], "n": len(tier_list),
+                            "n_pass": sum(a["pass"] for a in agg)})
+            log("stage B %s pass %d %s -> %s score %.1f share %s newcomer %s"
+                % (setting, npass + 1, group, {k: new[k] for k in group}, agg[i]["score"],
+                   ["%.0f" % x for x in agg[i]["share"]], agg[i]["newcomer"]))
+            if any(new[k] != cur[k] for k in group):
+                changed = True
+            cur = new
+        if not changed:
+            break
+    final = eval_tiers(setting, ctx, [cur], workers)[0]
+    return {"pick": cur, "metrics": final, "history": history}
+
+
+# ---------------------------------------------------------------------------
+# Scenarios with the launch values
+# ---------------------------------------------------------------------------
+
+S_SEEDS = list(range(1, 9))
+S_COMMUNITY = ["honest", "free_riders", "free_riders_giving", "pair", "ring3", "ring4", "mixed"]
+
+
+def kinds_of(pop):
+    return {m.name: m.kind for m in pop}
+
+
+def community_metrics(pop, res, base_pair=None):
+    kinds = kinds_of(pop)
+    acc = res["acc"]
+    total_pay = sum(a["planned"] for a in acc.values())
+    total_work = sum(a["work"] for a in acc.values())
+
+    def group(kind_set):
+        names = [n for n, k in kinds.items() if k in kind_set]
+        pay = sum(acc.get(n, new_acc())["planned"] for n in names)
+        paid = sum(acc.get(n, new_acc())["paid"] for n in names)
+        work = sum(acc.get(n, new_acc())["work"] for n in names)
+        n_pay = sum(acc.get(n, new_acc())["n"] for n in names)
+        t1 = sum(acc.get(n, new_acc())["tiers"][1] for n in names)
+        struck = sum(acc.get(n, new_acc())["struck"] for n in names)
+        return {"names": names, "pay": pay, "paid": paid, "work": work, "n": n_pay, "t1": t1,
+                "struck": struck,
+                "excess": 100 * (pay / total_pay - work / total_work) if total_pay else 0.0}
+
+    honest = [n for n, k in kinds.items() if k in HONEST_KINDS]
+    m = {
+        "colluders": group({"colluder"}),
+        "free_riders": group({"free_rider"}),
+        "honest_pair": group({"honest_pair"}),
+        "rho": spearman([acc.get(n, new_acc())["planned"] for n in honest],
+                        [acc.get(n, new_acc())["work"] for n in honest]),
+        "total_pay": total_pay,
+    }
+    new = acc.get("new", new_acc())
+    first = next((r for r, t in new["tier_rounds"] if t == 1), None)
+    m["newcomer_t1"] = first - NEWCOMER_JOIN + 1 if first else 99
+    return m
+
+
+def _task_s(args):
+    scenario, seed, launch_rules, launch_tiers = args
+    out = {}
+    for label, rules, tiers in (("none", RULES_OFF, launch_tiers),
+                                ("launch", launch_rules, launch_tiers)):
+        cfg = community_config(rules, tiers)
+        best = None
+        strategies = ["mutual", "one_way"] if COMMUNITY_SCENARIOS[scenario]["ring"] else ["mutual"]
+        for st in strategies:
+            pop, script = community_script(scenario, seed, rules["cap_per_receiver"], st)
+            res = play(cfg, script)
+            m = community_metrics(pop, res)
+            m["strategy"] = st
+            if best is None or m["colluders"]["pay"] > best["colluders"]["pay"]:
+                best = m
+        out[label] = best
+    return scenario, seed, out
+
+
+def run_community(launch_rules, launch_tiers, workers, seeds=S_SEEDS):
+    tasks = [(sc, s, launch_rules, launch_tiers) for sc in S_COMMUNITY for s in seeds]
+    out = {}
+    for sc, seed, m in run_pool(_task_s, tasks, workers):
+        out.setdefault(sc, {})[seed] = m
+    summary = {}
+    for sc in S_COMMUNITY:
+        row = {}
+        for label in ("none", "launch"):
+            ms = [out[sc][s][label] for s in seeds]
+            row[label] = {
+                "coll_excess": med([m["colluders"]["excess"] for m in ms]),
+                "coll_paid": med([100 * m["colluders"]["paid"] / m["colluders"]["pay"]
+                                  for m in ms if m["colluders"]["pay"]]),
+                "coll_t1": med([100 * m["colluders"]["t1"] / m["colluders"]["n"]
+                                for m in ms if m["colluders"]["n"]]),
+                "fr_excess": med([m["free_riders"]["excess"] for m in ms]),
+                "rho": med([m["rho"] for m in ms]),
+                "pair_pay": [m["honest_pair"]["pay"] for m in ms],
+                "newcomer_t1": med([m["newcomer_t1"] for m in ms]),
+                "strategy": sorted({m["strategy"] for m in ms}),
+                "strategies": [m["strategy"] for m in ms],
+            }
+        row["pair_change"] = med([100 * (a / b - 1) for a, b in
+                                  zip(row["launch"]["pair_pay"], row["none"]["pair_pay"]) if b])
+        summary[sc] = row
+    return summary
+
+
+def testnet_metrics(house, script, res, cfg):
+    acc = res["acc"]
+    kinds = {m.name: m.kind for m in house}
+    total_pay = sum(a["planned"] for a in acc.values())
+    total_work = sum(a["work"] for a in acc.values())
+    budget = sum(r["budget"] for r in res["rounds"])
+
+    def share(names, key="planned"):
+        return 100 * sum(acc.get(n, new_acc())[key] for n in names) / total_pay if total_pay else 0
+
+    pair = [n for n, k in kinds.items() if k == "pair"]
+    honest = [n for n, k in kinds.items() if k == "honest"]
+    guests = [n for n in acc if is_implicit(n)]
+    pair_work = 100 * sum(acc.get(n, new_acc())["work"] for n in pair) / total_work
+    pair_n = sum(acc.get(n, new_acc())["n"] for n in pair)
+    pair_t23 = sum(acc.get(n, new_acc())["tiers"][2] + acc.get(n, new_acc())["tiers"][3]
+                   for n in pair)
+    pair_struck = sum(acc.get(n, new_acc())["struck"] for n in pair)
+    tm = tier_metrics(res, STEADY_FROM["testnet"], "ivy", HOUSE_NEWCOMER_JOIN)
+    many, paid = visitor_stats(script, res)
+    rounds = len(res["rounds"])
+    farm_ids = {guest_id("farm %d" % k) for k in range(cfg["guest_seats"])}
+    farm = [n for n in guests if n in farm_ids]
+    return {
+        "per_round": sum(r["n"] for r in res["rounds"]) / rounds,
+        "share": tm["share"], "newcomer": tm["newcomer"], "cap_rounds": tm["cap_rounds"],
+        "pair_excess": share(pair) - pair_work,
+        "pair_paid_share": share(pair, "paid") - pair_work,
+        "pair_t23": 100 * pair_t23 / pair_n if pair_n else 0,
+        "pair_rejected": 100 * pair_struck / pair_t23 if pair_t23 else 0,
+        "free_rider_share": share(["hugo"]),
+        "honest_share": share(honest), "honest_work": 100 * sum(
+            acc.get(n, new_acc())["work"] for n in honest) / total_work,
+        "guest_share": share(guests),
+        "guest_per_round": sum(acc.get(n, new_acc())["planned"] for n in guests) / rounds / U,
+        "farm_per_round": sum(acc.get(n, new_acc())["planned"] for n in farm) / rounds / U,
+        "hugo_per_round": acc.get("hugo", new_acc())["planned"] / rounds / U,
+        "visitors": many, "visitors_paid": paid,
+        "turned_away": script[-1]["turned_away"],
+        "rejected": sum(r["rejected"] for r in res["rounds"]) / rounds,
+        "lapsed": 100 * sum(r["lapsed"] for r in res["rounds"]) / budget if budget else 0,
+    }
+
+
+TESTNET_VARIANTS = [
+    # label, kwargs for house_script, rules: "launch" or "none"
+    ("House, visitors and a newcomer", {}, "launch"),
+    ("The same without dampening", {}, "none"),
+    ("House only (no visitors, no newcomer)", {"visitors": False, "newcomer": False}, "launch"),
+    ("Guest farm, outsider", {"farm": "outsider"}, "launch"),
+    ("Guest farm with the free rider as accomplice", {"farm": "accomplice"}, "launch"),
+    ("Accomplice farm without dampening", {"farm": "accomplice"}, "none"),
+]
+
+
+def _task_t(args):
+    seed, cfgs = args
+    out = []
+    for label, kw, which in TESTNET_VARIANTS:
+        cfg = cfgs[which]
+        house, script = house_script(seed, cfg, **kw)
+        res = play(cfg, script)
+        out.append(testnet_metrics(house, script, res, cfg))
+    return seed, out
+
+
+def run_testnet(cfg_launch, cfg_none, workers, seeds=S_SEEDS):
+    results = run_pool(_task_t, [(s, {"launch": cfg_launch, "none": cfg_none}) for s in seeds],
+                       workers)
+    rows = []
+    for i, (label, kw, which) in enumerate(TESTNET_VARIANTS):
+        ms = [o[i] for _, o in results]
+        row = {"label": label}
+        for k in ms[0]:
+            if k == "share":
+                row[k] = [med([m[k][j] for m in ms]) for j in range(3)]
+            else:
+                row[k] = med([m[k] for m in ms])
+        row["visitors_paid_pct"] = (100 * sum(m["visitors_paid"] for m in ms)
+                                    / max(1, sum(m["visitors"] for m in ms)))
+        rows.append(row)
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Charts: static SVG, no plotting library
+# ---------------------------------------------------------------------------
+
+# The first three categorical slots of a palette validated for all-pairs use (light and
+# dark steps), a neutral for context, and the page's surfaces. Each SVG carries its own
+# background and switches to the dark steps with the reader's colour scheme.
+SVG_STYLE = """
+.c{--bg:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6e69;--grid:#e1e0d9;--axis:#c3c2b7;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--ctx:#b5b4ad}
+@media (prefers-color-scheme: dark){.c{--bg:#1a1a19;--ink:#f0efec;--ink2:#c3c2b7;--muted:#a3a29b;
+--grid:#2c2c2a;--axis:#4a4a46;--s1:#3987e5;--s2:#d95926;--s3:#199e70;--ctx:#5c5b56}}
+.bg{fill:var(--bg)}
+text{font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;fill:var(--ink2);font-size:12px}
+.t{fill:var(--ink);font-size:18px;font-weight:600}
+.st{fill:var(--ink2);font-size:13px}
+.ax{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.axt{fill:var(--ink2);font-size:12px}
+.pt{fill:var(--ink);font-size:13px;font-weight:600}
+.val{fill:var(--ink2);font-size:11px;font-variant-numeric:tabular-nums}
+.grid{stroke:var(--grid);stroke-width:1;fill:none}
+.axis{stroke:var(--axis);stroke-width:1;fill:none}
+.ref{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;fill:none}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.fc{fill:var(--ctx)}
+.l1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linejoin:round}
+.l2{stroke:var(--s2);stroke-width:2;fill:none;stroke-linejoin:round}
+.l3{stroke:var(--s3);stroke-width:2;fill:none;stroke-linejoin:round}
+.lc{stroke:var(--ctx);stroke-width:1.5;fill:none;stroke-linejoin:round}
+.dot{stroke:var(--bg);stroke-width:2}
+"""
+
+
+def _esc(x):
+    return str(x).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+class Svg:
+    def __init__(self, w, h, title, desc):
+        self.w, self.h, self.title, self.desc = w, h, title, desc
+        self.parts = []
+
+    def add(self, x):
+        self.parts.append(x)
+
+    def text(self, x, y, s, cls="", anchor="start"):
+        self.add('<text x="%.1f" y="%.1f" class="%s" text-anchor="%s">%s</text>'
+                 % (x, y, cls, anchor, _esc(s)))
+
+    def line(self, x1, y1, x2, y2, cls):
+        self.add('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" class="%s"/>'
+                 % (x1, y1, x2, y2, cls))
+
+    def rect(self, x, y, w, h, cls, tip=None, rx=0):
+        t = "<title>%s</title>" % _esc(tip) if tip else ""
+        self.add('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%g" class="%s">%s</rect>'
+                 % (x, y, max(0.0, w), max(0.0, h), rx, cls, t))
+
+    def circle(self, x, y, r, cls, tip=None):
+        t = "<title>%s</title>" % _esc(tip) if tip else ""
+        self.add('<circle cx="%.1f" cy="%.1f" r="%g" class="%s">%s</circle>' % (x, y, r, cls, t))
+
+    def render(self):
+        head = ('<svg xmlns="http://www.w3.org/2000/svg" class="c" width="%d" height="%d" '
+                'viewBox="0 0 %d %d" role="img" aria-labelledby="title desc">'
+                '<title id="title">%s</title><desc id="desc">%s</desc><style>%s</style>'
+                '<rect class="bg" width="%d" height="%d" rx="8"/>'
+                % (self.w, self.h, self.w, self.h, _esc(self.title), _esc(self.desc),
+                   SVG_STYLE, self.w, self.h))
+        return head + "\n".join(self.parts) + "</svg>\n"
+
+    def save(self, name):
+        os.makedirs(DOCS_SIM, exist_ok=True)
+        with open(os.path.join(DOCS_SIM, name), "w") as fh:
+            fh.write(self.render())
+
+
+def nice_step(span, n=4):
+    raw = span / n
+    mag = 10 ** math.floor(math.log10(raw))
+    for m in (1, 2, 2.5, 5, 10):
+        if raw <= m * mag:
+            return m * mag
+    return 10 * mag
+
+
+def legend(svg, x, y, items):
+    """items: [(css class, label)]; square swatches, labels in text ink."""
+    for cls, label in items:
+        svg.rect(x, y - 10, 12, 12, cls, rx=2)
+        svg.text(x + 18, y, label)
+        x += 30 + 7 * len(label)
+
+
+def chart_excess(rows, path_name):
+    """Grouped horizontal bars: colluders' excess payout share by rule set and scenario."""
+    series = [("pair", "f1", "Colluding pair"), ("ring3", "f2", "Ring of three"),
+              ("ring4", "f3", "Ring of four")]
+    vals = [r["values"][k] for r in rows for k, _, _ in series]
+    hi = max(1.0, max(vals))
+    lo = min(0.0, min(vals))
+    step = nice_step(hi - lo, 5)
+    x1 = math.ceil(hi / step) * step
+    x0 = math.floor(lo / step) * step
+    band = 54
+    top = 112
+    h = top + band * len(rows) + 56
+    svg = Svg(1000, h, "Colluders' excess payout share by rule set",
+              "Horizontal grouped bars. For each rule set, the colluders' share of planned "
+              "payouts minus their share of the work, in percentage points, for a colluding "
+              "pair, a ring of three and a ring of four, each playing its best response. "
+              "Medians over 8 seeds, 52 weekly rounds of a 24-member community.")
+    svg.text(32, 40, "Colluders' excess payout share, by rule set", "t")
+    svg.text(32, 62, "Payout share minus work share, percentage points; colluders play their "
+             "best response. Median of 8 seeds, 52 rounds, 24 members.", "st")
+    legend(svg, 32, 90, [(c, l) for _, c, l in series])
+    xa, xb = 330, 940
+
+    def X(v):
+        return xa + (xb - xa) * (v - x0) / (x1 - x0)
+
+    v = x0
+    while v <= x1 + 1e-9:
+        svg.line(X(v), top - 6, X(v), top + band * len(rows), "grid")
+        svg.text(X(v), top + band * len(rows) + 18, "%g" % v, "ax", "middle")
+        v += step
+    svg.line(X(0), top - 6, X(0), top + band * len(rows), "axis")
+    svg.text((xa + xb) / 2, top + band * len(rows) + 40, "Excess payout share (percentage "
+             "points)", "axt", "middle")
+    for i, r in enumerate(rows):
+        y = top + i * band
+        svg.text(xa - 12, y + 20, r["label"], "pt" if r.get("bold") else "", "end")
+        if r.get("note"):
+            svg.text(xa - 12, y + 36, r["note"], "ax", "end")
+        for j, (k, cls, lab) in enumerate(series):
+            val = r["values"][k]
+            yy = y + 6 + j * 14
+            a, b = sorted((X(0), X(val)))
+            svg.rect(a, yy, max(1.0, b - a), 12, cls, "%s, %s: %+.2f pp" % (r["label"], lab, val),
+                     rx=2)
+            if r.get("bold") or i == 0:
+                svg.text(max(a, b) + 6, yy + 10, "%+.1f" % val, "val")
+    svg.save(path_name)
+
+
+def chart_tracking(panels, path_name):
+    """Two scatter panels: work share vs payout share per member, no dampening and launch."""
+    allv = [v for p in panels for d in p["dots"] for v in d[1:3]]
+    hi = max(allv) * 1.08
+    step = nice_step(hi, 4)
+    top_v = math.ceil(hi / step) * step
+    svg = Svg(1000, 560, "Payout share against work share, per member",
+              "Two scatter panels, one per rule set, the same community and seed. Each dot is "
+              "a member: share of the work on the x-axis, share of the planned payouts on the "
+              "y-axis, both in percent. The dashed diagonal is payout equal to work.")
+    svg.text(32, 40, "Payout share against work share, per member", "t")
+    svg.text(32, 62, "Mixed community (honest members, two free riders, a colluding pair), "
+             "seed 1, 52 rounds. Dashed: payout share equal to work share.", "st")
+    legend(svg, 32, 90, [("f1", "Honest member"), ("f2", "Colluder"), ("f3", "Free rider")])
+    for pi, p in enumerate(panels):
+        px = 40 + pi * 480
+        xa, xb, ya, yb = px + 50, px + 430, 140, 500
+
+        def X(v):
+            return xa + (xb - xa) * v / top_v
+
+        def Y(v):
+            return yb - (yb - ya) * v / top_v
+
+        svg.text(px + 10, 124, p["title"], "pt")
+        v = 0.0
+        while v <= top_v + 1e-9:
+            svg.line(xa, Y(v), xb, Y(v), "grid")
+            svg.text(xa - 8, Y(v) + 4, "%g" % v, "ax", "end")
+            svg.text(X(v), yb + 18, "%g" % v, "ax", "middle")
+            v += step
+        svg.line(xa, yb, xb, yb, "axis")
+        svg.line(X(0), Y(0), X(top_v), Y(top_v), "ref")
+        svg.text((xa + xb) / 2, yb + 40, "Share of the work (%)", "axt", "middle")
+        svg.add('<text x="%.1f" y="%.1f" class="axt" text-anchor="middle" '
+                'transform="rotate(-90 %.1f %.1f)">Share of payouts (%%)</text>'
+                % (px + 12, (ya + yb) / 2, px + 12, (ya + yb) / 2))
+        cls = {"honest": "f1", "colluder": "f2", "free_rider": "f3"}
+        for kind in ("honest", "free_rider", "colluder"):
+            for name, wv, pv, k in p["dots"]:
+                if k == kind:
+                    svg.circle(X(wv), Y(pv), 5, cls[k] + " dot",
+                               "%s (%s): work %.1f %%, payouts %.1f %%" % (name, k, wv, pv))
+    svg.save(path_name)
+
+
+def chart_tiers(rounds, join, path_name, title_extra):
+    """Stacked bars: payouts per round by tier, testnet demo, one seed."""
+    n = len(rounds)
+    hi = max(sum(r) for r in rounds)
+    top_v = max(4, int(math.ceil(hi / 2.0) * 2))
+    svg = Svg(1000, 420, "Payouts per round by tier, testnet demo",
+              "Stacked bars, one per 20-minute round over 48 hours: the number of payouts "
+              "approved automatically (tier 1), by one council vote (tier 2) and by a council "
+              "majority (tier 3). A dashed line marks the round the newcomer joins.")
+    svg.text(32, 40, "Payouts per round by tier, testnet demo", "t")
+    svg.text(32, 62, "House community with visitors and a newcomer, launch values, seed 1, %s."
+             % title_extra, "st")
+    legend(svg, 32, 90, [("f1", "Tier 1: automatic"), ("f2", "Tier 2: one council vote"),
+                         ("f3", "Tier 3: council majority")])
+    xa, xb, ya, yb = 70, 960, 120, 360
+    bw = (xb - xa) / n
+
+    def Y(v):
+        return yb - (yb - ya) * v / top_v
+
+    for v in range(0, top_v + 1, 2):
+        svg.line(xa, Y(v), xb, Y(v), "grid")
+        svg.text(xa - 8, Y(v) + 4, str(v), "ax", "end")
+    for k in range(0, n + 1, 12):
+        svg.text(xa + k * bw, yb + 18, str(k), "ax", "middle")
+    svg.text((xa + xb) / 2, yb + 44, "Round (20 minutes each; 72 rounds = 24 hours)", "axt",
+             "middle")
+    svg.add('<text x="%.1f" y="%.1f" class="axt" text-anchor="middle" '
+            'transform="rotate(-90 %.1f %.1f)">Payouts</text>' % (24, (ya + yb) / 2, 24, (ya + yb) / 2))
+    for i, counts in enumerate(rounds):
+        base = 0
+        for t, cls in ((0, "f1"), (1, "f2"), (2, "f3")):
+            c = counts[t]
+            if c:
+                y_top = Y(base + c)
+                svg.rect(xa + i * bw + 0.5, y_top + 1, bw - 1.5, Y(base) - y_top - 1, cls,
+                         "round %d: tier %d, %d payouts" % (i + 1, t + 1, c))
+            base += c
+    svg.line(xa, yb, xb, yb, "axis")
+    xj = xa + (join - 1) * bw
+    svg.line(xj, ya - 14, xj, yb, "ref")
+    svg.text(xj + 4, ya - 6, "newcomer joins", "ax")
+    svg.save(path_name)
+
+
+def chart_reputation(series, rounds, thresh, path_name):
+    """Lines: reputation of house members over the rounds; the pair, the free rider and the
+    newcomer highlighted, the honest members as context."""
+    hi = max(v for _, _, vals in series for v in vals if v is not None)
+    step = nice_step(hi, 4)
+    top_v = math.ceil(hi / step) * step
+    svg = Svg(1000, 440, "Reputation of the house members, testnet demo",
+              "Line chart over 144 rounds. Grey lines: the five honest house members. "
+              "Coloured: the newcomer, the colluding pair and the free rider. The dashed "
+              "line is the reputation needed for automatic payouts.")
+    svg.text(32, 40, "Reputation of the house members, testnet demo", "t")
+    svg.text(32, 62, "Thanks of reputation (decayed points minus strikes); launch values, "
+             "seed 1. Dashed: the minimum for tier 1.", "st")
+    legend(svg, 32, 90, [("f1", "Newcomer"), ("f2", "Colluding pair"), ("f3", "Free rider"),
+                         ("fc", "Honest members")])
+    xa, xb, ya, yb = 80, 900, 120, 380
+
+    def X(k):
+        return xa + (xb - xa) * (k - 1) / (rounds - 1)
+
+    def Y(v):
+        return yb - (yb - ya) * v / top_v
+
+    v = 0
+    while v <= top_v + 1e-9:
+        svg.line(xa, Y(v), xb, Y(v), "grid")
+        svg.text(xa - 8, Y(v) + 4, "{:,.0f}".format(v), "ax", "end")
+        v += step
+    for k in range(0, rounds + 1, 12):
+        svg.text(X(max(1, k)), yb + 18, str(k), "ax", "middle")
+    svg.line(xa, yb, xb, yb, "axis")
+    svg.line(xa, Y(thresh), xb, Y(thresh), "ref")
+    svg.text((xa + xb) / 2, yb + 44, "Round", "axt", "middle")
+    order = sorted(series, key=lambda s: s[0] != "lc")
+    for cls, name, vals in order:
+        pts = ["%.1f,%.1f" % (X(k + 1), Y(v)) for k, v in enumerate(vals) if v is not None]
+        svg.add('<polyline class="%s" points="%s"><title>%s</title></polyline>'
+                % (cls, " ".join(pts), _esc(name)))
+        if cls != "lc":
+            last = max(k for k, v in enumerate(vals) if v is not None)
+            svg.text(X(last + 1) + 8, Y(vals[last]) + 4, name, "val")
+    svg.save(path_name)
+
+
+# ---------------------------------------------------------------------------
+# sim/params.json (I-2)
+# ---------------------------------------------------------------------------
+
+NOTE_ITEMS = [("fixed", "kettle", "kettles"), ("repaired", "lamp", "lamps"),
+              ("mended", "jacket", "jackets"), ("fixed", "toaster", "toasters"),
+              ("adjusted", "bike brake", "bike brakes"), ("soldered", "radio", "radios"),
+              ("sharpened", "knife", "knives"), ("glued", "chair", "chairs")]
+NOTE_VAGUE = ["helped at the front desk", "made coffee for the volunteers",
+              "sorted a box of screws", "tidied the workbench"]
+HOUSE_TEXT = {
+    "honest": ("Works in about nine rounds out of ten. When working: fixes "
+               "round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, "
+               "and hands out 100 thanks: first welcome_each thanks to each of up to "
+               "welcome_max guests who posted a note and gave thanks this round (picked at "
+               "random), then the rest to the other house members in proportion to the items "
+               "in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most "
+               "cap_per_receiver each and max_receivers in all, dropping anyone below focus of "
+               "the top pick. Skips the round (no note, no thanks) otherwise."),
+    "pair": ("Labelled 'demo: colluding pair'. Works like an honest member, but every round it "
+             "works gives its partner cap_per_receiver thanks first, then welcomes guests and "
+             "spreads the rest like an honest member."),
+    "free_rider": ("Labelled 'demo: free rider'. Fixes nothing, posts a vague note every round "
+                   "(it claims one item with probability free_rider_claim, which the others "
+                   "read as one item), and never gives thanks."),
+    "council": ("Votes in the DAO by the published rule, at least two minutes after the payout "
+                "is filed. Tier 2: approve, unless more than half of the receiver's points this "
+                "round came from one giver whom the receiver also thanked this round; then "
+                "reject. Tier 3: approve if at least three givers stand behind the receiver's "
+                "points this round; otherwise reject."),
+}
+
+
+def house_document():
+    hb = HOUSE_BEH
+    members = []
+    for name, kind, items in HOUSE:
+        m = {"name": name, "kind": kind,
+             "label": {"pair": "demo: colluding pair",
+                       "free_rider": "demo: free rider"}.get(kind, ""),
+             "parameters": {"items_mean": items}}
+        if kind == "pair":
+            m["parameters"]["partner"] = [n for n, k, _ in HOUSE if k == "pair" and n != name][0]
+        m["strategy"] = HOUSE_TEXT[kind]
+        m["notes"] = (NOTE_VAGUE if kind == "free_rider" else
+                      ["%s {n} %s" % (v, many) for v, one, many in NOTE_ITEMS])
+        members.append(m)
+    n, k, items = HOUSE_NEWCOMER
+    return {
+        "about": "The labelled house members of the testnet demo and their published "
+                 "strategies (DESIGN.md, 'House members'). Accounts are <name>.<root>. "
+                 "Packages d and e read this block; the simulation plays exactly these rules.",
+        "behaviour": {k2: (list(v) if isinstance(v, tuple) else v) for k2, v in hb.items()
+                      if not k2.startswith("visit")},
+        "visitors_in_the_simulation": {k2: (list(v) if isinstance(v, tuple) else v)
+                                       for k2, v in hb.items() if k2.startswith("visit")},
+        "members": members,
+        "council": [{"name": c, "kind": "council", "strategy": HOUSE_TEXT["council"]}
+                    for c in HOUSE_COUNCIL],
+        "optional_newcomer": {"name": n, "kind": k, "parameters": {"items_mean": items},
+                              "join_round": HOUSE_NEWCOMER_JOIN,
+                              "note": "Simulated to check the newcomer target; the demo may "
+                                      "add it through an AddMemberToRole proposal or leave "
+                                      "it out."},
+        "note_singular": {"{n} %s" % many: "1 %s" % one for _, one, many in NOTE_ITEMS},
+    }
+
+
+def params_document(pick):
+    rules = pick["rules"]
+    cfg_c = community_config(rules, pick["tiers_community"])
+    cfg_t = testnet_config(rules, pick["testnet_budget"], pick["tiers_testnet"])
+    return {
+        "about": "Launch values picked by sim/hat_tip_sim.py by the pre-registered decision "
+                 "rule; reasons and evidence in docs/SIMULATION.md. Field names and units are "
+                 "the contract's Config (I-1).",
+        "units": "tUSD amounts in base units (6 decimals) as decimal strings; *_bp in basis "
+                 "points (10,000 = 100 %); auto_rep_min in whole thanks; auto_per_thanks and "
+                 "cosign_per_thanks in base units per whole thanks of reputation; round_ms in "
+                 "milliseconds. dao, token and genesis_ms are null here: they are set at "
+                 "deployment.",
+        "integer_rules": "docs/SIMULATION.md, 'Integer rules decided here' (also "
+                         "sim/golden/README.md)",
+        "community": {"about": "Example for a real community with weekly rounds "
+                               "(DESIGN.md's 'Community' column).",
+                      "config": config_json(cfg_c)},
+        "testnet": {"about": "The testnet demo (DESIGN.md's 'Testnet demo' column).",
+                    "config": config_json(cfg_t)},
+        "pick": {"rules": rules, "testnet_budget": pick["testnet_budget"],
+                 "tiers_testnet": pick["tiers_testnet"],
+                 "tiers_community": pick["tiers_community"],
+                 "colluder_strategy": pick.get("colluder_strategy", "mutual")},
+        "house": house_document(),
+    }
+
+
+def load_pick():
+    with open(PARAMS_FILE) as fh:
+        doc = json.load(fh)
+    pick = doc["pick"]
+    if params_document(pick) != doc:
+        raise SystemExit("sim/params.json differs from what its pick block produces")
+    return pick
+
+
+def launch_configs(pick):
+    rules = pick["rules"]
+    return (community_config(rules, pick["tiers_community"]),
+            testnet_config(rules, pick["testnet_budget"], pick["tiers_testnet"]))
+
+
+# ---------------------------------------------------------------------------
+# Launch golden vectors and the page's replay
+# ---------------------------------------------------------------------------
+
+def _acct(name):
+    return name if is_implicit(name) else name + ".test"
+
+
+def script_to_golden(script, cfg, balance0, council=True):
+    """A behaviour script as a golden script: allocations, members (the policy at each
+    close includes members who join next round), outcomes by the council rule, and the
+    DAO balance falling as payouts are paid."""
+    hat = Hat(cfg)
+    rounds = []
+    balance = balance0
+    pending = []
+    for i, row in enumerate(script):
+        r = row["round"]
+        nxt = script[i + 1]["members"] if i + 1 < len(script) else row["members"]
+        members = sorted(set(row["members"]) | set(nxt))
+        outcomes = pending
+        for pr, recv, status in outcomes:
+            hat.resolve(pr, recv, status)
+        at_close = balance
+        res = hat.close(r, members, row["seats"], row["allocs"], at_close)
+        pending = []
+        if not res["empty"]:
+            index = round_index(res)
+            for x in res["payouts"]:
+                status = council_decision(x, res, index) if council else "paid"
+                pending.append((r, x["receiver"], status))
+                if status == "paid":
+                    balance -= x["amount"]
+        spec = {"outcomes": [(pr, _acct(rc), st) for pr, rc, st in outcomes],
+                "seats": [_acct(s) for s in row["seats"]],
+                "notes": [(_acct(n), "%d items" % v) for n, v in
+                          sorted(row.get("notes", {}).items()) if v],
+                "calls": [(_acct(g), [(_acct(rc), t) for rc, t in gifts])
+                          for g, gifts in sorted(row["allocs"].items())],
+                "members": [_acct(m) for m in members],
+                "balance": at_close}
+        rounds.append((r, spec))
+    return rounds
+
+
+GOLDEN_DEPLOY = {"dao": "dao.test", "token": "tusd.test", "genesis_ms": 1_800_000_000_000}
+
+
+def launch_golden_docs(pick):
+    cfg_c, cfg_t = launch_configs(pick)
+    cfg_c = dict(cfg_c, **GOLDEN_DEPLOY)
+    cfg_t = dict(cfg_t, **GOLDEN_DEPLOY)
+    docs = {}
+    _, script = house_script(1, cfg_t, rounds=24, newcomer_join=9)
+    rounds = script_to_golden(script, cfg_t, 1_000_000 * U)
+    docs["launch_testnet"] = golden_doc("launch_testnet", {
+        "about": "The testnet launch values with the house community (five honest members, "
+                 "the colluding pair, the free rider), visitors and a newcomer who joins at "
+                 "round 9, drawn by the behaviour models (seed 1, 24 rounds); outcomes by the "
+                 "house council's rule; the DAO balance falls as payouts are paid.",
+        "initial_members": [_acct(m) for m in script[0]["members"]],
+        "rounds": rounds}, cfg_t)
+    _, script = community_script("mixed", 1, pick["rules"]["cap_per_receiver"],
+                                 pick.get("colluder_strategy", "mutual"), rounds=12,
+                                 newcomer_join=7)
+    rounds = script_to_golden(script, cfg_c, 20_000 * U)
+    docs["launch_community"] = golden_doc("launch_community", {
+        "about": "The community launch values with a 24-member community (honest members, "
+                 "two free riders, a colluding pair, a newcomer from round 7), drawn by the "
+                 "behaviour models (seed 1, 12 rounds); outcomes by the council rule.",
+        "initial_members": [_acct(m) for m in script[0]["members"]],
+        "rounds": rounds}, cfg_c)
+    return docs
+
+
+REPLAY_ROUNDS = 36
+
+
+def replay_document(pick):
+    """The same house community (seed 1, visitors, no newcomer) with the launch rules and
+    with every dampening rule off, same gifts: for the page's second replay."""
+    _, cfg_t = launch_configs(pick)
+    cfg_none = dict(cfg_t, reciprocal_bp=BP, quadratic=False, breadth_k=0, breadth_bp=BP,
+                    idle_bp=BP)
+    _, script = house_script(1, cfg_t, rounds=REPLAY_ROUNDS, newcomer=False)
+    out = {"about": "The testnet house community over %d rounds (seed 1, with visitors), "
+                    "played twice with the same gifts: with the launch rules and with "
+                    "reciprocity, quadratic, breadth and idle off (cap kept). Points and "
+                    "reputation in milli-thanks, amounts in tUSD base units. Generated by "
+                    "sim/hat_tip_sim.py." % REPLAY_ROUNDS,
+           "accounts": [_acct(n) for n, _, _ in HOUSE],
+           "labels": {_acct(n): {"pair": "demo: colluding pair",
+                                 "free_rider": "demo: free rider"}.get(k, "")
+                      for n, k, _ in HOUSE},
+           "rounds": []}
+    hats = {"launch": Hat(cfg_t), "none": Hat(cfg_none)}
+    pending = {"launch": [], "none": []}
+    for row in script:
+        r = row["round"]
+        entry = {"round": r, "notes": {_acct(n): v for n, v in sorted(row["notes"].items())},
+                 "seats": [_acct(s) for s in row["seats"]]}
+        for label, hat in hats.items():
+            for pr, recv, st in pending[label]:
+                hat.resolve(pr, recv, st)
+            res = hat.close(r, row["members"], row["seats"], row["allocs"], BIG_BALANCE)
+            pending[label] = []
+            side = {}
+            if not res["empty"]:
+                cnt = res["count"]
+                index = round_index(res)
+                pays = []
+                for x in res["payouts"]:
+                    st = council_decision(x, res, index)
+                    pending[label].append((r, x["receiver"], st))
+                    pays.append([_acct(x["receiver"]), str(x["amount"]), x["tier"], st])
+                side = {"gifts": [[_acct(g), _acct(rc), t, str(cnt["counted"][k])]
+                                  for k, (g, rc, t) in enumerate(cnt["rows"])],
+                        "points": {_acct(a): str(v) for a, v in sorted(res["points"].items())},
+                        "budget": str(res["budget"]), "payouts": pays}
+            side["reputation"] = {_acct(a): str(v) for a, v in sorted(hat.rep.items()) if v}
+            entry[label] = side
+        out["rounds"].append(entry)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# The sweep, end to end
+# ---------------------------------------------------------------------------
+
+SWEEP_FILE = os.path.join(HERE, "sweep.json")
+
+
+def a_row_json(r):
+    return {"key": list(r["key"]), "objective": round(r["objective"], 4), "fails": r["fails"],
+            "scenarios": {sc: {"excess": round(v["excess"], 4), "rho": round(v["rho"], 4),
+                               "fr_excess": round(v["fr_excess"], 4),
+                               "pair_loss": None if v["pair_loss"] is None else round(v["pair_loss"], 4),
+                               "strategy": v["strategy"]}
+                          for sc, v in r["scenarios"].items()}}
+
+
+def sweep(workers, log=print, stage_a_result=None):
+    a = stage_a_result or stage_a(workers, log=log)
+    rules = rules_from_key(a["pick"]["key"])
+    # the colluding pair's best response under the picked rules (stage A, pair scenario)
+    strat = a["pick"]["scenarios"]["pair"]["strategy"]
+    colluder_strategy = max(sorted(strat), key=lambda k: strat[k])
+    c = stage_c(rules, workers, log=log)
+    b_pick = c["pick"]["key"]
+    budget = dict(TESTNET_GUESS, round_budget=b_pick[0], min_payout=b_pick[1])
+    ctx = {"rules": rules, "budget": budget, "strategy": colluder_strategy,
+           "testnet_cfg": testnet_config(rules, budget)}
+    b_t = stage_b("testnet", ctx, workers, log=log)
+    b_c = stage_b("community", ctx, workers, log=log)
+    pick = {"rules": rules, "testnet_budget": budget, "tiers_testnet": b_t["pick"],
+            "tiers_community": b_c["pick"], "colluder_strategy": colluder_strategy}
+    rows = a["rows"]
+    by_key = {r["key"]: r for r in rows}
+    passing = sorted([r for r in rows if not r["fails"]], key=lambda r: r["objective"])
+    failing = sorted([r for r in rows if r["fails"]], key=lambda r: r["objective"])
+    cap = a["pick"]["key"][0]
+    compare = {}
+    for k in [rule_key(RULES_OFF), (cap, BP, False, 0, BP, BP)]:
+        compare[k] = by_key[k]
+    for rbp in A_GRID["reciprocal_bp"][1:]:
+        compare[(cap, rbp, False, 0, BP, BP)] = by_key[(cap, rbp, False, 0, BP, BP)]
+    compare[(cap, BP, True, 0, BP, BP)] = by_key[(cap, BP, True, 0, BP, BP)]
+    for bk, bbp in A_GRID["breadth"][1:]:
+        compare[(cap, BP, False, bk, bbp, BP)] = by_key[(cap, BP, False, bk, bbp, BP)]
+    for ibp in A_GRID["idle_bp"][1:]:
+        compare[(cap, BP, False, 0, BP, ibp)] = by_key[(cap, BP, False, 0, BP, ibp)]
+    for capv in A_GRID["cap_per_receiver"]:
+        k = (capv,) + a["pick"]["key"][1:]
+        compare[k] = by_key[k]
+    summary = {
+        "about": "Summary of the last sweep (sim/hat_tip_sim.py sweep); the tables in "
+                 "docs/SIMULATION.md are rendered from it.",
+        "stage_a": {"n": len(rows), "n_pass": a["n_pass"], "n_tied": a["n_tied"],
+                    "best": round(a["best"], 4), "base": a_row_json(a["base"]),
+                    "pick": a_row_json(a["pick"]),
+                    "top_passing": [a_row_json(r) for r in passing[:12]],
+                    "top_failing": [a_row_json(r) for r in failing[:5]],
+                    "compare": [a_row_json(r) for r in compare.values()],
+                    "colluder_strategy": colluder_strategy},
+        "stage_c": {"rows": [dict(r, key=list(r["key"])) for r in c["rows"]],
+                    "pick": list(c["pick"]["key"]), "n_pass": c["n_pass"]},
+        "stage_b": {"testnet": b_t, "community": b_c},
+    }
+    return pick, summary
+
+
+def write_json(path, doc):
+    with open(path, "w") as fh:
+        fh.write(dumps(doc))
+
+
+# ---------------------------------------------------------------------------
+# Report: generated blocks in docs/SIMULATION.md
+# ---------------------------------------------------------------------------
+
+def table(head, rows):
+    out = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+    out += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
+    return "\n".join(out)
+
+
+def rules_label(k):
+    k = tuple(k)
+    parts = ["cap %d" % k[0]]
+    if k[1] < BP:
+        parts.append("R %g %%" % (k[1] / 100))
+    if k[2]:
+        parts.append("Q")
+    if k[3] > 0 and k[4] < BP:
+        parts.append("B %d at %g %%" % (k[3], k[4] / 100))
+    if k[5] < BP:
+        parts.append("I %g %%" % (k[5] / 100))
+    return ", ".join(parts)
+
+
+def pp(v, digits=1):
+    return ("%+." + str(digits) + "f") % v
+
+
+def strat_label(st):
+    return ", ".join("%s %d" % (k.replace("_", "-"), v) for k, v in sorted(st.items()))
+
+
+def md_stage_a(sa):
+    base = sa["base"]
+    rows = []
+    for r in sa["compare"] + [sa["pick"]]:
+        sc = r["scenarios"]
+        label = rules_label(r["key"])
+        if tuple(r["key"]) == rule_key(RULES_OFF):
+            label = "cap 50, no dampening"
+        if r["key"] == sa["pick"]["key"]:
+            label = "**%s (launch)**" % label
+        rows.append([label, pp(sc["pair"]["excess"]), pp(sc["ring3"]["excess"]),
+                     pp(sc["ring4"]["excess"]), "%.2f" % r["objective"],
+                     "%.1f %%" % sc["honest"]["pair_loss"],
+                     "%+.3f" % (min(sc[s]["rho"] - base["scenarios"][s]["rho"]
+                                    for s in A_SCENARIOS)),
+                     pp(sc["free_riders"]["fr_excess"]),
+                     "; ".join(r["fails"]) or "-"])
+    seen = []
+    uniq = []
+    for row in rows:
+        if row[0] not in seen:
+            seen.append(row[0])
+            uniq.append(row)
+    head = ["Rule set", "Pair", "Ring of 3", "Ring of 4", "Objective (mean)",
+            "Honest pair loses", "Tracking vs none (worst scenario)", "Free riders' excess",
+            "Constraints failed"]
+    out = [table(head, uniq), "",
+           "Colluders' excess payout share in percentage points (payout share minus work "
+           "share, colluders combined, best response), medians over %d seeds. The objective "
+           "is the mean of the three. R: reciprocity, Q: quadratic, B: breadth (fewer than k "
+           "givers count at the given rate), I: idle." % len(A_SEEDS), ""]
+    rows = []
+    for r in sa["top_passing"][:8] + sa["top_failing"][:3]:
+        sc = r["scenarios"]
+        rows.append([rules_label(r["key"]), pp(sc["pair"]["excess"]),
+                     pp(sc["ring3"]["excess"]), pp(sc["ring4"]["excess"]),
+                     "%.2f" % r["objective"], "%.1f %%" % sc["honest"]["pair_loss"],
+                     strat_label(sc["ring4"]["strategy"]), "; ".join(r["fails"]) or "-"])
+    out += ["The best rule sets that meet both constraints, then the best that do not:", "",
+            table(["Rule set", "Pair", "Ring of 3", "Ring of 4", "Objective",
+                   "Honest pair loses", "Ring of 4 plays (seeds)", "Constraints failed"],
+                  rows), "",
+            "%d of %d rule sets meet both constraints; the best objective among them is "
+            "%.2f points, and %d lie within %.2f points of it." %
+            (sa["n_pass"], sa["n"], sa["best"], sa["n_tied"], A_TIE_PP)]
+    return "\n".join(out)
+
+
+def md_stage_c(sc):
+    rows = []
+    for r in sc["rows"]:
+        label = "%d / %d" % tuple(r["key"])
+        if list(r["key"]) == sc["pick"]:
+            label = "**%s**" % label
+        rows.append([label, "%.2f" % r["per_round"], "%.0f %% of %d" % (r["visitors_paid"], r["visitors"]),
+                     "%.2f %%" % r["lapsed"], "; ".join(r["fails"]) or "-"])
+    return "\n".join([table(["Budget / min. payout (tUSD)", "Payouts per round",
+                             "Visitors thanked by 3+ house members who got a payout",
+                             "Lapsed carry (of budgets)", "Criteria failed"], rows), "",
+                      "Medians over %d seeds (visitors: all seeds pooled); %d of %d pass." %
+                      (len(C_SEEDS), sc["n_pass"], len(sc["rows"]))])
+
+
+def tiers_label(t, budget):
+    v = tier_values(t, budget)
+    return ("decay %g %%, auto from %d thanks at %s per thanks up to %s, round cap %g %%, "
+            "co-sign %s + %s per thanks up to %s" % (
+                t["decay_bp"] / 100, t["auto_rep_min"], tusd(v["auto_per_thanks"]),
+                tusd(v["auto_max"]), t["auto_share_bp"] / 100, tusd(v["cosign_base"]),
+                tusd(v["cosign_per_thanks"]), tusd(v["cosign_max"])))
+
+
+def tusd(x):
+    s = "%.4f" % (x / U)
+    s = s.rstrip("0").rstrip(".")
+    return s
+
+
+def md_stage_b(sb, budgets):
+    out = []
+    for setting in ("testnet", "community"):
+        b = sb[setting]
+        rows = []
+        for h_ in b["history"]:
+            m = h_["metrics"]
+            rows.append([h_["pass"], ", ".join("`%s`" % g for g in h_["group"]),
+                         ", ".join("%s" % h_["tiers"][g] for g in h_["group"]),
+                         "%.0f / %.0f / %.0f" % tuple(m["share"]), "%g" % m["newcomer"],
+                         "%.1f" % m["score"], "%d of %d" % (h_["n_pass"], h_["n"])])
+        m = b["metrics"]
+        out += ["**%s.** %s." % ({"testnet": "Testnet demo", "community": "Community"}[setting],
+                                tiers_label(b["pick"], budgets[setting])), "",
+                table(["Pass", "Group", "Pick (grid units)", "Tier 1 / 2 / 3 (%)",
+                       "Newcomer to tier 1 (rounds)", "Score", "Combinations meeting all "
+                       "criteria"], rows), "",
+                "Final: tiers %.0f / %.0f / %.0f %% in steady state, newcomer in tier 1 after "
+                "%g rounds, the round cap binds in %g of %d steady rounds; criteria %s." % (
+                    m["share"][0], m["share"][1], m["share"][2], m["newcomer"],
+                    m["cap_rounds"], m["steady_rounds"], "met" if m["pass"] else "NOT met"), ""]
+    return "\n".join(out).rstrip()
+
+
+def md_community(summary):
+    rows = []
+    for sc in S_COMMUNITY:
+        r = summary[sc]
+        n, l = r["none"], r["launch"]
+        has_c = COMMUNITY_SCENARIOS[sc]["ring"] > 0
+        has_f = COMMUNITY_SCENARIOS[sc]["free_riders"] > 0
+        rows.append([COMMUNITY_SCENARIOS[sc]["title"],
+                     "%s -> %s" % (pp(n["coll_excess"]), pp(l["coll_excess"])) if has_c else "-",
+                     ", ".join(sorted(set(l["strategies"]))).replace("_", "-") if has_c else "-",
+                     "%.0f %%" % l["coll_paid"] if has_c else "-",
+                     "%s -> %s" % (pp(n["fr_excess"]), pp(l["fr_excess"])) if has_f else "-",
+                     "%.3f -> %.3f" % (n["rho"], l["rho"]),
+                     "%+.1f %%" % r["pair_change"],
+                     "%g" % l["newcomer_t1"]])
+    return "\n".join([table(["Scenario", "Colluders' excess (pp), none -> launch",
+                             "Colluders play", "Colluders' payouts the council lets through",
+                             "Free riders' excess (pp)", "Tracking (rank correlation)",
+                             "Honest pair's payout", "Newcomer to tier 1 (rounds)"], rows), "",
+                      "Medians over %d seeds, 52 weekly rounds, community launch values; "
+                      "\"none\" is cap 50 with every dampening rule off and the same tier "
+                      "limits. Colluders play their best response under each rule set. The "
+                      "council column applies the house council's rule (reject tier-2 payouts "
+                      "that come mostly from one reciprocal partner, tier-3 payouts with fewer "
+                      "than three givers)." % len(S_SEEDS)])
+
+
+def md_testnet(rows):
+    out = []
+    for r in rows:
+        out.append([r["label"], "%.2f" % r["per_round"], "%.0f / %.0f / %.0f" % tuple(r["share"]),
+                    "%g" % r["newcomer"] if r["newcomer"] < 99 else "-",
+                    pp(r["pair_excess"]), "%.0f %%" % r["pair_rejected"],
+                    "%.1f %%" % r["free_rider_share"], "%.1f %%" % r["guest_share"],
+                    "%.2f" % r["farm_per_round"] if r["farm_per_round"] else "-",
+                    "%.2f" % r["hugo_per_round"]])
+    return "\n".join([table(["Variant", "Payouts per round", "Tier 1 / 2 / 3 (%)",
+                             "Newcomer to tier 1", "Pair's excess (pp)",
+                             "Pair's tier-2/3 payouts rejected", "Free rider's share",
+                             "Guests' share", "Farm's take per round (tUSD)",
+                             "Free rider's take per round (tUSD)"], out), "",
+                      "Medians over %d seeds, 144 rounds of 20 minutes, testnet launch values. "
+                      "Tier shares count payouts in rounds 49-144." % len(S_SEEDS)])
+
+
+def md_params(doc):
+    cc = doc["community"]["config"]
+    tc = doc["testnet"]["config"]
+    rows = []
+    for f in CONFIG_FIELDS:
+        if f in ("dao", "token", "genesis_ms", "members_role", "council_role", "thanks_role"):
+            continue
+
+        def fmt(v):
+            if f in U128_FIELDS:
+                return tusd(int(v)) + " tUSD"
+            if isinstance(v, bool):
+                return "on" if v else "off"
+            return "{:,}".format(v) if isinstance(v, int) else str(v)
+        rows.append(["`%s`" % f, fmt(cc[f]), fmt(tc[f])])
+    return table(["Field", "Community (weekly)", "Testnet demo (20 minutes)"], rows)
+
+
+def inject(blocks):
+    with open(DOC_FILE) as fh:
+        doc = fh.read()
+    for name, text in blocks.items():
+        b = "<!-- BEGIN generated:%s -->" % name
+        e = "<!-- END generated:%s -->" % name
+        if b not in doc:
+            continue
+        i, j = doc.index(b) + len(b), doc.index(e)
+        doc = doc[:i] + "\n" + text + "\n" + doc[j:]
+    with open(DOC_FILE, "w") as fh:
+        fh.write(doc)
+
+
+# ---------------------------------------------------------------------------
+# Scenarios, charts and blocks with the launch values
+# ---------------------------------------------------------------------------
+
+def scenarios(pick, summary, workers, log=print):
+    cfg_c, cfg_t = launch_configs(pick)
+    rules = pick["rules"]
+    log("community scenarios")
+    comm = run_community(rules, pick["tiers_community"], workers)
+    log("testnet variants")
+    cfg_t_none = dict(cfg_t, **RULES_OFF)
+    tn = run_testnet(cfg_t, cfg_t_none, workers)
+    # charts
+    sa = summary["stage_a"]
+    by_key = {tuple(r["key"]): r for r in sa["compare"] + sa["top_passing"] + sa["top_failing"]
+              + [sa["pick"], sa["base"]]}
+    pk = tuple(sa["pick"]["key"])
+    cap = pk[0]
+    chart_rows = [("No dampening (cap 50)", rule_key(RULES_OFF), None),
+                  ("Cap %d only" % cap, (cap, BP, False, 0, BP, BP), None)]
+    if pk[1] < BP:
+        chart_rows.append(("Cap %d + reciprocity %g %%" % (cap, pk[1] / 100),
+                           (cap, pk[1], False, 0, BP, BP), None))
+    if pk[3] > 0:
+        chart_rows.append(("Cap %d + breadth %d at %g %%" % (cap, pk[3], pk[4] / 100),
+                           (cap, BP, False, pk[3], pk[4], BP), None))
+    chart_rows.append(("Cap %d + quadratic" % cap, (cap, BP, True, 0, BP, BP),
+                       "fails: honest pair loses too much"))
+    chart_rows.append(("Cap %d + idle 50 %%" % cap, (cap, BP, False, 0, BP, 5000), None))
+    chart_rows.append(("Launch: " + rules_label(pk), pk, None))
+    rows = []
+    for label, k, note in chart_rows:
+        r = by_key.get(tuple(k))
+        if r is None:
+            continue
+        if note is None and r["fails"]:
+            note = "fails: " + "; ".join(r["fails"])
+        rows.append({"label": label, "note": note, "bold": tuple(k) == pk,
+                     "values": {s: r["scenarios"][s]["excess"] for s in A_COLLUSION}})
+    chart_excess(rows, "excess.svg")
+    panels = []
+    for title, rl in (("No dampening (cap 50)", RULES_OFF), ("Launch rules: " + rules_label(pk), rules)):
+        cfg = community_config(rl, pick["tiers_community"])
+        best = None
+        for st in ("mutual", "one_way"):
+            pop, script = community_script("mixed", 1, rl["cap_per_receiver"], st)
+            res = play(cfg, script)
+            coll = sum(res["acc"].get(m.name, new_acc())["planned"] for m in pop
+                       if m.kind == "colluder")
+            if best is None or coll > best[0]:
+                best = (coll, pop, res)
+        _, pop, res = best
+        tp = sum(a["planned"] for a in res["acc"].values())
+        tw = sum(a["work"] for a in res["acc"].values())
+        dots = []
+        for m in pop:
+            a = res["acc"].get(m.name, new_acc())
+            k = {"colluder": "colluder", "free_rider": "free_rider"}.get(m.kind, "honest")
+            dots.append((m.name, 100 * a["work"] / tw, 100 * a["planned"] / tp, k))
+        panels.append({"title": title, "dots": dots})
+    chart_tracking(panels, "tracking.svg")
+    house, script = house_script(1, cfg_t)
+    res = play(cfg_t, script, keep=True)
+    chart_tiers([rec["tiers"][1:] for rec in res["rounds"]], HOUSE_NEWCOMER_JOIN, "tiers.svg",
+                "144 rounds of 20 minutes")
+    series = []
+    for m in house:
+        vals = [rec["rep"].get(m.name) / MILLI if m.join <= rec["round"] and rec["rep"].get(m.name) is not None
+                else (0.0 if m.join <= rec["round"] else None) for rec in res["rounds"]]
+        cls = {"pair": "l2", "free_rider": "l3"}.get(m.kind, "lc")
+        if m.name == HOUSE_NEWCOMER[0]:
+            cls = "l1"
+        label = {"pair": "%s (pair)" % m.name, "free_rider": "%s (free rider)" % m.name}.get(
+            m.kind, m.name if cls == "l1" else m.name)
+        if m.name == HOUSE_NEWCOMER[0]:
+            label = "%s (newcomer)" % m.name
+        series.append((cls, label, vals))
+    chart_reputation(series, len(res["rounds"]), cfg_t["auto_rep_min"], "reputation.svg")
+    doc = params_document(pick)
+    blocks = {
+        "stage_a": md_stage_a(sa),
+        "stage_c": md_stage_c(summary["stage_c"]),
+        "stage_b": md_stage_b(summary["stage_b"], {"testnet": cfg_t["round_budget"],
+                                                   "community": cfg_c["round_budget"]}),
+        "community": md_community(comm),
+        "testnet": md_testnet(tn),
+        "params": md_params(doc),
+    }
+    inject(blocks)
+    return comm, tn
+
+
+# ---------------------------------------------------------------------------
+# Command line
+# ---------------------------------------------------------------------------
+
+def outputs(pick):
+    """Every generated file that --check compares: golden vectors and the replay."""
+    files = {os.path.join(GOLDEN_DIR, n + ".json"): dumps(d)
+             for n, d in golden_docs(pick).items()}
+    files[REPLAY_FILE] = dumps(replay_document(pick))
+    return files
+
+
+def write_outputs(pick):
+    for path, text in outputs(pick).items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as fh:
+            fh.write(text)
+
+
+def check(rerun_sweep, workers):
+    selftest()
+    pick = load_pick()
+    bad = []
+    for path, text in outputs(pick).items():
+        try:
+            with open(path) as fh:
+                have = fh.read()
+        except FileNotFoundError:
+            have = None
+        if have != text:
+            bad.append(os.path.relpath(path, ROOT))
+    if rerun_sweep:
+        new_pick, summary = sweep(workers, log=lambda *a: None)
+        if params_document(new_pick) != params_document(pick):
+            bad.append("sim/params.json (the sweep picks other values)")
+        with open(SWEEP_FILE) as fh:
+            if json.load(fh) != json.loads(dumps(summary)):
+                bad.append("sim/sweep.json")
+    if bad:
+        print("differs from the model: " + ", ".join(bad))
+        return 1
+    print("ok: golden vectors, replay and params.json match the model" +
+          (" and the sweep" if rerun_sweep else ""))
+    return 0
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=NAME + " simulation")
+    ap.add_argument("command", nargs="?", default="all",
+                    choices=["all", "sweep", "scenarios", "golden"])
+    ap.add_argument("--check", action="store_true",
+                    help="recompute the golden vectors, the replay and params.json and "
+                         "compare them with the files")
+    ap.add_argument("--sweep", action="store_true", help="with --check: rerun the sweep too")
+    ap.add_argument("--write-params", action="store_true",
+                    help="with sweep: write sim/params.json and sim/sweep.json")
+    ap.add_argument("--workers", type=int, default=max(1, min(4, os.cpu_count() or 1)))
+    args = ap.parse_args(argv)
+    sys.dont_write_bytecode = True
+    if args.check:
+        return check(args.sweep, args.workers)
+    if args.command in ("all", "sweep"):
+        pick, summary = sweep(args.workers)
+        if args.command == "all" or args.write_params:
+            write_json(PARAMS_FILE, params_document(pick))
+            write_json(SWEEP_FILE, summary)
+        if args.command == "sweep":
+            return 0
+    pick = load_pick()
+    with open(SWEEP_FILE) as fh:
+        summary = json.load(fh)
+    if args.command in ("all", "scenarios"):
+        scenarios(pick, summary, args.workers)
+    write_outputs(pick)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

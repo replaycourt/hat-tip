@@ -1,0 +1,1973 @@
+{
+ "about": "Summary of the last sweep (sim/hat_tip_sim.py sweep); the tables in docs/SIMULATION.md are rendered from it.",
+ "stage_a": {
+  "n": 640,
+  "n_pass": 320,
+  "n_tied": 2,
+  "best": 2.2133,
+  "base": {
+   "key": [50, 10000, false, 0, 10000, 10000],
+   "objective": 11.7134,
+   "fails": [],
+   "scenarios": {
+    "honest": {
+     "excess": 0.0,
+     "rho": 0.8309,
+     "fr_excess": 0.0,
+     "pair_loss": 0.0,
+     "strategy": {"mutual": 8}
+    },
+    "free_riders": {
+     "excess": 0.0,
+     "rho": 0.8383,
+     "fr_excess": 2.8381,
+     "pair_loss": null,
+     "strategy": {"mutual": 8}
+    },
+    "pair": {
+     "excess": 3.5043,
+     "rho": 0.8639,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"mutual": 8}
+    },
+    "ring3": {
+     "excess": 13.7529,
+     "rho": 0.8442,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"mutual": 8}
+    },
+    "ring4": {
+     "excess": 17.8832,
+     "rho": 0.8406,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"mutual": 8}
+    }
+   }
+  },
+  "pick": {
+   "key": [25, 2500, false, 3, 2500, 10000],
+   "objective": 2.2218,
+   "fails": [],
+   "scenarios": {
+    "honest": {
+     "excess": 0.0,
+     "rho": 0.853,
+     "fr_excess": 0.0,
+     "pair_loss": 10.7518,
+     "strategy": {"mutual": 8}
+    },
+    "free_riders": {
+     "excess": 0.0,
+     "rho": 0.8474,
+     "fr_excess": 3.2194,
+     "pair_loss": null,
+     "strategy": {"mutual": 8}
+    },
+    "pair": {
+     "excess": -0.7306,
+     "rho": 0.8628,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"one_way": 8}
+    },
+    "ring3": {
+     "excess": 1.9931,
+     "rho": 0.8383,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"one_way": 7, "mutual": 1}
+    },
+    "ring4": {
+     "excess": 5.4031,
+     "rho": 0.8429,
+     "fr_excess": 0.0,
+     "pair_loss": null,
+     "strategy": {"mutual": 6, "one_way": 2}
+    }
+   }
+  },
+  "top_passing": [
+   {
+    "key": [25, 2500, false, 4, 5000, 10000],
+    "objective": 2.2133,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8504,
+      "fr_excess": 0.0,
+      "pair_loss": 12.3815,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8504,
+      "fr_excess": 3.2934,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.7738,
+      "rho": 0.8538,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 2.3412,
+      "rho": 0.8442,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 5.0727,
+      "rho": 0.8293,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 2500, 10000],
+    "objective": 2.2218,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.853,
+      "fr_excess": 0.0,
+      "pair_loss": 10.7518,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8474,
+      "fr_excess": 3.2194,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.7306,
+      "rho": 0.8628,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 1.9931,
+      "rho": 0.8383,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 5.4031,
+      "rho": 0.8429,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 6, "one_way": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 4, 5000, 7500],
+    "objective": 2.5753,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8491,
+      "fr_excess": 0.0,
+      "pair_loss": 12.6102,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 2.6431,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.5983,
+      "rho": 0.8617,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 2.7217,
+      "rho": 0.8442,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 5.6024,
+      "rho": 0.8346,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 5000, 10000],
+    "objective": 2.5895,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8543,
+      "fr_excess": 0.0,
+      "pair_loss": 10.6873,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 3.5833,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.5666,
+      "rho": 0.8594,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 2.6275,
+      "rho": 0.8461,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 5.7077,
+      "rho": 0.8308,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 2500, 7500],
+    "objective": 2.6074,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8522,
+      "fr_excess": 0.0,
+      "pair_loss": 11.5441,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8519,
+      "fr_excess": 2.5454,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.5049,
+      "rho": 0.8554,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 2.3662,
+      "rho": 0.8422,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 5.9608,
+      "rho": 0.8436,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 6, "one_way": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 5000, 7500],
+    "objective": 2.9755,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.853,
+      "fr_excess": 0.0,
+      "pair_loss": 11.1514,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8519,
+      "fr_excess": 2.8543,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.3729,
+      "rho": 0.8594,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.0334,
+      "rho": 0.8474,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 6.266,
+      "rho": 0.8263,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 4, 5000, 5000],
+    "objective": 3.0119,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.857,
+      "fr_excess": 0.0,
+      "pair_loss": 13.955,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8526,
+      "fr_excess": 1.8693,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.3606,
+      "rho": 0.856,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.181,
+      "rho": 0.826,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 6.2152,
+      "rho": 0.8256,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 2500, 5000],
+    "objective": 3.0632,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8517,
+      "fr_excess": 0.0,
+      "pair_loss": 11.3133,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8534,
+      "fr_excess": 1.8301,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.2377,
+      "rho": 0.8566,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 2.8205,
+      "rho": 0.8305,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 6.607,
+      "rho": 0.8414,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 6, "one_way": 2}
+     }
+    }
+   },
+   {
+    "key": [25, 5000, false, 4, 5000, 10000],
+    "objective": 3.2852,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8326,
+      "fr_excess": 0.0,
+      "pair_loss": 9.4112,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 2.9861,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.5348,
+      "rho": 0.8696,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 3.0988,
+      "rho": 0.8416,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 7.2917,
+      "rho": 0.8459,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 2, 5000, 10000],
+    "objective": 3.3198,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8591,
+      "fr_excess": 0.0,
+      "pair_loss": 9.7246,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8474,
+      "fr_excess": 3.974,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.3911,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.0412,
+      "rho": 0.8429,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 7.3094,
+      "rho": 0.8368,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 5000, 5000],
+    "objective": 3.4418,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8509,
+      "fr_excess": 0.0,
+      "pair_loss": 10.8881,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8526,
+      "fr_excess": 2.0312,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.0962,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.511,
+      "rho": 0.8325,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 6.9106,
+      "rho": 0.8271,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [34, 2500, false, 4, 5000, 10000],
+    "objective": 3.4562,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8417,
+      "fr_excess": 0.0,
+      "pair_loss": 13.0688,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8451,
+      "fr_excess": 3.0394,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.4722,
+      "rho": 0.86,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.3665,
+      "rho": 0.837,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 7.4742,
+      "rho": 0.8406,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 4, "mutual": 4}
+     }
+    }
+   }
+  ],
+  "top_failing": [
+   {
+    "key": [25, 2500, true, 4, 5000, 10000],
+    "objective": -0.2888,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.856,
+      "fr_excess": 0.0,
+      "pair_loss": 32.901,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8429,
+      "fr_excess": 1.5279,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -2.153,
+      "rho": 0.857,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 3, "mutual": 5}
+     },
+     "ring3": {
+      "excess": -0.3788,
+      "rho": 0.8351,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 1.6655,
+      "rho": 0.8444,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, true, 3, 2500, 10000],
+    "objective": -0.1707,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": 32.2049,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8444,
+      "fr_excess": 1.6016,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -2.1405,
+      "rho": 0.86,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 6, "one_way": 2}
+     },
+     "ring3": {
+      "excess": -0.3463,
+      "rho": 0.8351,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 1.9748,
+      "rho": 0.8451,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, true, 3, 5000, 10000],
+    "objective": -0.137,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": 32.1289,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8504,
+      "fr_excess": 1.6247,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -2.0972,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 3, "mutual": 5}
+     },
+     "ring3": {
+      "excess": -0.2846,
+      "rho": 0.8357,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 1.9708,
+      "rho": 0.8451,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, true, 2, 5000, 10000],
+    "objective": -0.0965,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8579,
+      "fr_excess": 0.0,
+      "pair_loss": 32.0728,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 1.6986,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -2.055,
+      "rho": 0.8583,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 3, "mutual": 5}
+     },
+     "ring3": {
+      "excess": -0.1982,
+      "rho": 0.8357,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 1.9637,
+      "rho": 0.8451,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, true, 0, 10000, 10000],
+    "objective": -0.0688,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8566,
+      "fr_excess": 0.0,
+      "pair_loss": 32.0591,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 1.7321,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -1.9712,
+      "rho": 0.8583,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 3, "mutual": 5}
+     },
+     "ring3": {
+      "excess": -0.1985,
+      "rho": 0.8357,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 1.9633,
+      "rho": 0.8451,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   }
+  ],
+  "compare": [
+   {
+    "key": [50, 10000, false, 0, 10000, 10000],
+    "objective": 11.7134,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8309,
+      "fr_excess": 0.0,
+      "pair_loss": 0.0,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8383,
+      "fr_excess": 2.8381,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 3.5043,
+      "rho": 0.8639,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 13.7529,
+      "rho": 0.8442,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 17.8832,
+      "rho": 0.8406,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 0, 10000, 10000],
+    "objective": 7.3099,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8378,
+      "fr_excess": 0.0,
+      "pair_loss": 7.1928,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 3.1968,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 1.2438,
+      "rho": 0.8713,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 6.8288,
+      "rho": 0.839,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 13.8572,
+      "rho": 0.8549,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 7500, false, 0, 10000, 10000],
+    "objective": 5.989,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8365,
+      "fr_excess": 0.0,
+      "pair_loss": 7.2338,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 3.4842,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 0.662,
+      "rho": 0.8741,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 5.6457,
+      "rho": 0.8435,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 11.6593,
+      "rho": 0.8519,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 5000, false, 0, 10000, 10000],
+    "objective": 4.3415,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8357,
+      "fr_excess": 0.0,
+      "pair_loss": 7.0913,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8489,
+      "fr_excess": 3.8209,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.045,
+      "rho": 0.869,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 4.1748,
+      "rho": 0.8494,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 8.8947,
+      "rho": 0.8474,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 0, 10000, 10000],
+    "objective": 3.8299,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8578,
+      "fr_excess": 0.0,
+      "pair_loss": 8.774,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8474,
+      "fr_excess": 4.2364,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.0876,
+      "rho": 0.8577,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.7101,
+      "rho": 0.8442,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring4": {
+      "excess": 7.8671,
+      "rho": 0.8414,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, true, 0, 10000, 10000],
+    "objective": 2.0671,
+    "fails": ["honest pair"],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 0.0,
+      "pair_loss": 28.1295,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8586,
+      "fr_excess": 1.2944,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -1.6372,
+      "rho": 0.865,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 1.8418,
+      "rho": 0.8364,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 5.9966,
+      "rho": 0.8421,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 2, 5000, 10000],
+    "objective": 7.2604,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8396,
+      "fr_excess": 0.0,
+      "pair_loss": 7.3153,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 2.9751,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 1.0386,
+      "rho": 0.8707,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 6.8506,
+      "rho": 0.8344,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 13.8918,
+      "rho": 0.8519,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 3, 5000, 10000],
+    "objective": 6.9868,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8361,
+      "fr_excess": 0.0,
+      "pair_loss": 8.0947,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 2.6954,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 0.9656,
+      "rho": 0.8713,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 5.9937,
+      "rho": 0.8331,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 14.0012,
+      "rho": 0.8519,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 4, 5000, 10000],
+    "objective": 5.8069,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8326,
+      "fr_excess": 0.0,
+      "pair_loss": 9.0873,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 2.4987,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 0.6331,
+      "rho": 0.8713,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 5.387,
+      "rho": 0.8221,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 11.4007,
+      "rho": 0.8466,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 3, 2500, 10000],
+    "objective": 6.7899,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8326,
+      "fr_excess": 0.0,
+      "pair_loss": 8.276,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8444,
+      "fr_excess": 2.4068,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 0.8387,
+      "rho": 0.8684,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 5.4589,
+      "rho": 0.8344,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 14.072,
+      "rho": 0.8519,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 0, 10000, 7500],
+    "objective": 7.7805,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.84,
+      "fr_excess": 0.0,
+      "pair_loss": 6.8891,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 2.5187,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 1.4685,
+      "rho": 0.8622,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 7.3298,
+      "rho": 0.8253,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 14.5431,
+      "rho": 0.8361,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 0, 10000, 5000],
+    "objective": 8.321,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8383,
+      "fr_excess": 0.0,
+      "pair_loss": 5.9017,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8541,
+      "fr_excess": 1.7536,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 1.7662,
+      "rho": 0.8622,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 7.893,
+      "rho": 0.8227,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 15.304,
+      "rho": 0.8308,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 10000, false, 0, 10000, 2500],
+    "objective": 8.9331,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8317,
+      "fr_excess": 0.0,
+      "pair_loss": 4.7393,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8421,
+      "fr_excess": 0.8585,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 2.1097,
+      "rho": 0.8634,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring3": {
+      "excess": 8.5312,
+      "rho": 0.8227,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "ring4": {
+      "excess": 16.1585,
+      "rho": 0.8414,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [25, 2500, false, 3, 2500, 10000],
+    "objective": 2.2218,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.853,
+      "fr_excess": 0.0,
+      "pair_loss": 10.7518,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8474,
+      "fr_excess": 3.2194,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.7306,
+      "rho": 0.8628,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 1.9931,
+      "rho": 0.8383,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 5.4031,
+      "rho": 0.8429,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 6, "one_way": 2}
+     }
+    }
+   },
+   {
+    "key": [34, 2500, false, 3, 2500, 10000],
+    "objective": 3.6897,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8413,
+      "fr_excess": 0.0,
+      "pair_loss": 11.8692,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8474,
+      "fr_excess": 2.947,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.4021,
+      "rho": 0.865,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.0302,
+      "rho": 0.8305,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 8.4411,
+      "rho": 0.8481,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     }
+    }
+   },
+   {
+    "key": [40, 2500, false, 3, 2500, 10000],
+    "objective": 4.2247,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.84,
+      "fr_excess": 0.0,
+      "pair_loss": 10.5089,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8481,
+      "fr_excess": 2.8668,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": -0.1243,
+      "rho": 0.8611,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 3.9241,
+      "rho": 0.8273,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 7, "mutual": 1}
+     },
+     "ring4": {
+      "excess": 8.8744,
+      "rho": 0.8481,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 6, "mutual": 2}
+     }
+    }
+   },
+   {
+    "key": [50, 2500, false, 3, 2500, 10000],
+    "objective": 6.0265,
+    "fails": [],
+    "scenarios": {
+     "honest": {
+      "excess": 0.0,
+      "rho": 0.8365,
+      "fr_excess": 0.0,
+      "pair_loss": 7.4926,
+      "strategy": {"mutual": 8}
+     },
+     "free_riders": {
+      "excess": 0.0,
+      "rho": 0.8496,
+      "fr_excess": 2.7915,
+      "pair_loss": null,
+      "strategy": {"mutual": 8}
+     },
+     "pair": {
+      "excess": 0.3789,
+      "rho": 0.856,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     },
+     "ring3": {
+      "excess": 5.6282,
+      "rho": 0.8468,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 4, "mutual": 4}
+     },
+     "ring4": {
+      "excess": 12.0722,
+      "rho": 0.8444,
+      "fr_excess": 0.0,
+      "pair_loss": null,
+      "strategy": {"one_way": 8}
+     }
+    }
+   }
+  ],
+  "colluder_strategy": "one_way"
+ },
+ "stage_c": {
+  "rows": [
+   {
+    "key": [100, 1],
+    "per_round": 7.597222222222222,
+    "lapsed": 0.0013815902777777778,
+    "visitors_paid": 100.0,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [100, 2],
+    "per_round": 7.420138888888889,
+    "lapsed": 0.012601999999999999,
+    "visitors_paid": 98.77675840978593,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [100, 3],
+    "per_round": 7.177083333333334,
+    "lapsed": 0.0355665,
+    "visitors_paid": 97.55351681957187,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [100, 5],
+    "per_round": 6.638888888888889,
+    "lapsed": 0.46255903472222226,
+    "visitors_paid": 75.84097859327217,
+    "visitors": 327,
+    "fails": []
+   },
+   {
+    "key": [120, 1],
+    "per_round": 7.638888888888889,
+    "lapsed": 0.0013815914351851851,
+    "visitors_paid": 100.0,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [120, 2],
+    "per_round": 7.482638888888889,
+    "lapsed": 0.0032291753472222223,
+    "visitors_paid": 99.38837920489297,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [120, 3],
+    "per_round": 7.302083333333334,
+    "lapsed": 0.015429557291666667,
+    "visitors_paid": 98.77675840978593,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [120, 5],
+    "per_round": 6.902777777777778,
+    "lapsed": 0.17024174479166668,
+    "visitors_paid": 91.13149847094802,
+    "visitors": 327,
+    "fails": []
+   },
+   {
+    "key": [150, 1],
+    "per_round": 7.729166666666666,
+    "lapsed": 0.0013815925925925927,
+    "visitors_paid": 100.0,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [150, 2],
+    "per_round": 7.545138888888889,
+    "lapsed": 0.003229178240740741,
+    "visitors_paid": 99.69418960244649,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [150, 3],
+    "per_round": 7.420138888888889,
+    "lapsed": 0.012601997685185187,
+    "visitors_paid": 98.77675840978593,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   },
+   {
+    "key": [150, 5],
+    "per_round": 7.086805555555555,
+    "lapsed": 0.04001570833333333,
+    "visitors_paid": 96.02446483180428,
+    "visitors": 327,
+    "fails": ["payouts per round"]
+   }
+  ],
+  "pick": [120, 5],
+  "n_pass": 2
+ },
+ "stage_b": {
+  "testnet": {
+   "pick": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+   "metrics": {
+    "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+    "newcomer": 8.0,
+    "cap_rounds": 43.0,
+    "steady_rounds": 96,
+    "score": 3.4028059987542445,
+    "pass": true
+   },
+   "history": [
+    {
+     "pass": 1,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [32.30387209398026, 62.987801972649734, 4.917775611715145],
+      "newcomer": 6.0,
+      "cap_rounds": 0.0,
+      "steady_rounds": 96,
+      "score": 75.76615426695433,
+      "pass": false
+     },
+     "n": 64,
+     "n_pass": 0
+    },
+    {
+     "pass": 1,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [66.25405360984624, 29.031326844748058, 4.917775611715145],
+      "newcomer": 6.0,
+      "cap_rounds": 23.0,
+      "steady_rounds": 96,
+      "score": 7.859497623186675,
+      "pass": true
+     },
+     "n": 16,
+     "n_pass": 2
+    },
+    {
+     "pass": 1,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [66.25405360984624, 29.031326844748058, 4.917775611715145],
+      "newcomer": 6.0,
+      "cap_rounds": 23.0,
+      "steady_rounds": 96,
+      "score": 7.859497623186675,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 16
+    },
+    {
+     "pass": 2,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [71.87293154311814, 25.973438102375063, 1.9940915805022157],
+      "newcomer": 6.0,
+      "cap_rounds": 43.5,
+      "steady_rounds": 96,
+      "score": 5.852278064990989,
+      "pass": false
+     },
+     "n": 64,
+     "n_pass": 2
+    },
+    {
+     "pass": 2,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [71.87293154311814, 25.973438102375063, 1.9940915805022157],
+      "newcomer": 6.0,
+      "cap_rounds": 43.5,
+      "steady_rounds": 96,
+      "score": 5.852278064990989,
+      "pass": false
+     },
+     "n": 16,
+     "n_pass": 0
+    },
+    {
+     "pass": 2,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 100, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.87293154311814, 22.736260975409017, 5.298626422417341],
+      "newcomer": 6.0,
+      "cap_rounds": 43.5,
+      "steady_rounds": 96,
+      "score": 4.435296990126465,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 21
+    },
+    {
+     "pass": 3,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 7
+    },
+    {
+     "pass": 3,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 16,
+     "n_pass": 2
+    },
+    {
+     "pass": 3,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 21
+    },
+    {
+     "pass": 4,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 7
+    },
+    {
+     "pass": 4,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 16,
+     "n_pass": 2
+    },
+    {
+     "pass": 4,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+     "metrics": {
+      "share": [71.50351336305336, 23.399333786716454, 5.298626422417341],
+      "newcomer": 8.0,
+      "cap_rounds": 43.0,
+      "steady_rounds": 96,
+      "score": 3.4028059987542445,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 21
+    }
+   ]
+  },
+  "community": {
+   "pick": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+   "metrics": {
+    "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+    "newcomer": 7.0,
+    "cap_rounds": 21.0,
+    "steady_rounds": 52,
+    "score": 2.884184260526995,
+    "pass": true
+   },
+   "history": [
+    {
+     "pass": 1,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 500, "auto_rep_min": 200, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [73.4551488038981, 26.488354020960664, 0.0],
+      "newcomer": 7.5,
+      "cap_rounds": 28.5,
+      "steady_rounds": 52,
+      "score": 9.943502824858761,
+      "pass": false
+     },
+     "n": 64,
+     "n_pass": 0
+    },
+    {
+     "pass": 1,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 500, "auto_rep_min": 200, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 800, "cosign_per_thanks_bp": 5, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [73.4551488038981, 26.488354020960664, 0.0],
+      "newcomer": 7.5,
+      "cap_rounds": 28.5,
+      "steady_rounds": 52,
+      "score": 9.943502824858761,
+      "pass": false
+     },
+     "n": 16,
+     "n_pass": 0
+    },
+    {
+     "pass": 1,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 500, "auto_rep_min": 200, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [73.4551488038981, 25.896078802007857, 0.7373894253494496],
+      "newcomer": 7.5,
+      "cap_rounds": 28.5,
+      "steady_rounds": 52,
+      "score": 8.613838180556506,
+      "pass": false
+     },
+     "n": 64,
+     "n_pass": 0
+    },
+    {
+     "pass": 2,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 5
+    },
+    {
+     "pass": 2,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 16,
+     "n_pass": 14
+    },
+    {
+     "pass": 2,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 4
+    },
+    {
+     "pass": 3,
+     "group": ["decay_bp", "auto_rep_min", "auto_per_thanks_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 5
+    },
+    {
+     "pass": 3,
+     "group": ["auto_max_bp", "auto_share_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 16,
+     "n_pass": 14
+    },
+    {
+     "pass": 3,
+     "group": ["cosign_base_bp", "cosign_per_thanks_bp", "cosign_max_bp"],
+     "tiers": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+     "metrics": {
+      "share": [70.04572063410674, 23.523052600094005, 6.361516226514256],
+      "newcomer": 7.0,
+      "cap_rounds": 21.0,
+      "steady_rounds": 52,
+      "score": 2.884184260526995,
+      "pass": true
+     },
+     "n": 64,
+     "n_pass": 4
+    }
+   ]
+  }
+ }
+}

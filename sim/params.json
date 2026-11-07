@@ -1,0 +1,201 @@
+{
+ "about": "Launch values picked by sim/hat_tip_sim.py by the pre-registered decision rule; reasons and evidence in docs/SIMULATION.md. Field names and units are the contract's Config (I-1).",
+ "units": "tUSD amounts in base units (6 decimals) as decimal strings; *_bp in basis points (10,000 = 100 %); auto_rep_min in whole thanks; auto_per_thanks and cosign_per_thanks in base units per whole thanks of reputation; round_ms in milliseconds. dao, token and genesis_ms are null here: they are set at deployment.",
+ "integer_rules": "docs/SIMULATION.md, 'Integer rules decided here' (also sim/golden/README.md)",
+ "community": {
+  "about": "Example for a real community with weekly rounds (DESIGN.md's 'Community' column).",
+  "config": {
+   "dao": null,
+   "token": null,
+   "members_role": "members",
+   "council_role": "council",
+   "thanks_role": "thanks",
+   "genesis_ms": null,
+   "round_ms": 604800000,
+   "thanks_per_round": 100,
+   "cap_per_receiver": 25,
+   "max_receivers": 10,
+   "reciprocal_bp": 2500,
+   "quadratic": false,
+   "breadth_k": 3,
+   "breadth_bp": 2500,
+   "idle_bp": 10000,
+   "decay_bp": 1000,
+   "round_budget": "500000000",
+   "min_payout": "5000000",
+   "carry_rounds": 8,
+   "reserve": "0",
+   "auto_rep_min": 100,
+   "auto_per_thanks": "100000",
+   "auto_max": "60000000",
+   "cosign_base": "20000000",
+   "cosign_per_thanks": "50000",
+   "cosign_max": "200000000",
+   "auto_share_bp": 6000,
+   "guest_seats": 0,
+   "guest_weight_bp": 0,
+   "guest_cap_bp": 0,
+   "max_members": 48,
+   "max_catchup": 8,
+   "log_keep": 52,
+   "note_max_bytes": 80
+  }
+ },
+ "testnet": {
+  "about": "The testnet demo (DESIGN.md's 'Testnet demo' column).",
+  "config": {
+   "dao": null,
+   "token": null,
+   "members_role": "members",
+   "council_role": "council",
+   "thanks_role": "thanks",
+   "genesis_ms": null,
+   "round_ms": 1200000,
+   "thanks_per_round": 100,
+   "cap_per_receiver": 25,
+   "max_receivers": 10,
+   "reciprocal_bp": 2500,
+   "quadratic": false,
+   "breadth_k": 3,
+   "breadth_bp": 2500,
+   "idle_bp": 10000,
+   "decay_bp": 750,
+   "round_budget": "120000000",
+   "min_payout": "5000000",
+   "carry_rounds": 12,
+   "reserve": "0",
+   "auto_rep_min": 200,
+   "auto_per_thanks": "60000",
+   "auto_max": "30000000",
+   "cosign_base": "14400000",
+   "cosign_per_thanks": "60000",
+   "cosign_max": "30000000",
+   "auto_share_bp": 8000,
+   "guest_seats": 6,
+   "guest_weight_bp": 5000,
+   "guest_cap_bp": 2000,
+   "max_members": 24,
+   "max_catchup": 36,
+   "log_keep": 108,
+   "note_max_bytes": 80
+  }
+ },
+ "pick": {
+  "rules": {"cap_per_receiver": 25, "reciprocal_bp": 2500, "quadratic": false, "breadth_k": 3, "breadth_bp": 2500, "idle_bp": 10000},
+  "testnet_budget": {"round_budget": 120, "min_payout": 5, "guest_weight_bp": 5000, "guest_cap_bp": 2000},
+  "tiers_testnet": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
+  "tiers_community": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
+  "colluder_strategy": "one_way"
+ },
+ "house": {
+  "about": "The labelled house members of the testnet demo and their published strategies (DESIGN.md, 'House members'). Accounts are <name>.<root>. Packages d and e read this block; the simulation plays exactly these rules.",
+  "behaviour": {"p_work": 0.9, "items_sigma": 0.4, "noise_sigma": 0.5, "focus": 0.15, "welcome_each": 5, "welcome_max": 2, "free_rider_claim": 0.5},
+  "visitors_in_the_simulation": {
+   "visit_rate": 0.5,
+   "visit_stay": 0.4,
+   "visit_note": 0.8,
+   "visit_give": 0.9,
+   "visit_receivers": [2, 5]
+  },
+  "members": [
+   {
+    "name": "ana",
+    "kind": "honest",
+    "label": "",
+    "parameters": {"items_mean": 6.0},
+    "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "ben",
+    "kind": "honest",
+    "label": "",
+    "parameters": {"items_mean": 5.0},
+    "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "cleo",
+    "kind": "honest",
+    "label": "",
+    "parameters": {"items_mean": 4.0},
+    "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "dina",
+    "kind": "honest",
+    "label": "",
+    "parameters": {"items_mean": 3.0},
+    "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "emil",
+    "kind": "honest",
+    "label": "",
+    "parameters": {"items_mean": 2.5},
+    "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "finn",
+    "kind": "pair",
+    "label": "demo: colluding pair",
+    "parameters": {"items_mean": 2.0, "partner": "gus"},
+    "strategy": "Labelled 'demo: colluding pair'. Works like an honest member, but every round it works gives its partner cap_per_receiver thanks first, then welcomes guests and spreads the rest like an honest member.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "gus",
+    "kind": "pair",
+    "label": "demo: colluding pair",
+    "parameters": {"items_mean": 2.0, "partner": "finn"},
+    "strategy": "Labelled 'demo: colluding pair'. Works like an honest member, but every round it works gives its partner cap_per_receiver thanks first, then welcomes guests and spreads the rest like an honest member.",
+    "notes": ["fixed {n} kettles", "repaired {n} lamps", "mended {n} jackets", "fixed {n} toasters", "adjusted {n} bike brakes", "soldered {n} radios", "sharpened {n} knives", "glued {n} chairs"]
+   },
+   {
+    "name": "hugo",
+    "kind": "free_rider",
+    "label": "demo: free rider",
+    "parameters": {"items_mean": 0.0},
+    "strategy": "Labelled 'demo: free rider'. Fixes nothing, posts a vague note every round (it claims one item with probability free_rider_claim, which the others read as one item), and never gives thanks.",
+    "notes": ["helped at the front desk", "made coffee for the volunteers", "sorted a box of screws", "tidied the workbench"]
+   }
+  ],
+  "council": [
+   {
+    "name": "council-a",
+    "kind": "council",
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+   },
+   {
+    "name": "council-b",
+    "kind": "council",
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+   },
+   {
+    "name": "council-c",
+    "kind": "council",
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+   }
+  ],
+  "optional_newcomer": {
+   "name": "ivy",
+   "kind": "honest",
+   "parameters": {"items_mean": 4.0},
+   "join_round": 61,
+   "note": "Simulated to check the newcomer target; the demo may add it through an AddMemberToRole proposal or leave it out."
+  },
+  "note_singular": {
+   "{n} kettles": "1 kettle",
+   "{n} lamps": "1 lamp",
+   "{n} jackets": "1 jacket",
+   "{n} toasters": "1 toaster",
+   "{n} bike brakes": "1 bike brake",
+   "{n} radios": "1 radio",
+   "{n} knives": "1 knife",
+   "{n} chairs": "1 chair"
+  }
+ }
+}
