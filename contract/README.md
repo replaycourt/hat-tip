@@ -4,14 +4,14 @@ The rules of DESIGN.md in one NEAR contract (Rust, near-sdk 5.30, edition 2024):
 thanks, the counting pipeline, reputation, the three payout tiers, and every payout filed as a
 proposal in the community's own Sputnik v2 DAO through the DAO role `thanks`. The contract never
 holds the money; it has no owner, admin, upgrade or withdraw method, and after deployment its
-account has no keys. This file is interface I-1 of PLAN.md, as built.
+account has no keys. This file is the contract's interface, as built.
 
 The name lives in `src/config.rs` (`NAME`, `EVENT_STANDARD`, `SIGNING_PREFIX`) and in the crate
 name `hat-tip`; a rename touches those and the export list in `build.sh`.
 
-## Deviations from I-1
+## Deviations from the first interface draft
 
-Small, and none changes a method name, an argument or a field other packages read:
+Small, and none changes a method name, an argument or a field the page or the scripts read:
 
 1. **`pay(max)` returns `PayOutcome {filing, error}`**, not a promise. It starts one chain per
    payout and the chains run on their own; `filing` lists their payout ids. (A call that files
@@ -28,17 +28,18 @@ Small, and none changes a method name, an argument or a field other packages rea
 4. **`on_finalized` records nothing.** After any `Finalize` the outcome (`Expired` with the bond
    back, or `Approved` / `Failed` after a retry) is read by the next `check_payout`, from the
    DAO's own record. An expired payout therefore takes two checks: one finalizes, one records.
-5. **The views carry more fields than I-1 lists** (additive; see "Views"), and two shapes are
+5. **The views carry more fields than the draft listed** (additive; see "Views"), and two shapes are
    spelled out: `member().history` rows are objects `{round, points, givers: [[giver, given,
    counted]]}`, and `limits` (like `tiers()`) is `{auto, cosign, reputation}`.
-6. **Gas** differs from PLAN.md's starting values: every `call.then(callback)` costs about
+6. **Gas** differs from the first budgets: every `call.then(callback)` costs about
    19 Tgas in receipt fees on top of the static gas, and a vote that executes a transfer needs at
    least 25 Tgas attached (probe). See "Gas".
-7. **One new parameter, `guest_receive_cap_bp: u16`** (coordinator's decision, 2026-11-07),
+7. **One new parameter, `guest_receive_cap_bp: u16`** (added 2026-11-07),
    the last field of `Config`, optional in JSON with default 10,000 (off): guests together
    receive at most this share of a round's points ("Counting, exactly", step 7). Without it a
-   member could route its thanks to a farm of guests. The simulation and `sim/golden` do not
-   model it yet; with the default the contract matches every vector.
+   member could route its thanks to a farm of guests. The simulation models it (rule 17 of
+   `sim/golden/README.md`, stage D of `docs/SIMULATION.md`), `sim/golden/receive_cap.json`
+   exercises it and `launch_testnet.json` runs with it at 800.
 
 ## Build and check
 
@@ -51,7 +52,16 @@ cargo test            # unit tests and the mock-VM tests in tests/
 `build.sh` (from Bonfire) builds with `cargo near build non-reproducible-wasm --locked`, remaps
 every machine path, pins the host triple cargo hashes, and fails if `strings` finds `/Users/`,
 `/home/` or the user name in the wasm (exit 2) or if the wasm exports anything but the methods
-below (exit 4). Toolchain: `rust-toolchain.toml` (1.95.0), cargo-near 0.22.
+below (exit 4). It unsets every `CARGO_NEAR_*` and `NEP330_*` variable first: cargo-near writes
+`CARGO_NEAR_VERSION` into the `builder` field of the ABI it embeds, which moves every later byte.
+Toolchain: `rust-toolchain.toml` (1.95.0), cargo-near 0.22. On the Intel Mac (macOS 15, x86_64)
+that built the deployed wasm, `./build.sh --check` reproduces `WASM_SHA256` from a cold target
+directory in about 4.5 minutes, also with `CARGO_NEAR_VERSION` set. To compare a build with the
+code on chain, section by section:
+
+```sh
+python3 ../scripts/compare-wasm.py target/near/hat_tip.wasm --deployment contract
+```
 
 ## Init
 
@@ -214,7 +224,7 @@ limit: 1})` -> `on_checked(payout)`:
 | `InProgress` | nothing | |
 
 A strike takes the round's points back, decayed to the last closed round with the per-round
-floors: `R = R - min(R, strike)`. Needs 120 Tgas attached.
+floors: `R = R - min(R, strike)`. Needs 140 Tgas attached (with less it panics `this call needs 140 Tgas`).
 
 ## Views
 
@@ -291,8 +301,8 @@ subtracts) and every payout status; `tests/invariant.rs` does exactly that.
 ## Counting, exactly
 
 The contract implements the integer rules listed in `sim/golden/README.md` ("The integer rules
-the vectors fix", 1-16), plus the receive cap of step 7 below, and `tests/golden.rs` checks it
-against every vector (all five match to the base unit and the milli-thanks). In short, for a
+the vectors fix", 1-17), and `tests/golden.rs` checks it against every vector (all six match to
+the base unit and the milli-thanks). In short, for a
 round with entries `T[i][j]`, every division rounding down:
 
 1. Eligibility (at the close, against the policy just read): giver and receiver each a named
@@ -305,7 +315,7 @@ round with entries `T[i][j]`, every division rounding down:
    `a = W * v * S_j / Q`; else `a = w`.
 5. Breadth: if fewer than `breadth_k` entries to j have `a > 0`: `a = a * breadth_bp / 10000`.
 6. Idle: if j is a member without an allocation in the round: `a = a * idle_bp / 10000`.
-7. Guests' receive cap (not in `sim/golden` yet; off at 10,000): `Pg` = sum of `a` over entries
+7. Guests' receive cap (off at 10,000): `Pg` = sum of `a` over entries
    to guests, `Pm` over entries to members. If `Pg * (10000 - guest_receive_cap_bp) > Pm *
    guest_receive_cap_bp`, every entry to a guest becomes `a * (Pm * guest_receive_cap_bp) /
    (Pg * (10000 - guest_receive_cap_bp))`, one floor per entry (the same rule as step 2's cap).
@@ -351,8 +361,12 @@ Static gas each receipt gets (`src/config.rs`); `GAS_LINK` (20 Tgas) is the rece
 | `on_checked` | 5 + 2 x 20 + 10 + 30 + 5 = 90 |
 
 Attach: `sync` 70, `close_round` 255 (when a round with allocations is due), `check_payout`
-135, `pay` 40 to 130 per payout (tier 3 already registered to tier 1 with registration), plus
-15 for itself. The mock-VM tests fail any receipt that attaches more gas than it has.
+140, `pay` 40 to 130 per payout (tier 3 already registered to tier 1 with registration), plus
+15 for itself. The first three are what the contract asks for itself (`this call needs N Tgas`):
+the gas it attaches, one `GAS_LINK` per link, the 15 Tgas it keeps (`GAS_MARGIN`) and 5 for its
+own work before the check: `sync` 20 + 10 + 20 + 15 + 5 = 70, `close_round` 2 x 20 + 10 + 5 + 180
++ 15 + 5 = 255, `check_payout` 20 + 10 + 90 + 15 + 5 = 140. The mock-VM tests fail any receipt
+that attaches more gas than it has.
 
 Measured in the mock VM (`tests/gas.rs`; host calls only: storage, logs, promises, not wasm
 instructions; storage writes flushed inside the call):
@@ -366,8 +380,9 @@ instructions; storage writes flushed inside the call):
 | `on_voted`, `on_checked`, `on_policy` | 0.1-0.2 Tgas | |
 
 `on_close` gets 180 Tgas, so the counting itself (wasm: the pipeline, JSON of the policy and the
-events, borsh of the round) has more than 160 Tgas at the worst size; the real figure is for the
-stage deployment to measure. `pay` with 300 Tgas files 3 first payouts (with registration).
+events, borsh of the round) has more than 160 Tgas at the worst size. On the staging deployment
+`on_close` burnt 5.0-8.4 Tgas for 8 members, and a whole close 12.2-15.8 (`docs/testnet-stage.md`,
+"Gas, measured"). `pay` with 300 Tgas files 3 first payouts (with registration).
 
 ## Tests
 
@@ -390,6 +405,7 @@ re-runs) and of the token; it executes every receipt the contract creates and fe
 | `gas.rs` | 4 | the largest and the worst close within gas and the log limit, every payout chain within its attached gas |
 | `init.rs` | 6 | parameter checks, defaults, paused before the first sync, views before genesis, pruning, both launch columns of `sim/params.json` accepted |
 | `invariant.rs` | 2 | 600 random rounds (members joining and leaving, guests, a DAO running low and failing, council votes): `audit()` after every round, and the events alone rebuild every reputation and payout status |
-| `golden.rs` | 1 | every `sim/golden/*.json` (5 vectors, 57 rounds) to the unit; skipped with a message when there are none |
+| `golden.rs` | 1 | every `sim/golden/*.json` (6 vectors, 61 rounds) to the unit; skipped with a message when there are none |
 
-Not done: an integration test in near-sandbox with the testnet DAO's wasm (optional in PLAN.md).
+Not done: an integration test in near-sandbox with the testnet DAO's wasm (optional; the staging
+run on testnet, `docs/testnet-stage.md`, covers the same paths against the real DAO).

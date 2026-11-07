@@ -20,7 +20,7 @@ export const FACTORY = 'sputnikv2.testnet'
 export const GAS = {
   sync: 70n * TGAS,
   close: 255n * TGAS,
-  check: 140n * TGAS, // the contract panics "this call needs 140 Tgas" below that (README says 135)
+  check: 140n * TGAS, // the contract panics "this call needs 140 Tgas" below that
   pay: 300n * TGAS,
   act: 30n * TGAS,
   allocate: 30n * TGAS,

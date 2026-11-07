@@ -40,3 +40,11 @@ see ../contract/README.md). The only way the supply shrinks is NEP-145's
 ./build.sh --check    # the same, and compares with WASM_SHA256
 cargo test
 ```
+
+`build.sh` is the contract's (from Bonfire): remapped paths, host pin, export list, and every
+`CARGO_NEAR_*` and `NEP330_*` variable unset before cargo-near runs. Compare a build with the code
+on chain, section by section:
+
+```sh
+python3 ../scripts/compare-wasm.py target/near/tusd.wasm --deployment token
+```
