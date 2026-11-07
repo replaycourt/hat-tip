@@ -1,0 +1,1966 @@
+{
+ "network": "testnet",
+ "root": "tr-probe-759c20.testnet",
+ "dao": "tr-probe-759c20.sputnikv2.testnet",
+ "token": "wrap.testnet",
+ "accounts": {
+  "councilA": "council-a.tr-probe-759c20.testnet",
+  "councilB": "council-b.tr-probe-759c20.testnet",
+  "councilC": "council-c.tr-probe-759c20.testnet",
+  "standin": "standin.tr-probe-759c20.testnet",
+  "recv": "recv.tr-probe-759c20.testnet",
+  "outsider": "outsider.tr-probe-759c20.testnet"
+ },
+ "steps": [
+  {
+   "id": "S-councilA",
+   "label": "create council-a.tr-probe-759c20.testnet with 0.200000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "council-a.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "2bqwF3SnB5nUyeRQydFUgkETB1JVUFKnSRReKoznCiA8",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "council-a.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.200000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:03.488Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-councilB",
+   "label": "create council-b.tr-probe-759c20.testnet with 0.200000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "council-b.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "J8ymJ4i51NgMZeqbeJZrRAQxfBC198hibg8v95u2HW6b",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "council-b.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.200000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:05.046Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-councilC",
+   "label": "create council-c.tr-probe-759c20.testnet with 0.200000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "council-c.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "DR9iMY8kPM5S6JrerZtwv3AjSm2DrVgqQL11WRUA39yX",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "council-c.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.200000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:06.728Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-standin",
+   "label": "create standin.tr-probe-759c20.testnet with 0.500000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "standin.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "e7KLuWuAVm6fdsxufDsmjbHKUQysD81z5stDDDjtZFC",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.500000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:08.447Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-recv",
+   "label": "create recv.tr-probe-759c20.testnet with 0.100000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "recv.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "4A7CJgp8mve7qjDgRQQJYvaeAmscYgasym2WRGhVXKNc",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "recv.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.100000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:09.982Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-outsider",
+   "label": "create outsider.tr-probe-759c20.testnet with 0.100000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "outsider.tr-probe-759c20.testnet",
+   "method": "actions",
+   "hash": "4j3PVZniQDAXrnNqLsPTafuZxaxaxCZ3grkn93tnkCeS",
+   "ok": true,
+   "gasTotal": 8.34,
+   "fee": "0.007115",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "outsider.tr-probe-759c20.testnet",
+     "what": "CreateAccount, Transfer 0.100000 NEAR, AddKey",
+     "tgas": 7.52,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:12.302Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-reg-tr-probe-759c20",
+   "label": "register tr-probe-759c20.testnet with wrap.testnet",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "storage_deposit",
+   "hash": "3rGvGCxFujpa4DB4JwbgkTi9NnJKZuPW6W5XfwGn4NU1",
+   "ok": true,
+   "value": {
+    "total": "1250000000000000000000",
+    "available": "0"
+   },
+   "gasTotal": 1.89,
+   "fee": "0.000190",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "storage_deposit(deposit 1250000000000000000000)",
+     "tgas": 1.58,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:13.941Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-reg-recv",
+   "label": "register recv.tr-probe-759c20.testnet with wrap.testnet",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "storage_deposit",
+   "hash": "AQQ8qwhotgCYtBmTc8ADra9qEpEkDTvZzQAM14Q3uVCd",
+   "ok": true,
+   "value": {
+    "total": "1250000000000000000000",
+    "available": "0"
+   },
+   "gasTotal": 1.89,
+   "fee": "0.000190",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "storage_deposit(deposit 1250000000000000000000)",
+     "tgas": 1.58,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:15.961Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-wrap",
+   "label": "wrap 0.06 NEAR into wNEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "near_deposit",
+   "hash": "3gMP7oW8NoVqNRmUJWykPhRWJLyrfRteHY1wZWKMNoQi",
+   "ok": true,
+   "gasTotal": 1.93,
+   "fee": "0.000194",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "near_deposit(deposit 60000000000000000000000)",
+     "tgas": 1.62,
+     "ok": true,
+     "logs": [
+      "Deposit 60000000000000000000000 NEAR to tr-probe-759c20.testnet"
+     ]
+    }
+   ],
+   "at": "2026-11-07T11:41:17.956Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-dao",
+   "label": "create DAO tr-probe-759c20.sputnikv2.testnet with 6.000000 NEAR",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "sputnikv2.testnet",
+   "method": "create",
+   "hash": "wkkFv4i3UsWuejEKYGhfBknCs8CvYiHMaJUY4X193Pa",
+   "ok": true,
+   "gasTotal": 89.11,
+   "fee": "0.015147",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "sputnikv2.testnet",
+     "what": "create(deposit 6000000000000000000000000)",
+     "tgas": 41.17,
+     "ok": true
+    },
+    {
+     "from": "sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "CreateAccount, Transfer 6.000000 NEAR, DeployContract, new()",
+     "tgas": 44.73,
+     "ok": true
+    },
+    {
+     "from": "sputnikv2.testnet",
+     "to": "sputnikv2.testnet",
+     "what": "on_create()",
+     "tgas": 2.36,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:21.634Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-policy",
+   "label": "get_policy equals the policy sent",
+   "check": true,
+   "asExpected": true,
+   "detail": {
+    "version": "2.3.1",
+    "code_hash": "AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH"
+   },
+   "at": "2026-11-07T11:41:21.782Z",
+   "run": "setup"
+  },
+  {
+   "id": "S-reg-dao",
+   "label": "register tr-probe-759c20.sputnikv2.testnet with wrap.testnet",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "storage_deposit",
+   "hash": "7JSGaEdJZ1jTz8hTiYRZQdDs34pBzHPSfdRwJS6yVCvu",
+   "ok": true,
+   "value": {
+    "total": "1250000000000000000000",
+    "available": "0"
+   },
+   "gasTotal": 1.89,
+   "fee": "0.000190",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "storage_deposit(deposit 1250000000000000000000)",
+     "tgas": 1.58,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:41:33.547Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "S-fund-dao",
+   "label": "send 0.05 wNEAR to the DAO",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "ft_transfer",
+   "hash": "J7px7FoS1oLuY9Ujo7U18sRHt2mhDZ3baVro5hzZNNyY",
+   "ok": true,
+   "gasTotal": 2.14,
+   "fee": "0.000214",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.83,
+     "ok": true,
+     "logs": [
+      "Transfer 50000000000000000000000 from tr-probe-759c20.testnet to tr-probe-759c20.sputnikv2.testnet"
+     ]
+    }
+   ],
+   "at": "2026-11-07T11:41:35.656Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": "setup"
+  },
+  {
+   "id": "E-file",
+   "label": "tier 3 transfer, to be left to expire",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "3NvgCr4UrNmGSkFnT3oQzRxkwbjDEJgKh4g48VzXpT75",
+   "ok": true,
+   "value": 0,
+   "gasTotal": 2.49,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.17,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:42:13.049Z",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 0,
+   "daoStorageDelta": 200,
+   "run": 1
+  },
+  {
+   "id": "E-reject1",
+   "label": "one council VoteReject on a tier-3 transfer",
+   "signer": "council-c.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "EW4kCdgVCJBXLBV3ShYpjHLzUv3eoLkEsnyxnATwfDzM",
+   "ok": true,
+   "gasTotal": 2.68,
+   "fee": "0.000268",
+   "receipts": [
+    {
+     "from": "council-c.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.36,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:42:14.980Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": 1
+  },
+  {
+   "id": "E-status",
+   "label": "one reject of three leaves a tier-3 transfer InProgress",
+   "check": true,
+   "asExpected": true,
+   "detail": "InProgress",
+   "at": "2026-11-07T11:42:15.162Z",
+   "run": 1
+  },
+  {
+   "id": "T1-file",
+   "label": "tier 1: role files a Transfer",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "9fSsDdiUxq7MyRVtYrKGJ8e9SydDEtdmLGgXNpgrsyeN",
+   "ok": true,
+   "value": 1,
+   "gasTotal": 2.49,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:42:17.353Z",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 1,
+   "daoStorageDelta": 190,
+   "run": 1
+  },
+  {
+   "id": "T1-vote",
+   "label": "tier 1: role votes VoteApprove (1 of 1)",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "Goyj2iGWQfacWgdZaSseXDgzwWaUJELwunq3hVWesXi",
+   "ok": true,
+   "gasTotal": 8.68,
+   "fee": "0.000801",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.13,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: tier 1 auto"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.48,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:42:21.007Z",
+   "expected": "ok",
+   "asExpected": true,
+   "run": 1
+  },
+  {
+   "id": "T1-status",
+   "label": "tier 1 Approved and paid by the role alone",
+   "check": true,
+   "asExpected": true,
+   "detail": {
+    "status": "Approved",
+    "paid": "1000000000000000000000"
+   },
+   "at": "2026-11-07T11:42:21.174Z",
+   "run": 1
+  },
+  {
+   "id": "T1-bond",
+   "label": "tier 1 bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:42:21.175Z",
+   "run": 1
+  },
+  {
+   "id": "T2-file",
+   "label": "tier 2: role files FunctionCall ft_transfer",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "Hj3qZDXuvEas6XmSLmS7NMyZD17A3mgbBCZ8ennAeZGm",
+   "ok": true,
+   "value": 2,
+   "gasTotal": 2.53,
+   "fee": "0.000253",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.2,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:42:23.400Z",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 2,
+   "daoStorageDelta": 280,
+   "run": 1
+  },
+  {
+   "id": "T2-role-vote",
+   "label": "tier 2: role tries VoteApprove on a call",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "6sE4f8jYC9EUfpdaX8y6Dx8WtHu9cJVCxzyiVENsbMXn",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}",
+   "gasTotal": 2.34,
+   "fee": "0.000235",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.02,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:42:25.348Z",
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true,
+   "run": 1
+  },
+  {
+   "id": "E-file",
+   "label": "tier 3 transfer, to be left to expire",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "AyS25ayNbLxC76okXE8nJwMQSXxzFFYfLxxaN88sRchd",
+   "ok": true,
+   "value": 3,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:28.706Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 3,
+   "daoStorageDelta": 200
+  },
+  {
+   "id": "E-reject1",
+   "label": "one council VoteReject on a tier-3 transfer",
+   "signer": "council-c.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "DtX8oEjW1hx7aMSEYJb8RxwDLjnqJL1eHFtaVhPMc4j6",
+   "ok": true,
+   "gasTotal": 2.68,
+   "fee": "0.000269",
+   "receipts": [
+    {
+     "from": "council-c.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.36,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:31.198Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "E-status",
+   "label": "one reject of three leaves a tier-3 transfer InProgress",
+   "check": true,
+   "asExpected": true,
+   "detail": "InProgress",
+   "at": "2026-11-07T11:43:31.315Z",
+   "run": 2
+  },
+  {
+   "id": "T1-file",
+   "label": "tier 1: role files a Transfer",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "29LmUwkHTiPa2PXHS1n7GYHuway94pe4Ly9txcXMzXBp",
+   "ok": true,
+   "value": 4,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:33.516Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 4,
+   "daoStorageDelta": 190
+  },
+  {
+   "id": "T1-vote",
+   "label": "tier 1: role votes VoteApprove (1 of 1)",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "GGfSEUkktSuA2z9XwzkaecioyqSqnmtMB6V9VWV6xYKh",
+   "ok": true,
+   "gasTotal": 8.68,
+   "fee": "0.000801",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.13,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: tier 1 auto"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.48,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:37.037Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T1-status",
+   "label": "tier 1 Approved and paid by the role alone",
+   "check": true,
+   "asExpected": true,
+   "detail": {
+    "status": "Approved",
+    "paid": "1000000000000000000000"
+   },
+   "at": "2026-11-07T11:43:37.420Z",
+   "run": 2
+  },
+  {
+   "id": "T1-bond",
+   "label": "tier 1 bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:43:37.421Z",
+   "run": 2
+  },
+  {
+   "id": "T2-file",
+   "label": "tier 2: role files FunctionCall ft_transfer",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "6AudNM6MfRJoJoqCuw5is4NZJM5ypoTwnmrADQuoAMWd",
+   "ok": true,
+   "value": 5,
+   "gasTotal": 2.53,
+   "fee": "0.000253",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.2,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:39.582Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 5,
+   "daoStorageDelta": 280
+  },
+  {
+   "id": "T2-role-vote",
+   "label": "tier 2: role tries VoteApprove on a call",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "Fjj9DNryzGGT2dp6Qmuz9D71KCs8fbYM3RYUuAzENacL",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}",
+   "gasTotal": 2.34,
+   "fee": "0.000235",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.02,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:43:41.614Z",
+   "run": 2,
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true
+  },
+  {
+   "id": "T2-member-vote",
+   "label": "tier 2: member tries VoteApprove on a call",
+   "signer": "recv.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "4Pv14DpDc6DengD8tJ579JpBFYJY4jkpM6kqzK28bb64",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}",
+   "gasTotal": 2.34,
+   "fee": "0.000235",
+   "receipts": [
+    {
+     "from": "recv.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.02,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:546:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:43:43.777Z",
+   "run": 2,
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true
+  },
+  {
+   "id": "T2-pending",
+   "label": "tier 2 still InProgress, nothing paid",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:43:43.927Z",
+   "run": 2
+  },
+  {
+   "id": "T2-vote",
+   "label": "tier 2: one council VoteApprove",
+   "signer": "council-a.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "EtUvUYTByDWg3NGHWRhWoktgj8A2NBvGNj3DCuK1dHeS",
+   "ok": true,
+   "gasTotal": 8.69,
+   "fee": "0.000803",
+   "receipts": [
+    {
+     "from": "council-a.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.14,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.82,
+     "ok": true,
+     "logs": [
+      "Transfer 2000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.5,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:47.943Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T2-status",
+   "label": "tier 2 Approved and paid on one council vote",
+   "check": true,
+   "asExpected": true,
+   "detail": {
+    "status": "Approved",
+    "votes": {
+     "council-a.tr-probe-759c20.testnet": "Approve"
+    },
+    "paid": "2000000000000000000000"
+   },
+   "at": "2026-11-07T11:43:48.149Z",
+   "run": 2
+  },
+  {
+   "id": "T2-bond",
+   "label": "tier 2 bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:43:48.150Z",
+   "run": 2
+  },
+  {
+   "id": "C-council-call",
+   "label": "council tries to file a FunctionCall",
+   "signer": "council-a.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "vtRpdnjZ5Wmvcqmxq5hYwhGMswRGW5ZTsrEDnfmcSVM",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}",
+   "gasTotal": 2.74,
+   "fee": "0.000230",
+   "receipts": [
+    {
+     "from": "council-a.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 1.97,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:43:50.804Z",
+   "run": 2,
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true
+  },
+  {
+   "id": "C-member-transfer",
+   "label": "member tries to file a Transfer",
+   "signer": "recv.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "6BQ8ZZ5za1Bu7ksicoBzPeaH7K8AkVnc3LiJi5ePVS1p",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}",
+   "gasTotal": 2.72,
+   "fee": "0.000227",
+   "receipts": [
+    {
+     "from": "recv.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 1.95,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:43:53.208Z",
+   "run": 2,
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true
+  },
+  {
+   "id": "C-outsider-transfer",
+   "label": "outsider tries to file a Transfer",
+   "signer": "outsider.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "HKtuQn6dPpGCz6tfszyWDvZVSRMbZTE6H2XuCv1FSxKk",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}",
+   "gasTotal": 2.7,
+   "fee": "0.000226",
+   "receipts": [
+    {
+     "from": "outsider.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 1.94,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: panicked at 'ERR_PERMISSION_DENIED', sputnikdao2/src/proposals.rs:518:9\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:43:55.678Z",
+   "run": 2,
+   "expected": "ERR_PERMISSION_DENIED",
+   "asExpected": true
+  },
+  {
+   "id": "T2R-file",
+   "label": "tier 2 to be rejected",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "62gN3uxtkkQ9fvuJcsHf6d7jN3zrxRNAEGVo5uN3aDAn",
+   "ok": true,
+   "value": 6,
+   "gasTotal": 2.52,
+   "fee": "0.000253",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.2,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:43:57.620Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 6,
+   "daoStorageDelta": 270
+  },
+  {
+   "id": "T2R-vote",
+   "label": "tier 2: one council VoteReject",
+   "signer": "council-b.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "5MfyG723ysSjHp6LYB6DW2SLrXnnKE55XPgs1HgFNG8V",
+   "ok": true,
+   "gasTotal": 3.4,
+   "fee": "0.000318",
+   "receipts": [
+    {
+     "from": "council-b.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.63,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:00.784Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T2R-status",
+   "label": "tier 2 Rejected on one council vote, nothing paid",
+   "check": true,
+   "asExpected": true,
+   "detail": "Rejected",
+   "at": "2026-11-07T11:44:01.014Z",
+   "run": 2
+  },
+  {
+   "id": "T2R-bond",
+   "label": "rejected: bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:44:01.014Z",
+   "run": 2
+  },
+  {
+   "id": "T2X-file",
+   "label": "tier 2 to be removed",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "Bjf1STJhit6cyvpwvMDPxxP1Uq4xv3Yghdxxzurqh8FF",
+   "ok": true,
+   "value": 7,
+   "gasTotal": 2.52,
+   "fee": "0.000253",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.2,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:03.312Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 7,
+   "daoStorageDelta": 270
+  },
+  {
+   "id": "T2X-vote",
+   "label": "tier 2: one council VoteRemove",
+   "signer": "council-c.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "EjiakFBbSW5iVW5g2NiSAvgqmymZmgSSnpL454fA3jWR",
+   "ok": true,
+   "gasTotal": 2.66,
+   "fee": "0.000267",
+   "receipts": [
+    {
+     "from": "council-c.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.34,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:05.269Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T2X-status",
+   "label": "tier 2 Removed on one council vote (proposal gone)",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:44:05.308Z",
+   "run": 2
+  },
+  {
+   "id": "T2X-bond",
+   "label": "removed: bond kept by the DAO",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:44:05.309Z",
+   "run": 2
+  },
+  {
+   "id": "T3-file",
+   "label": "tier 3: role files a Transfer, no vote",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "9v7MjLZ2qbCRe5xxhqDjnKYoWrd4H3BdAx2xMt35znAV",
+   "ok": true,
+   "value": 8,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:07.362Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 8,
+   "daoStorageDelta": 202
+  },
+  {
+   "id": "T3-vote1",
+   "label": "tier 3: first council VoteApprove",
+   "signer": "council-a.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "4oFWpq6Y98RvXvnbGCioygVkzjVmR3bYso3jMUBr7jFY",
+   "ok": true,
+   "gasTotal": 2.68,
+   "fee": "0.000269",
+   "receipts": [
+    {
+     "from": "council-a.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.36,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:09.673Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T3-pending",
+   "label": "tier 3 InProgress after one council vote, nothing paid",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:44:09.985Z",
+   "run": 2
+  },
+  {
+   "id": "T3-vote2",
+   "label": "tier 3: second council VoteApprove",
+   "signer": "council-b.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "B9ymSbVtWUEMiLqtkcPNQP8W1smrUo2SCqsVTsGKhpkp",
+   "ok": true,
+   "gasTotal": 8.73,
+   "fee": "0.000807",
+   "receipts": [
+    {
+     "from": "council-b.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.17,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 3000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: tier 3 council majority"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.49,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:14.163Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "T3-status",
+   "label": "tier 3 Approved and paid on the second council vote",
+   "check": true,
+   "asExpected": true,
+   "detail": {
+    "status": "Approved",
+    "votes": {
+     "council-b.tr-probe-759c20.testnet": "Approve",
+     "council-a.tr-probe-759c20.testnet": "Approve"
+    }
+   },
+   "at": "2026-11-07T11:44:14.258Z",
+   "run": 2
+  },
+  {
+   "id": "T3-bond",
+   "label": "tier 3 bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:44:14.258Z",
+   "run": 2
+  },
+  {
+   "id": "U-file",
+   "label": "tier 1 Transfer to an unregistered implicit account",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "3vyagpDTCr83rVSfrixBSoTfuwudSrX6bUpzahxmsoNu",
+   "ok": true,
+   "value": 9,
+   "gasTotal": 2.5,
+   "fee": "0.000251",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:16.512Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 9,
+   "daoStorageDelta": 236
+  },
+  {
+   "id": "U-vote",
+   "label": "role approves it: ft_transfer must fail",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "6RcgeK1SuigpEcYibqzF8F5ZrmwpebKcj3jo21h7jBFM",
+   "ok": true,
+   "gasTotal": 7.69,
+   "fee": "0.000703",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.15,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.54,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: The account 829036fa3c20d3ee49a4585d40ed675ff2377821554c101f83369b05098a7759 is not registered\"}}}}"
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.01,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:20.080Z",
+   "run": 2,
+   "expected": "inner-fail",
+   "asExpected": true
+  },
+  {
+   "id": "U-status",
+   "label": "unregistered receiver: proposal Failed, bond held",
+   "check": true,
+   "asExpected": true,
+   "detail": "Failed",
+   "at": "2026-11-07T11:44:20.128Z",
+   "run": 2
+  },
+  {
+   "id": "U-register",
+   "label": "register the implicit account with the token",
+   "signer": "tr-probe-759c20.testnet",
+   "receiver": "wrap.testnet",
+   "method": "storage_deposit",
+   "hash": "BTMw6bmPxhbcG6VRJ895s9x2FMJ7Y9ayAqb9Hh6zU3Mb",
+   "ok": true,
+   "value": {
+    "total": "1250000000000000000000",
+    "available": "0"
+   },
+   "gasTotal": 1.91,
+   "fee": "0.000191",
+   "receipts": [
+    {
+     "from": "tr-probe-759c20.testnet",
+     "to": "wrap.testnet",
+     "what": "storage_deposit(deposit 1250000000000000000000)",
+     "tgas": 1.6,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:22.574Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "U-finalize",
+   "label": "role calls Finalize on the Failed proposal",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "DwBfSPBRJ4W84XgboKjyrVrzzCZ5HmHjNcrbRQsSLHZL",
+   "ok": true,
+   "gasTotal": 8.69,
+   "fee": "0.000802",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.11,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.87,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to 829036fa3c20d3ee49a4585d40ed675ff2377821554c101f83369b05098a7759",
+      "Memo: probe: unregistered receiver"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.49,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:44:26.215Z",
+   "run": 2,
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "U-retry",
+   "label": "Finalize re-executes it: Approved, paid, bond returned",
+   "check": true,
+   "asExpected": true,
+   "detail": "Approved",
+   "at": "2026-11-07T11:44:26.319Z",
+   "run": 2
+  },
+  {
+   "id": "G-file-20",
+   "label": "tier 1 Transfer for a vote with 20 Tgas",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "FYsBMWi1EZLAgtzVitNq3oKAM52WJ1LsWnKiD98tAZ2r",
+   "ok": true,
+   "value": 10,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:23.087Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 10,
+   "daoStorageDelta": 190
+  },
+  {
+   "id": "G-vote-20",
+   "label": "tier 1 vote with 20 Tgas attached",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "45ASGuWDcAourDj9y58WPbiGfQr7onNEbN64CaAVCRvT",
+   "ok": false,
+   "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Exceeded the prepaid gas.\"}}}}",
+   "gasTotal": 3.15,
+   "fee": "0.000316",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.83,
+     "ok": false,
+     "failure": "{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Exceeded the prepaid gas.\"}}}}"
+    }
+   ],
+   "at": "2026-11-07T11:45:25.075Z",
+   "run": "gas",
+   "expected": "Exceeded the prepaid gas",
+   "asExpected": true
+  },
+  {
+   "id": "G-untouched-20",
+   "label": "failed 20 Tgas vote left proposal #10 InProgress",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:45:25.115Z",
+   "run": "gas"
+  },
+  {
+   "id": "G-revote-20",
+   "label": "same vote again with 30 Tgas",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "F4U6GBC5nXGaYn2tPtGa3JnhV4GyyewUR7cSFCNaZEvf",
+   "ok": true,
+   "gasTotal": 8.68,
+   "fee": "0.000801",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.13,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: vote gas 20"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.48,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:29.091Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "G-file-25",
+   "label": "tier 1 Transfer for a vote with 25 Tgas",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "BoAZPsLwCEsCwdYWN2pZ7wg5QQuNXAhr5jCa3fgypbDh",
+   "ok": true,
+   "value": 11,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:31.220Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 11,
+   "daoStorageDelta": 190
+  },
+  {
+   "id": "G-vote-25",
+   "label": "tier 1 vote with 25 Tgas attached",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "EPsRuopuK5FNrXu3MT5vokLoLcQY5QxX2tbCBB4vxkeR",
+   "ok": true,
+   "gasTotal": 8.68,
+   "fee": "0.000801",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.13,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: vote gas 25"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.48,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:34.990Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "G-file-30",
+   "label": "tier 1 Transfer for a vote with 30 Tgas",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "8QxdR7Kb6HTxcMAUcYwDbgPtjHPsMcbfiTuuXCR7T9g9",
+   "ok": true,
+   "value": 12,
+   "gasTotal": 2.5,
+   "fee": "0.000250",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.18,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:36.673Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 12,
+   "daoStorageDelta": 190
+  },
+  {
+   "id": "G-vote-30",
+   "label": "tier 1 vote with 30 Tgas attached",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "8LVagszCTdEWWySpbm9HZGjeH7BZwnnLstNnRJHAVqv1",
+   "ok": true,
+   "gasTotal": 8.68,
+   "fee": "0.000801",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.13,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.85,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet",
+      "Memo: probe: vote gas 30"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.48,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:41.232Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "G-file-call",
+   "label": "tier 2 call for a council vote with 25 Tgas",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "add_proposal",
+   "hash": "8zpZUWEq6797VbzcsZraRiXoUpfcVQNpCPZNYW1qk8gA",
+   "ok": true,
+   "value": 13,
+   "gasTotal": 2.52,
+   "fee": "0.000253",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "add_proposal(deposit 10000000000000000000000)",
+     "tgas": 2.2,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:43.489Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true,
+   "proposalId": 13,
+   "daoStorageDelta": 276
+  },
+  {
+   "id": "G-vote-call-25",
+   "label": "council vote on tier 2 with 25 Tgas attached",
+   "signer": "council-a.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "EHG5AZtWSaRM9pM88zsg8aswamMK4aRwW4sF6y2GKa8Q",
+   "ok": true,
+   "gasTotal": 8.69,
+   "fee": "0.000803",
+   "receipts": [
+    {
+     "from": "council-a.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 3.14,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "wrap.testnet",
+     "what": "ft_transfer(deposit 1)",
+     "tgas": 1.82,
+     "ok": true,
+     "logs": [
+      "Transfer 1000000000000000000000 from tr-probe-759c20.sputnikv2.testnet to recv.tr-probe-759c20.testnet"
+     ]
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "on_proposal_callback()",
+     "tgas": 2.5,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:45:47.657Z",
+   "run": "gas",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "G-call-status",
+   "label": "tier 2 paid with a 25 Tgas council vote",
+   "check": true,
+   "asExpected": true,
+   "at": "2026-11-07T11:45:47.687Z",
+   "run": "gas"
+  },
+  {
+   "id": "E-finalize-0",
+   "label": "role calls Finalize on expired tier-3 transfer #0",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "6Ax5syW85UtS6NSBeMymehJRFYwJ4SgBw6aaKArop3Rv",
+   "ok": true,
+   "gasTotal": 3.32,
+   "fee": "0.000310",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.56,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:48:35.264Z",
+   "run": "expire",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "E-expired-0",
+   "label": "expired tier-3 transfer #0: status Expired, bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "detail": "Expired",
+   "at": "2026-11-07T11:48:35.321Z",
+   "run": "expire"
+  },
+  {
+   "id": "E-finalize-2",
+   "label": "role calls Finalize on expired tier-2 call #2",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "4Bs3w2wwhSvTegAW22Z732z52QndSZnT9s7sLKvJ22Am",
+   "ok": true,
+   "gasTotal": 3.31,
+   "fee": "0.000309",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.54,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:48:37.864Z",
+   "run": "expire",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "E-expired-2",
+   "label": "expired tier-2 call #2: status Expired, bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "detail": "Expired",
+   "at": "2026-11-07T11:48:37.908Z",
+   "run": "expire"
+  },
+  {
+   "id": "E-finalize-3",
+   "label": "role calls Finalize on expired tier-3 transfer #3",
+   "signer": "standin.tr-probe-759c20.testnet",
+   "receiver": "tr-probe-759c20.sputnikv2.testnet",
+   "method": "act_proposal",
+   "hash": "7AanToffUQhvtEJBg7P9m795bAa69YH8KcA32BhnL3og",
+   "ok": true,
+   "gasTotal": 3.32,
+   "fee": "0.000310",
+   "receipts": [
+    {
+     "from": "standin.tr-probe-759c20.testnet",
+     "to": "tr-probe-759c20.sputnikv2.testnet",
+     "what": "act_proposal()",
+     "tgas": 2.56,
+     "ok": true
+    },
+    {
+     "from": "tr-probe-759c20.sputnikv2.testnet",
+     "to": "standin.tr-probe-759c20.testnet",
+     "what": "Transfer 0.010000 NEAR",
+     "tgas": 0.22,
+     "ok": true
+    }
+   ],
+   "at": "2026-11-07T11:48:40.647Z",
+   "run": "expire",
+   "expected": "ok",
+   "asExpected": true
+  },
+  {
+   "id": "E-expired-3",
+   "label": "expired tier-3 transfer #3: status Expired, bond returned to the role",
+   "check": true,
+   "asExpected": true,
+   "detail": "Expired",
+   "at": "2026-11-07T11:48:40.675Z",
+   "run": "expire"
+  }
+ ],
+ "ids": {
+  "unregistered": "829036fa3c20d3ee49a4585d40ed675ff2377821554c101f83369b05098a7759",
+  "expire": 3,
+  "expireAfterMs": 1794052107750
+ },
+ "policy": {
+  "roles": [
+   {
+    "name": "council",
+    "kind": {
+     "Group": [
+      "council-b.tr-probe-759c20.testnet",
+      "council-c.tr-probe-759c20.testnet",
+      "council-a.tr-probe-759c20.testnet"
+     ]
+    },
+    "permissions": [
+     "add_member_to_role:AddProposal",
+     "policy:AddProposal",
+     "policy_add_or_update_role:AddProposal",
+     "config:AddProposal",
+     "*:Finalize",
+     "*:VoteReject",
+     "policy_update_parameters:AddProposal",
+     "transfer:AddProposal",
+     "policy_update_default_vote_policy:AddProposal",
+     "remove_member_from_role:AddProposal",
+     "vote:AddProposal",
+     "*:VoteRemove",
+     "*:VoteApprove",
+     "factory_info_update:AddProposal",
+     "policy_remove_role:AddProposal"
+    ],
+    "vote_policy": {
+     "call": {
+      "weight_kind": "RoleWeight",
+      "quorum": "0",
+      "threshold": "1"
+     }
+    }
+   },
+   {
+    "name": "thanks",
+    "kind": {
+     "Group": [
+      "standin.tr-probe-759c20.testnet"
+     ]
+    },
+    "permissions": [
+     "call:AddProposal",
+     "transfer:Finalize",
+     "transfer:VoteApprove",
+     "transfer:AddProposal",
+     "call:Finalize"
+    ],
+    "vote_policy": {
+     "transfer": {
+      "weight_kind": "RoleWeight",
+      "quorum": "0",
+      "threshold": [
+       1,
+       1
+      ]
+     }
+    }
+   },
+   {
+    "name": "members",
+    "kind": {
+     "Group": [
+      "recv.tr-probe-759c20.testnet"
+     ]
+    },
+    "permissions": [],
+    "vote_policy": {}
+   }
+  ],
+  "default_vote_policy": {
+   "weight_kind": "RoleWeight",
+   "quorum": "0",
+   "threshold": [
+    1,
+    2
+   ]
+  },
+  "proposal_bond": "10000000000000000000000",
+  "proposal_period": "300000000000",
+  "bounty_bond": "1000000000000000000000000",
+  "bounty_forgiveness_period": "86400000000000"
+ },
+ "daoVersion": "2.3.1",
+ "daoCodeHash": "AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH",
+ "probeRuns": 2,
+ "notes": [
+  "probe run 1 stopped after T2-role-vote: recv (0.1 NEAR) could not prepay 100 Tgas at 10^9 yocto/gas; run 2 repeats the probe with new proposals, member vote at 30 Tgas"
+ ],
+ "final": {
+  "daoNear": "6009999999999999999999991",
+  "daoStorage": 545120,
+  "daoLocked": "5451200000000000000000000",
+  "daoWnear": "38000000000000000000000",
+  "lastProposalId": 14,
+  "balances": {
+   "tr-probe-759c20.testnet": "2575994558522413199999999",
+   "council-a.tr-probe-759c20.testnet": "197896120730004300000000",
+   "council-b.tr-probe-759c20.testnet": "198875336344689900000000",
+   "council-c.tr-probe-759c20.testnet": "199196544396551100000000",
+   "standin.tr-probe-759c20.testnet": "479258354649066500000000",
+   "recv.tr-probe-759c20.testnet": "99537784922190000000000",
+   "outsider.tr-probe-759c20.testnet": "99774055134317400000000"
+  }
+ },
+ "faucet": {
+  "account": "tr-probe-759c20.testnet",
+  "tx": "9curmhHLYixHG6DRtsP6UhmwB9sdMqyu7DrS7RqJXTMx",
+  "near": 10,
+  "how": "near-cli-rs 0.30.1: near account create-account sponsor-by-faucet-service <root> autogenerate-new-keypair save-to-legacy-keychain network-config testnet create"
+ }
+}
