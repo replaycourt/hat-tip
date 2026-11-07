@@ -125,6 +125,7 @@ function wire() {
   })
   U.$('btn-replay').addEventListener('click', () => S.last && playStory(storyOf(S.last, S.lastPayouts), true))
   U.$('btn-older').addEventListener('click', () => loadLedger(true))
+  U.$('btn-replay-open').addEventListener('click', openReplay)
   U.$('drawer-close').addEventListener('click', U.closeDrawer)
   U.$('drawer-backdrop').addEventListener('click', U.closeDrawer)
   document.addEventListener('keydown', (e) => e.key === 'Escape' && U.drawerOpen() && U.closeDrawer())
@@ -631,6 +632,22 @@ function help(st) {
   } else if (st.planned > 0 && st.due === 0 && !S.helped.has(`pay:${st.next_payout}`)) {
     S.helped.add(`pay:${st.next_payout}`)
     setTimeout(() => client.pay().catch((e) => console.info('pay', e?.message)), 20_000 + Math.random() * 5000)
+  }
+}
+
+// ---- the second replay: the same thanks, counted twice ------------------------------------------
+
+/** Loads the replay and its data only now (they are not part of the first page load). */
+async function openReplay() {
+  const btn = U.$('btn-replay-open')
+  btn.disabled = true
+  try {
+    const { mountReplay } = await import('./replay.js')
+    mountReplay(U.$('replay-host'), { reduced })
+  } catch (e) {
+    console.info('replay', e?.message ?? e)
+    btn.disabled = false
+    U.toast('The simulation could not be loaded. Try again.', 'warn')
   }
 }
 
