@@ -567,23 +567,27 @@
     {
      "account": "council-a.hat-tip-stage.testnet",
      "name": "council-a",
-     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
     },
     {
      "account": "council-b.hat-tip-stage.testnet",
      "name": "council-b",
-     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
     },
     {
      "account": "council-c.hat-tip-stage.testnet",
      "name": "council-c",
-     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
     }
    ],
    "guests_in_tests": [
     "5b92bb7dc270050bae160aa8bbf8c9eec10fa02f619d65c85d7a0159579dffc5",
     "58253b23080bb0345791b11671fe8913db3fb93f2b40f9bfe1899c7c7b0cece2"
-   ]
+   ],
+   "council_rule": {
+    "partner_min": 6,
+    "about": "The fewest thanks the receiver must have given its top giver in the round for the council to read the pair as partners; picked by sim/hat_tip_sim.py council (docs/SIMULATION.md, 'The house council's partner threshold')."
+   }
   },
   "history": [
    {
@@ -802,6 +806,28 @@
    "tier3_council_reject_2": "31GRwg7x8XkAtmEAe7o51WWTskm8FCpVdqzDjmctaPTo",
    "tier3_check_rejected_struck": "8Ngm4JDEpK1q8VqzzBrEmMjBRPiNcXGCYsVZ4hmjc5CT",
    "guest_join_relayed": "Di8c2yYutH3shhqz5vuK2Ly7kHCELZLBvutgVLrugRAj"
+  },
+  "house_run_council_rule": {
+   "when": "2026-11-07 19:08-19:35 UTC, rounds 18-22 (rounds 15-17 closed empty)",
+   "script": "scripts/house.mjs run --rounds 5 --guest 1,3 (seed 2026110719), house council with partner_min 6 (sim/params.json house.council_rule)",
+   "transactions": 183,
+   "failed": 0,
+   "refused": 0,
+   "payouts": 33,
+   "by_tier": {
+    "1": {
+     "paid": 13
+    },
+    "2": {
+     "paid": 16
+    },
+    "3": {
+     "paid": 4
+    }
+   },
+   "council_decisions": 20,
+   "replay": "house.mjs council-replay: of the 94 decided tier-2/3 payouts of the reviewed contract, the new rule decides one otherwise: payout 9 (emil, round 2, a guest he welcomed with 5 thanks as top giver), rejected then, paid now; the pair rejections (finn from gus, rounds 6 and 7) and every other decision stay",
+   "evidence": "docs/testnet-stage-2.json, docs/testnet-stage.md"
   }
  }
 }
