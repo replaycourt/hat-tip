@@ -9,6 +9,7 @@ Regenerate and compare: `python3 sim/hat_tip_sim.py --check` (fails if a file di
 | `linear.json` | all dampening off; a replaced allocation; `0x` and implicit accounts in the members role (ignored); two empty rounds (one lapses a carry); a DAO holding less than the budget, then nothing; a member removed at a close; a round whose only entries are dropped (no points, no budget); carries growing and lapsing; tiers growing with reputation; the tier-1 round cap |
 | `dampening.json` | reciprocity, quadratic aggregation, breadth and idle all on; a colluding pair; a one-way ring of three; strikes from a rejected and a removed payout (one decayed across rounds, one across an empty round); expired and paid payouts; a five-way tie in the round cap |
 | `guests.json` | seated guests; guest weight with rounding (3,333 bp); the guests' cap binding and not binding; reciprocity between a guest and a member; a guest entry dropped because its member left the DAO; a guest never in tier 1, even with the reputation for it; a guest's reputation set to 0 below one thanks; a carry lapsing |
+| `receive_cap.json` | the guests' receive cap (rule 17) at 10 %: a member feeding three guest seats that thank him back, with reciprocity, breadth and the giving cap on; the cap binding (with rounding) and not binding; a round whose only entry goes to a guest (no points, no budget) |
 | `launch_testnet.json`, `launch_community.json` | the launch parameters of `sim/params.json` with allocations drawn by the behaviour models (house community with visitors and council outcomes; a 24-member community at full size) |
 
 ## Format
@@ -16,7 +17,8 @@ Regenerate and compare: `python3 sim/hat_tip_sim.py --check` (fails if a file di
 ```text
 {
   "name", "about", "format",
-  "config":          the contract's Config (I-1 field names; U128 fields as decimal strings)
+  "config":          the contract's Config (I-1 field names; U128 fields as decimal strings;
+                     guest_receive_cap_bp is left out where it is 10000, its default)
   "initial_members": the members role before round 1 (what the first sync() sees)
   "rounds": [{
     "round":        n (rounds are numbered from 1 and closed in order)
@@ -34,9 +36,11 @@ Regenerate and compare: `python3 sim/hat_tip_sim.py --check` (fails if a file di
       "strikes":      [[receiver, payout round, status, amount]]  from this round's outcomes
       "entries":      [[giver, receiver, thanks, weight, after_reciprocity, aggregated, counted]]
                       eligible entries in (giver, receiver) order; weight after the guest weight
-                      and cap, counted after breadth and idle (milli-thanks)
+                      and cap, counted after breadth, idle and the receive cap (milli-thanks)
       "dropped":      [[giver, receiver, thanks, reason]]
       "members_weight", "guests_weight", "guest_scaled"   M and G before the cap, and whether it bound
+      "to_guests", "to_members", "receive_scaled"   Pg and Pm before the receive cap, and whether
+                      it bound (only in vectors with guest_receive_cap_bp below 10000)
       "points":       [[account, points]]  every account with an entry, points may be 0
       "budget", "dust"
       "payouts":      [{"receiver", "amount", "tier", "r0", "auto_limit", "cosign_limit"}]
@@ -57,7 +61,7 @@ Units: thanks are whole numbers; weights, points and reputation are milli-thanks
 
 ## The integer rules the vectors fix
 
-DESIGN.md "One round" leaves some details open. The simulation decided each in favour of the simplest exact integer rule; the contract must match. The same list heads `docs/SIMULATION.md`.
+DESIGN.md "One round" leaves some details open. The simulation decided each in favour of the simplest exact integer rule; the contract must match. The same list heads `docs/SIMULATION.md`. Rule 17 follows the contract's README ("Counting, exactly", step 7).
 
 1. **Members and guests.** The member set is the named accounts of the members role; 64-hex implicit accounts and `0x` accounts in the role are ignored. A guest is an implicit account seated in the round.
 2. **Order.** Entries are processed in (giver, receiver) order of the account ids compared as bytes, payouts are planned in receiver order. Only the round cap's tie-break depends on an order.
@@ -75,3 +79,4 @@ DESIGN.md "One round" leaves some details open. The simulation decided each in f
 14. **Carry lapse.** At every close (empty or not), after the shares, every carry with `r - stamp >= carry_rounds` lapses.
 15. **Guest records.** A guest record with reputation 0, no carry and no open payout may be deleted; that changes no number.
 16. **Strikes.** A payout found `rejected` or `removed` costs its receiver that round's points decayed `c - r` times (per-round floors), `c` the last closed round when the outcome is read: `R = R - min(R, strike)`. `paid`, `expired` and `failed` cost nothing.
+17. **Guests' receive cap** (`guest_receive_cap_bp`, the last `Config` field, optional, default 10000 = off; added after the first vectors). Applied after rule 8 (idle), before the points: `Pg` = sum of `a` over entries to guests, `Pm` over entries to members. If `Pg * (10000 - guest_receive_cap_bp) > Pm * guest_receive_cap_bp`, every entry to a guest becomes `a * (Pm * guest_receive_cap_bp) / (Pg * (10000 - guest_receive_cap_bp))`, one floor per entry (the same rule as the giving cap of rule 4). With `Pm = 0` and `Pg > 0` the guests get 0.

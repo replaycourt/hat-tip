@@ -62,17 +62,24 @@ CONFIG_FIELDS = [
     "cosign_base", "cosign_per_thanks", "cosign_max", "auto_share_bp",
     "guest_seats", "guest_weight_bp", "guest_cap_bp",
     "max_members", "max_catchup", "log_keep", "note_max_bytes",
+    "guest_receive_cap_bp",
 ]
+# Fields the contract accepts without a value, and their defaults.
+CONFIG_DEFAULTS = {"guest_receive_cap_bp": 10_000}
 # U128 in the contract: decimal strings in JSON.
 U128_FIELDS = {"round_budget", "min_payout", "reserve", "auto_per_thanks", "auto_max",
                "cosign_base", "cosign_per_thanks", "cosign_max"}
 
 
-def config_json(cfg):
-    """A config dict (ints internally) in the contract's JSON form, field order of I-1."""
+def config_json(cfg, omit_defaults=False):
+    """A config dict (ints internally) in the contract's JSON form, field order of I-1.
+    omit_defaults leaves out optional fields at their default (the golden vectors do, so
+    vectors written before a field existed stay unchanged)."""
     out = {}
     for f in CONFIG_FIELDS:
-        v = cfg[f]
+        v = cfg.get(f, CONFIG_DEFAULTS.get(f))
+        if omit_defaults and f in CONFIG_DEFAULTS and v == CONFIG_DEFAULTS[f]:
+            continue
         out[f] = str(v) if f in U128_FIELDS else v
     return out
 
@@ -80,7 +87,7 @@ def config_json(cfg):
 def config_from_json(js):
     cfg = {}
     for f in CONFIG_FIELDS:
-        v = js[f]
+        v = js.get(f, CONFIG_DEFAULTS.get(f))
         cfg[f] = int(v) if f in U128_FIELDS else v
     return cfg
 
@@ -192,7 +199,24 @@ def count_round(cfg, members, seats, allocations):
             if r in members and r not in givers:
                 a[k] = a[k] * cfg["idle_bp"] // BP
                 idle.add(r)
-    # 7. points
+    # 7. guests' receive cap: guests together receive at most guest_receive_cap_bp of the
+    # round's points, by the same rule as the cap on what they give (one floor per entry)
+    rcap = cfg.get("guest_receive_cap_bp", BP)
+    to_guests = to_members = 0
+    receive_scaled = False
+    if rcap < BP:
+        for k, (g, r, t) in enumerate(rows):
+            if r in seats:
+                to_guests += a[k]
+            else:
+                to_members += a[k]
+        receive_scaled = to_guests * (BP - rcap) > to_members * rcap
+        if receive_scaled:
+            num, den = to_members * rcap, to_guests * (BP - rcap)
+            for k, (g, r, t) in enumerate(rows):
+                if r in seats:
+                    a[k] = a[k] * num // den
+    # 8. points
     points = {}
     for k, (g, r, t) in enumerate(rows):
         points[r] = points.get(r, 0) + a[k]
@@ -201,6 +225,8 @@ def count_round(cfg, members, seats, allocations):
         "aggregated": a_agg, "counted": a, "members_weight": m_total, "guests_weight": g_total,
         "guest_scaled": guest_scaled, "W": big_w, "Q": big_q, "support": support,
         "narrow": narrow, "idle": idle, "givers": givers, "points": points,
+        "receive_cap": rcap < BP, "to_guests": to_guests, "to_members": to_members,
+        "receive_scaled": receive_scaled,
     }
 
 
@@ -383,6 +409,7 @@ GOLDEN_BASE = {
     "auto_share_bp": 6_000,
     "guest_seats": 6, "guest_weight_bp": 5_000, "guest_cap_bp": 2_000,
     "max_members": 24, "max_catchup": 36, "log_keep": 108, "note_max_bytes": 80,
+    "guest_receive_cap_bp": 10_000,
 }
 
 FIVE = [ANA, BEN, CLEO, DINA, EMIL]
@@ -549,6 +576,50 @@ GOLDEN_SCRIPTS = {
                  "members": [ANA, BEN, CLEO], "balance": 1_000 * U}),
         ],
     },
+    "receive_cap": {
+        "about": "The guests' receive cap (guest_receive_cap_bp 10 %): a member feeding three "
+                 "guest seats that thank him back, with reciprocity, breadth and the guests' "
+                 "giving cap on; the receive cap binding (one floor per entry), not binding, and "
+                 "a round whose only entry goes to a guest, so the cap leaves no points and no "
+                 "budget.",
+        "config": {"guest_receive_cap_bp": 1_000, "cap_per_receiver": 25, "reciprocal_bp": 2_500,
+                   "breadth_k": 3, "breadth_bp": 2_500, "guest_weight_bp": 5_000,
+                   "guest_cap_bp": 2_000, "decay_bp": 750, "min_payout": 2 * U,
+                   "auto_rep_min": 10},
+        "initial_members": FIVE,
+        "rounds": [
+            (1, {"seats": [X1, X2, X3],
+                 "calls": [(DINA, [(X1, 25), (X2, 25), (X3, 25), (ANA, 25)]),
+                           (X1, [(DINA, 25), (ANA, 25), (BEN, 25)]),
+                           (X2, [(DINA, 25), (ANA, 25), (BEN, 25)]),
+                           (X3, [(DINA, 25), (ANA, 25), (CLEO, 25)]),
+                           (ANA, [(BEN, 25), (CLEO, 25), (X1, 5), (X2, 5)]),
+                           (BEN, [(ANA, 25), (CLEO, 25), (EMIL, 25), (X3, 5)]),
+                           (CLEO, [(ANA, 25), (BEN, 25), (EMIL, 25), (X1, 5), (X2, 5), (X3, 5)]),
+                           (EMIL, [(ANA, 20), (BEN, 20), (CLEO, 20), (X1, 5), (X2, 5), (X3, 5)])],
+                 "members": FIVE, "balance": 1_000 * U}),
+            (2, {"seats": [X4],
+                 "calls": [(X4, [(ANA, 25), (EMIL, 25)]),
+                           (ANA, [(BEN, 25), (CLEO, 25), (DINA, 25), (X4, 5)]),
+                           (BEN, [(ANA, 25), (CLEO, 25), (EMIL, 25), (X4, 5)]),
+                           (CLEO, [(ANA, 25), (BEN, 25), (DINA, 25), (X4, 5)]),
+                           (DINA, [(ANA, 25), (BEN, 25), (EMIL, 25)]),
+                           (EMIL, [(ANA, 25), (CLEO, 25), (DINA, 25)])],
+                 "members": FIVE, "balance": 1_000 * U}),
+            (3, {"seats": [X1],
+                 "calls": [(ANA, [(X1, 25)])],
+                 "members": FIVE, "balance": 1_000 * U}),
+            (4, {"seats": [X2, X3],
+                 "calls": [(DINA, [(X2, 25), (X3, 25), (ANA, 25), (BEN, 25)]),
+                           (X2, [(DINA, 25), (CLEO, 25)]),
+                           (X3, [(DINA, 25), (EMIL, 25)]),
+                           (ANA, [(BEN, 25), (CLEO, 25), (EMIL, 25), (X2, 5)]),
+                           (BEN, [(ANA, 25), (CLEO, 25), (DINA, 25), (X3, 5)]),
+                           (CLEO, [(ANA, 25), (BEN, 25), (X2, 5), (X3, 5)]),
+                           (EMIL, [(ANA, 25), (BEN, 25), (X2, 5), (X3, 5)])],
+                 "members": FIVE, "balance": 1_000 * U}),
+        ],
+    },
 }
 
 
@@ -611,6 +682,11 @@ def play_golden(cfg, initial_members, rounds):
                 "members_weight": _s(cnt["members_weight"]),
                 "guests_weight": _s(cnt["guests_weight"]),
                 "guest_scaled": cnt["guest_scaled"],
+            }
+            if cnt["receive_cap"]:
+                exp.update({"to_guests": _s(cnt["to_guests"]), "to_members": _s(cnt["to_members"]),
+                            "receive_scaled": cnt["receive_scaled"]})
+            exp.update({
                 "points": [[a, _s(p)] for a, p in sorted(cnt["points"].items())],
                 "budget": _s(res["budget"]),
                 "dust": _s(res["dust"]),
@@ -620,7 +696,7 @@ def play_golden(cfg, initial_members, rounds):
                              "cosign_limit": _s(x["cosign_limit"])} for x in res["payouts"]],
                 "moved_to_tier2": res["moved"],
                 "lapsed": [[a, _s(v), since] for a, v, since in res["lapsed"]],
-            }
+            })
         exp["reputation"] = [[a, _s(v)] for a, v in sorted(hat.rep.items()) if v > 0]
         exp["carry"] = [[a, _s(v[0]), v[1]] for a, v in sorted(hat.carry.items())]
         t = hat.totals
@@ -639,7 +715,7 @@ def golden_doc(name, spec, cfg):
         "name": name,
         "about": spec["about"],
         "format": "hat-tip golden v1; see sim/golden/README.md",
-        "config": config_json(cfg),
+        "config": config_json(cfg, omit_defaults=True),
         "initial_members": list(spec["initial_members"]),
         "rounds": play_golden(cfg, spec["initial_members"], spec["rounds"]),
     }
@@ -1280,15 +1356,17 @@ def tier_values(tiers, budget):
     }
 
 
-def community_config(rules, tiers=TIER_GUESS):
+def community_config(rules, tiers=TIER_GUESS, receive_cap=BP):
     cfg = dict(COMMUNITY_FIXED)
     cfg.update(rules)
     cfg.update(tier_values(tiers, cfg["round_budget"]))
+    cfg["guest_receive_cap_bp"] = receive_cap
     return cfg
 
 
-def testnet_config(rules, budget=TESTNET_GUESS, tiers=TIER_GUESS):
+def testnet_config(rules, budget=TESTNET_GUESS, tiers=TIER_GUESS, receive_cap=BP):
     cfg = dict(TESTNET_FIXED)
+    cfg["guest_receive_cap_bp"] = receive_cap
     cfg.update(rules)
     cfg["round_budget"] = budget["round_budget"] * U
     cfg["min_payout"] = budget["min_payout"] * U
@@ -1748,6 +1826,90 @@ def stage_b(setting, ctx, workers, log=print, max_passes=4):
 
 
 # ---------------------------------------------------------------------------
+# Stage D: the guests' receive cap (testnet demo)
+# ---------------------------------------------------------------------------
+
+D_GRID = [10_000, 2_000, 1_500, 1_000, 800, 600, 500, 400, 300]
+D_SEEDS = list(range(1, 9))
+D_FARM_MAX = 50.0          # the farm's take with the cap, % of its take without
+D_VISITORS_KEEP = 80.0     # visitors' payout share with the cap, % of their share without
+D_VISITORS_PAID = 75.0     # % of visitors thanked by 3+ house members who get a payout
+D_BUSY_KEEP = 50.0         # busy demo: visitors' payout share kept, % of the share without
+D_SCENARIOS = [("visitors", {}), ("busy", {"visit_rate": 2.0}),
+               ("accomplice", {"farm": "accomplice"}), ("outsider", {"farm": "outsider"})]
+
+
+def _task_d(args):
+    seed, pick = args
+    _, cfg0 = launch_configs(dict(pick, guest_receive_cap_bp=BP))
+    farm_ids = {guest_id("farm %d" % k) for k in range(cfg0["guest_seats"])}
+    out = {}
+    for name, kw in D_SCENARIOS:
+        _, script = house_script(seed, cfg0, **kw)
+        for rc in D_GRID:
+            cfg = dict(cfg0, guest_receive_cap_bp=rc)
+            res = play(cfg, script)
+            acc = res["acc"]
+            total = sum(a["planned"] for a in acc.values())
+            guests = sum(a["planned"] for n, a in acc.items() if is_implicit(n))
+            farm = sum(a["planned"] for n, a in acc.items() if n in farm_ids)
+            many, paid = visitor_stats(script, res)
+            n = len(script)
+            out[(name, rc)] = {"guest_share": 100 * guests / total if total else 0,
+                               "farm": farm / n / U, "hugo": acc.get("hugo", new_acc())["planned"] / n / U,
+                               "visitors": many, "visitors_paid": paid,
+                               "per_round": sum(r["n"] for r in res["rounds"]) / n}
+    return seed, out
+
+
+def stage_d(pick, workers, seeds=D_SEEDS, log=print):
+    results = run_pool(_task_d, [(s, pick) for s in seeds], workers)
+
+    def agg(name, rc, key):
+        return med([o[(name, rc)][key] for _, o in results])
+
+    rows = []
+    for rc in D_GRID:
+        many = sum(o[("visitors", rc)]["visitors"] for _, o in results)
+        paid = sum(o[("visitors", rc)]["visitors_paid"] for _, o in results)
+        row = {"cap": rc,
+               "visitors_share": agg("visitors", rc, "guest_share"),
+               "visitors_paid": 100 * paid / many if many else 0.0,
+               "busy_share": agg("busy", rc, "guest_share"),
+               "farm": agg("accomplice", rc, "farm"), "hugo": agg("accomplice", rc, "hugo"),
+               "outsider": agg("outsider", rc, "farm"),
+               "per_round": agg("visitors", rc, "per_round")}
+        rows.append(row)
+    base = rows[0]
+    for row in rows:
+        row["farm_pct"] = 100 * row["farm"] / base["farm"] if base["farm"] else 0.0
+        row["visitors_keep"] = (100 * row["visitors_share"] / base["visitors_share"]
+                                if base["visitors_share"] else 0.0)
+        row["busy_keep"] = 100 * row["busy_share"] / base["busy_share"] if base["busy_share"] else 0.0
+        fails = []
+        if row["farm_pct"] > D_FARM_MAX:
+            fails.append("farm")
+        if row["visitors_keep"] < D_VISITORS_KEEP:
+            fails.append("visitors' share")
+        if row["visitors_paid"] < D_VISITORS_PAID:
+            fails.append("visitors paid")
+        if row["busy_keep"] < D_BUSY_KEEP:
+            fails.append("busy demo")
+        row["fails"] = fails
+    passing = [r for r in rows if not r["fails"]]
+    fallback = False
+    if passing:
+        pick_row = max(passing, key=lambda r: r["cap"])
+    else:
+        fallback = True
+        core = [r for r in rows if not (set(r["fails"]) - {"busy demo"})]
+        pick_row = max(core, key=lambda r: r["cap"]) if core else rows[0]
+    log("stage D pick %d (%d pass%s)" % (pick_row["cap"], len(passing),
+                                         ", fallback" if fallback else ""))
+    return {"rows": rows, "pick": pick_row["cap"], "n_pass": len(passing), "fallback": fallback}
+
+
+# ---------------------------------------------------------------------------
 # Scenarios with the launch values
 # ---------------------------------------------------------------------------
 
@@ -1885,12 +2047,15 @@ def testnet_metrics(house, script, res, cfg):
 
 
 TESTNET_VARIANTS = [
-    # label, kwargs for house_script, rules: "launch" or "none"
+    # label, kwargs for house_script, rules: "launch", "none" (every dampening rule and the
+    # receive cap off) or "nocap" (launch without the guests' receive cap)
     ("House, visitors and a newcomer", {}, "launch"),
     ("The same without dampening", {}, "none"),
     ("House only (no visitors, no newcomer)", {"visitors": False, "newcomer": False}, "launch"),
+    ("Busy demo: visitors at 2 per round", {"visit_rate": 2.0}, "launch"),
     ("Guest farm, outsider", {"farm": "outsider"}, "launch"),
     ("Guest farm with the free rider as accomplice", {"farm": "accomplice"}, "launch"),
+    ("The same without the receive cap", {"farm": "accomplice"}, "nocap"),
     ("Accomplice farm without dampening", {"farm": "accomplice"}, "none"),
 ]
 
@@ -1907,8 +2072,9 @@ def _task_t(args):
 
 
 def run_testnet(cfg_launch, cfg_none, workers, seeds=S_SEEDS):
-    results = run_pool(_task_t, [(s, {"launch": cfg_launch, "none": cfg_none}) for s in seeds],
-                       workers)
+    cfgs = {"launch": cfg_launch, "none": cfg_none,
+            "nocap": dict(cfg_launch, guest_receive_cap_bp=BP)}
+    results = run_pool(_task_t, [(s, cfgs) for s in seeds], workers)
     rows = []
     for i, (label, kw, which) in enumerate(TESTNET_VARIANTS):
         ms = [o[i] for _, o in results]
@@ -2272,9 +2438,7 @@ def house_document():
 
 
 def params_document(pick):
-    rules = pick["rules"]
-    cfg_c = community_config(rules, pick["tiers_community"])
-    cfg_t = testnet_config(rules, pick["testnet_budget"], pick["tiers_testnet"])
+    cfg_c, cfg_t = launch_configs(pick)
     return {
         "about": "Launch values picked by sim/hat_tip_sim.py by the pre-registered decision "
                  "rule; reasons and evidence in docs/SIMULATION.md. Field names and units are "
@@ -2291,10 +2455,11 @@ def params_document(pick):
                       "config": config_json(cfg_c)},
         "testnet": {"about": "The testnet demo (DESIGN.md's 'Testnet demo' column).",
                     "config": config_json(cfg_t)},
-        "pick": {"rules": rules, "testnet_budget": pick["testnet_budget"],
+        "pick": {"rules": pick["rules"], "testnet_budget": pick["testnet_budget"],
                  "tiers_testnet": pick["tiers_testnet"],
                  "tiers_community": pick["tiers_community"],
-                 "colluder_strategy": pick.get("colluder_strategy", "mutual")},
+                 "colluder_strategy": pick.get("colluder_strategy", "mutual"),
+                 "guest_receive_cap_bp": pick.get("guest_receive_cap_bp", BP)},
         "house": house_document(),
     }
 
@@ -2310,8 +2475,9 @@ def load_pick():
 
 def launch_configs(pick):
     rules = pick["rules"]
-    return (community_config(rules, pick["tiers_community"]),
-            testnet_config(rules, pick["testnet_budget"], pick["tiers_testnet"]))
+    rc = pick.get("guest_receive_cap_bp", BP)
+    return (community_config(rules, pick["tiers_community"], rc),
+            testnet_config(rules, pick["testnet_budget"], pick["tiers_testnet"], rc))
 
 
 # ---------------------------------------------------------------------------
@@ -2397,11 +2563,12 @@ def replay_document(pick):
     with every dampening rule off, same gifts: for the page's second replay."""
     _, cfg_t = launch_configs(pick)
     cfg_none = dict(cfg_t, reciprocal_bp=BP, quadratic=False, breadth_k=0, breadth_bp=BP,
-                    idle_bp=BP)
+                    idle_bp=BP, guest_receive_cap_bp=BP)
     _, script = house_script(1, cfg_t, rounds=REPLAY_ROUNDS, newcomer=False)
     out = {"about": "The testnet house community over %d rounds (seed 1, with visitors), "
                     "played twice with the same gifts: with the launch rules and with "
-                    "reciprocity, quadratic, breadth and idle off (cap kept). Points and "
+                    "reciprocity, quadratic, breadth, idle and the guests' receive cap off "
+                    "(cap per receiver kept). Points and "
                     "reputation in milli-thanks, amounts in tUSD base units. Generated by "
                     "sim/hat_tip_sim.py." % REPLAY_ROUNDS,
            "accounts": [_acct(n) for n, _, _ in HOUSE],
@@ -2470,6 +2637,8 @@ def sweep(workers, log=print, stage_a_result=None):
     b_c = stage_b("community", ctx, workers, log=log)
     pick = {"rules": rules, "testnet_budget": budget, "tiers_testnet": b_t["pick"],
             "tiers_community": b_c["pick"], "colluder_strategy": colluder_strategy}
+    d = stage_d(pick, workers, log=log)
+    pick["guest_receive_cap_bp"] = d["pick"]
     rows = a["rows"]
     by_key = {r["key"]: r for r in rows}
     passing = sorted([r for r in rows if not r["fails"]], key=lambda r: r["objective"])
@@ -2501,6 +2670,7 @@ def sweep(workers, log=print, stage_a_result=None):
         "stage_c": {"rows": [dict(r, key=list(r["key"])) for r in c["rows"]],
                     "pick": list(c["pick"]["key"]), "n_pass": c["n_pass"]},
         "stage_b": {"testnet": b_t, "community": b_c},
+        "stage_d": d,
     }
     return pick, summary
 
@@ -2731,7 +2901,7 @@ def scenarios(pick, summary, workers, log=print):
     log("community scenarios")
     comm = run_community(rules, pick["tiers_community"], workers)
     log("testnet variants")
-    cfg_t_none = dict(cfg_t, **RULES_OFF)
+    cfg_t_none = dict(cfg_t, guest_receive_cap_bp=BP, **RULES_OFF)
     tn = run_testnet(cfg_t, cfg_t_none, workers)
     # charts
     sa = summary["stage_a"]

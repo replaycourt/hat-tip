@@ -22,6 +22,7 @@ DESIGN.md "One round" and I-1 leave some details open. Each was decided in favou
 14. **Carry lapse.** At every close (empty or not), after the shares, every carry with `r - stamp >= carry_rounds` lapses.
 15. **Guest records.** A guest record with reputation 0, no carry and no open payout may be deleted; that changes no number.
 16. **Strikes.** A payout found `rejected` or `removed` costs its receiver that round's points decayed `c - r` times (per-round floors), `c` the last closed round when the outcome is read: `R = R - min(R, strike)`. `paid`, `expired` and `failed` cost nothing.
+17. **Guests' receive cap** (`guest_receive_cap_bp`, the last `Config` field, optional, default 10000 = off; added after the first vectors). Applied after rule 8 (idle), before the points: `Pg` = sum of `a` over entries to guests, `Pm` over entries to members. If `Pg * (10000 - guest_receive_cap_bp) > Pm * guest_receive_cap_bp`, every entry to a guest becomes `a * (Pm * guest_receive_cap_bp) / (Pg * (10000 - guest_receive_cap_bp))`, one floor per entry (the same rule as the giving cap of rule 4). With `Pm = 0` and `Pg > 0` the guests get 0.
 
 Units: thanks are whole numbers; weights, points and reputation are milli-thanks (1 thanks = 1,000); tUSD amounts are base units (6 decimals).
 
@@ -87,6 +88,21 @@ Pair memory (P in DESIGN.md) is not in I-1. The simulation does not implement it
 **Criteria.** In steady state, by count of planned payouts: tier 1 between 60 and 80 %, tier 2 between 15 and 35 %, tier 3 between 2 and 10 %; the newcomer's first tier-1 payout comes 6 to 10 rounds after it joins (median over seeds; the joining round counts as round 1).
 
 **Pick.** A coordinate search in three groups (B1: `decay_bp`, `auto_rep_min`, `auto_per_thanks`; B2: `auto_max`, `auto_share_bp`; B3: `cosign_base`, `cosign_per_thanks`, `cosign_max`), repeated until a pass changes nothing (at most four passes). In each group the combination with the lowest score wins: score = `|t1 - 70| + |t2 - 25| + |t3 - 5|` (steady-state tier shares in percentage points) plus 5 for every round the newcomer's median lies outside 6-10. Scores within 1 count as equal, and then the combination fewest grid steps from the current values wins. The final values must meet the criteria; if they do not, this document says so.
+
+### Stage D: the guests' receive cap (testnet demo)
+
+Added after stages A, C and B had run, when the contract gained `guest_receive_cap_bp` (rule 17) to close the gap those stages found: a member who feeds his thanks to a farm of guest seats. Written and committed before stage D ran.
+
+**Setting.** The testnet launch values of stages A, C and B, 144 rounds, 8 seeds, four variants: the house community with visitors at 0.5 per round and the newcomer (as in stages B and C); a busy demo with visitors at 2 per round; the guest farm with the free rider as accomplice; the outsider farm (reported only).
+
+**Candidates.** `guest_receive_cap_bp` in {10000 (off), 2000, 1500, 1000, 800, 600, 500, 400, 300}.
+
+**Criteria** (medians over seeds; visitors pooled over seeds):
+- the farm seats' take (tUSD per round, accomplice variant) is at most 50 % of their take without the cap;
+- visitors at 0.5 per round keep at least 80 % of their share of planned payouts without the cap, and at least 75 % of the visitors thanked by three or more house members get a payout (the stage C criterion);
+- in the busy demo, visitors keep at least 50 % of their share of planned payouts without the cap.
+
+**Pick.** The largest value (the loosest cap) that meets all criteria. If none does, the largest value that meets the first two, and this document says what the busy demo loses. The community column gets the same value; with `guest_seats` 0 it never binds there.
 
 ## Method
 

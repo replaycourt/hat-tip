@@ -38,7 +38,8 @@
    "max_members": 48,
    "max_catchup": 8,
    "log_keep": 52,
-   "note_max_bytes": 80
+   "note_max_bytes": 80,
+   "guest_receive_cap_bp": 10000
   }
  },
  "testnet": {
@@ -77,7 +78,8 @@
    "max_members": 24,
    "max_catchup": 36,
    "log_keep": 108,
-   "note_max_bytes": 80
+   "note_max_bytes": 80,
+   "guest_receive_cap_bp": 10000
   }
  },
  "pick": {
@@ -85,7 +87,8 @@
   "testnet_budget": {"round_budget": 120, "min_payout": 5, "guest_weight_bp": 5000, "guest_cap_bp": 2000},
   "tiers_testnet": {"decay_bp": 750, "auto_rep_min": 200, "auto_per_thanks_bp": 5, "auto_max_bp": 2500, "auto_share_bp": 8000, "cosign_base_bp": 1200, "cosign_per_thanks_bp": 5, "cosign_max_bp": 2500},
   "tiers_community": {"decay_bp": 1000, "auto_rep_min": 100, "auto_per_thanks_bp": 2, "auto_max_bp": 1200, "auto_share_bp": 6000, "cosign_base_bp": 400, "cosign_per_thanks_bp": 1, "cosign_max_bp": 4000},
-  "colluder_strategy": "one_way"
+  "colluder_strategy": "one_way",
+  "guest_receive_cap_bp": 10000
  },
  "house": {
   "about": "The labelled house members of the testnet demo and their published strategies (DESIGN.md, 'House members'). Accounts are <name>.<root>. Packages d and e read this block; the simulation plays exactly these rules.",
