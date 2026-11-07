@@ -25,7 +25,8 @@
 //   with chance p_work; the free rider never gives thanks.
 // - keeper: closes due rounds (close_round, 255 Tgas), files planned payouts (pay, 300 Tgas), and
 //   records outcomes (check_payout, 140 Tgas) once the DAO proposal has one, through its own relay
-//   keys on the gas account.
+//   keys on the gas account. An Approved proposal is checked twice, on two ticks at least 5 s
+//   apart: the contract books `paid` only on a second Approved answer 3 blocks after the first.
 // - council: at least two minutes after a tier-2 or tier-3 payout is filed, house council members
 //   vote on its DAO proposal by the published rule (sim/hat_tip_sim.py `council_decision`): tier 2,
 //   one vote: approve unless more than half of the receiver's points this round came from one
@@ -59,7 +60,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { accessKeys, hex, nearPublicKey, newKey, rpc, sign, view } from './near-lite.mjs'
 import {
-  GAS, MEMBER_METHODS, COUNCIL_METHODS, RELAY_METHODS, Recorder, cli, deployment, freeBalance, houseKeysFile, itemsOf,
+  FINAL_STATUSES, GAS, MEMBER_METHODS, COUNCIL_METHODS, RELAY_METHODS, Recorder, cli, deployment, freeBalance, houseKeysFile, itemsOf, readWindow,
   loadParams, nearStr, publicKeyOfSeed, readJson, seedSigner, short, sleep, split, stamp, stream, tryView, tusd, writeSecret,
 } from './hat-tip-lib.mjs'
 
@@ -70,6 +71,7 @@ const GH = !!process.env.GITHUB_ACTIONS
 const warn = (msg) => console.log(GH ? `::warning::${msg}` : `LOW  ${msg}`)
 const kset = (s) => new Set(String(s ?? '').split(',').filter(Boolean).map(Number))
 const COUNCIL_DELAY_MS = 120_000
+const CHECK_GAP_MS = 5_000 // > SETTLE_BLOCKS (3) blocks of about 1.2 s
 
 // ---- the deployment, the strategies and the keys ----------------------------------------------------
 
@@ -315,6 +317,7 @@ async function run() {
   let lastReportRound = first
   const seenFiled = new Map() // payout id -> when the house first saw it with a DAO proposal
   let openFrom = 0
+  let earlier = [] // open payouts below openFrom, read one by one
   let drainSince = null
   const problems = []
 
@@ -356,40 +359,58 @@ async function run() {
     return st
   }
 
+  const lastCheck = new Map() // payout id -> when the house last checked it
+  const check = async (p, daoStatus) => {
+    lastCheck.set(p.id, Date.now())
+    const seen = (checks.get(p.id) ?? 0) + 1
+    checks.set(p.id, seen)
+    const r = await keeperCall('check_payout', { payout: p.id }, GAS.check, `check_payout ${p.id} #${seen} (DAO #${p.dao_proposal}: ${daoStatus})`, p.round)
+    const v = r?.value
+    if (v && v.changed === false && daoStatus === 'Approved') console.log(`[${stamp()}] payout ${p.id}: Approved seen once (still ${v.status}); booked on a later check`)
+    return r
+  }
+  const checks = new Map() // payout id -> checks sent
   const tickPayouts = async (st) => {
-    const from = Math.max(openFrom, st.oldest_payout ?? 0)
-    if (from >= st.next_payout) return 0
-    const list = await view(d.contract, 'payouts', { from, limit: 100 })
+    // The payouts to look at (hat-tip-lib.mjs `nextWindow`): every page from the window's start to
+    // the newest payout, the earlier ones still open (a payout whose filing chain is running or was
+    // lost does not hold the window), and the held ones (state().held_payouts, open and older than
+    // log_keep rounds, below the pruning line).
+    const w = await readWindow((from, limit) => view(d.contract, 'payouts', { from, limit }),
+      { openFrom, earlier, held: st.held_payouts ?? [], oldest: st.oldest_payout ?? 0, nextPayout: st.next_payout })
+    const list = w.list
+    openFrom = w.openFrom
+    earlier = w.earlier
     let open = 0
-    let firstOpen = null
     // The proposals worth reading this tick: tier 1 at once; tiers 2 and 3 from two minutes after
-    // the house first saw them filed (the council's delay), all in one get_proposals call.
+    // the house first saw them filed (the council's delay), in as few get_proposals calls as fit.
     const now = Date.now()
     const due = []
     for (const p of list) {
-      const final = ['paid', 'rejected', 'expired', 'removed', 'failed'].includes(p.status)
-      if (!final && firstOpen === null) firstOpen = p.id
+      const final = FINAL_STATUSES.has(p.status)
       if (final || p.dao_proposal === null || p.dao_proposal === undefined) continue
       if (!seenFiled.has(p.id)) seenFiled.set(p.id, now)
       if (p.tier === 1 || p.status !== 'filed' || now - seenFiled.get(p.id) >= COUNCIL_DELAY_MS - 10_000) due.push(p.dao_proposal)
     }
     const props = new Map()
-    if (due.length) {
-      const lo = Math.min(...due)
-      const hi = Math.max(...due)
-      for (let at = lo; at <= hi; at += 100) {
-        for (const q of await view(d.dao, 'get_proposals', { from_index: at, limit: Math.min(100, hi - at + 1) })) props.set(q.id, q)
-      }
+    const wanted = [...new Set(due)].sort((a, b) => a - b)
+    let coveredTo = -1
+    for (const id of wanted) {
+      if (id <= coveredTo) continue
+      const limit = Math.min(100, wanted[wanted.length - 1] - id + 1)
+      for (const q of await view(d.dao, 'get_proposals', { from_index: id, limit })) props.set(q.id, q)
+      coveredTo = id + limit - 1
     }
     for (const p of list) {
-      const final = ['paid', 'rejected', 'expired', 'removed', 'failed'].includes(p.status)
+      const final = FINAL_STATUSES.has(p.status)
       if (final) continue
       open++
       if (p.dao_proposal === null || p.dao_proposal === undefined || !due.includes(p.dao_proposal)) continue
       const prop = props.get(p.dao_proposal) ?? null // removed proposals are deleted by the DAO
       const expired = prop && prop.status === 'InProgress' && BigInt(prop.submission_time) + BigInt(st.proposal_period_ns) < BigInt(Date.now()) * 1_000_000n
       if (!prop || prop.status !== 'InProgress' || expired) {
-        await keeperCall('check_payout', { payout: p.id }, GAS.check, `check_payout ${p.id} (DAO #${p.dao_proposal}: ${prop?.status ?? 'gone'})`, p.round)
+        // `paid` needs two Approved answers at least 3 blocks apart (contract/README.md,
+        // "Outcomes"): the first check notes the block, a check on a later tick books it
+        if (Date.now() - (lastCheck.get(p.id) ?? 0) >= CHECK_GAP_MS) await check(p, prop?.status ?? 'gone')
         continue
       }
       if (p.tier === 1 || p.status !== 'filed') continue
@@ -429,13 +450,11 @@ async function run() {
         cast++
         const now = await view(d.dao, 'get_proposal', { id: p.dao_proposal }).catch(() => null)
         if (!now || now.status !== 'InProgress') {
-          await keeperCall('check_payout', { payout: p.id }, GAS.check, `check_payout ${p.id} (DAO #${p.dao_proposal}: ${now?.status ?? 'gone'})`, p.round)
+          await check(p, now?.status ?? 'gone')
           break
         }
       }
     }
-    if (firstOpen !== null) openFrom = firstOpen
-    else if (list.length) openFrom = list[list.length - 1].id + 1
     return open
   }
 

@@ -357,3 +357,45 @@ export function itemsOf(note) {
   const m = /\b(\d+)\b/.exec(note ?? '')
   return m ? Number(m[1]) : 0
 }
+
+// ---- the keeper's window of open payouts ---------------------------------------------------------------
+
+export const FINAL_STATUSES = new Set(['paid', 'rejected', 'expired', 'removed', 'failed'])
+
+/**
+ * Where the keeper looks next tick. `read`: the payout views it read this tick (the pages from
+ * `openFrom` up to the newest payout, the earlier open ones, the held ones). The new window starts
+ * at the first payout at or after `openFrom` that is neither final nor in `filing` without a DAO
+ * proposal id: a filing chain that is still running, or was lost and never lands, must not pin the
+ * window (pages then grow until the house stops seeing new payouts). Every open payout below the new
+ * start (such a filing, or one that left filing since) is returned in `earlier`, to be read one by one
+ * until it is final or pruned. With nothing open from `openFrom` on, the window moves to `nextPayout`.
+ */
+export function nextWindow(read, openFrom, nextPayout) {
+  const open = read.filter((p) => !FINAL_STATUSES.has(p.status))
+  const lost = (p) => p.status === 'filing' && (p.dao_proposal === null || p.dao_proposal === undefined)
+  const holds = open.filter((p) => p.id >= openFrom && !lost(p)).map((p) => p.id)
+  const start = holds.length ? Math.min(...holds) : Math.max(openFrom, nextPayout)
+  const earlier = [...new Set(open.filter((p) => p.id < start).map((p) => p.id))].sort((a, b) => a - b)
+  return { openFrom: start, earlier }
+}
+
+/**
+ * One tick's read of the keeper: every page of `payouts(from, 100)` from the window's start to the
+ * newest payout, then the earlier open payouts and the held ones one by one. `viewPayouts(from,
+ * limit)` is the contract's view (injected, so the window logic is testable without a chain).
+ * Returns { list (by id), openFrom, earlier } for the next tick.
+ */
+export async function readWindow(viewPayouts, { openFrom, earlier = [], held = [], oldest = 0, nextPayout }) {
+  const from = Math.max(openFrom, oldest)
+  const read = new Map()
+  for (let at = from; at < nextPayout; at += 100) {
+    for (const p of await viewPayouts(at, 100)) read.set(p.id, p)
+  }
+  for (const id of [...earlier, ...held]) {
+    if (read.has(id)) continue
+    for (const p of await viewPayouts(id, 1)) if (p.id === id) read.set(id, p)
+  }
+  const list = [...read.values()].sort((a, b) => a.id - b.id)
+  return { list, ...nextWindow(list, from, nextPayout) }
+}

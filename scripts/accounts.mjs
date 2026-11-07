@@ -6,11 +6,12 @@
 //       (`sponsor-by-faucet-service`); its key goes to the legacy keychain (mode 600).
 //   node scripts/accounts.mjs fund --from <account> --to <account> --near <amount> [--section staging]
 //       moves NEAR between two accounts whose keys are in the legacy keychain.
-//   node scripts/accounts.mjs create --root <root.testnet> --contract-near <n> --token-near <n>
+//   node scripts/accounts.mjs create --root <root.testnet> [--contract-near <n>] [--token-near 3]
 //                                    [--member-near 0.25] [--council-near 0.3] [--key-allowance 0.25]
 //                                    [--section staging]
 //       the sub-accounts of the root, each in one transaction signed by the root: the contract
-//       (`thanks.`) and the token (`tusd.`), funded for their code; the eight house members and the
+//       (`thanks.`, funded with sim/params.json testnet.contract_near unless --contract-near says
+//       otherwise: it pays all storage, the guests' too) and the token (`tusd.`); the eight house members and the
 //       three house council members of sim/params.json, each with a full-access key (legacy keychain)
 //       and a function-call key for the house script: members may call only `allocate` and `note` on
 //       the contract, council members only `act_proposal` on the DAO. The function-call seeds go to
@@ -28,7 +29,7 @@ import {
   near, nearPublicKey, nearSecretKey, newKey, transferAction, viewAccount,
 } from './near-lite.mjs'
 import {
-  COUNCIL_METHODS, MEMBER_METHODS, NEAR, cli, houseKeysFile, names, nearStr, readJson, recordDeploy, recordTx,
+  COUNCIL_METHODS, MEMBER_METHODS, NEAR, cli, houseKeysFile, loadParams, names, nearStr, readJson, recordDeploy, recordTx,
   seedHexOf, tg, writeSecret,
 } from './hat-tip-lib.mjs'
 
@@ -105,8 +106,8 @@ async function create() {
   const rootSigner = new Signer(root, keyFromKeychain(root))
   const keyAllowance = toYocto(opt('key-allowance', '0.25'))
   const plan = [
-    { account: n.contract, role: 'contract', near: toYocto(opt('contract-near')) },
-    { account: n.token, role: 'token', near: toYocto(opt('token-near')) },
+    { account: n.contract, role: 'contract', near: toYocto(opt('contract-near', String(loadParams().testnet.contract_near))) },
+    { account: n.token, role: 'token', near: toYocto(opt('token-near', '3')) },
     ...n.members.map((m) => ({ account: m.account, role: 'member', near: toYocto(opt('member-near', '0.25')), fc: { receiver: n.contract, methods: MEMBER_METHODS } })),
     ...n.council.map((c) => ({ account: c.account, role: 'council', near: toYocto(opt('council-near', '0.3')), fc: { receiver: n.dao, methods: COUNCIL_METHODS } })),
   ]
@@ -155,7 +156,7 @@ async function create() {
 
 const run = { faucet, fund, create }[cmd]
 if (!run) {
-  console.error('usage: accounts.mjs faucet <account> | fund --from <a> --to <b> --near <n> | create --root <root> --contract-near <n> --token-near <n>')
+  console.error('usage: accounts.mjs faucet <account> | fund --from <a> --to <b> --near <n> | create --root <root> [--contract-near <n>] [--token-near <n>]')
   process.exit(64)
 }
 run().catch((e) => {

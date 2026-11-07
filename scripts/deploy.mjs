@@ -110,6 +110,13 @@ async function deployIt(initArgs) {
     console.error(`${account} already has code (${acc.code_hash}); \`new\` can run only once`)
     process.exit(65)
   }
+  // the contract pays all storage, the guests' too, and refuses guests below 1 NEAR free:
+  // it starts with sim/params.json testnet.contract_near (contract/README.md, "Storage")
+  const want = what === 'contract' ? BigInt(Math.round(Number(loadParams().testnet.contract_near) * 1e6)) * 10n ** 18n : 0n
+  if (BigInt(acc.amount) < want) {
+    console.error(`${account} holds ${nearStr(acc.amount, 3)} NEAR; sim/params.json testnet.contract_near asks for ${nearStr(want, 3)}`)
+    process.exit(65)
+  }
   const need = BigInt(code.length + acc.storage_usage + 2_000) * 10n ** 19n
   if (BigInt(acc.amount) < need) {
     console.error(`${account} holds ${nearStr(acc.amount, 3)} NEAR, the code alone needs ${nearStr(need, 3)}`)

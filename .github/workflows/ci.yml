@@ -27,8 +27,9 @@ jobs:
           node-version: 22
       # No install: the page, the scripts and their tests use only the browser and Node's standard library.
       - run: node --test 'web/test/*.test.mjs'
-      # The scripts have no test suite of their own (the staging run on testnet exercised them,
-      # docs/testnet-stage.md); here they must at least parse.
+      # The keeper's window of open payouts has a unit test; the rest of the scripts was exercised by
+      # the staging runs on testnet (docs/testnet-stage.md) and must at least parse here.
+      - run: node --test 'scripts/test/*.test.mjs'
       - name: The scripts parse
         run: |
           for f in scripts/*.mjs; do node --check "$f"; done
