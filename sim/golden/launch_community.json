@@ -1464,7 +1464,7 @@
     {"round": 3, "receiver": "m02.test", "status": "paid"},
     {"round": 3, "receiver": "m03.test", "status": "paid"},
     {"round": 3, "receiver": "m05.test", "status": "paid"},
-    {"round": 3, "receiver": "m06.test", "status": "rejected"},
+    {"round": 3, "receiver": "m06.test", "status": "paid"},
     {"round": 3, "receiver": "m08.test", "status": "paid"},
     {"round": 3, "receiver": "m10.test", "status": "paid"},
     {"round": 3, "receiver": "m11.test", "status": "paid"},
@@ -1697,12 +1697,10 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test"],
-   "dao_balance": "18530174073",
+   "dao_balance": "18519111372",
    "expected": {
     "empty": false,
-    "strikes": [
-     ["m06.test", 3, "rejected", "28000"]
-    ],
+    "strikes": [],
     "entries": [
      ["c1.test", "m04.test", 7, "7000", "1750", "1750", "1750"],
      ["c1.test", "m09.test", 16, "16000", "16000", "16000", "16000"],
@@ -1875,7 +1873,7 @@
      {"receiver": "c1.test", "amount": "12130104", "tier": 2, "r0": "31532", "auto_limit": "0", "cosign_limit": "21550000"},
      {"receiver": "m03.test", "amount": "6901611", "tier": 2, "r0": "79655", "auto_limit": "0", "cosign_limit": "23950000"},
      {"receiver": "m05.test", "amount": "14953491", "tier": 1, "r0": "174650", "auto_limit": "17400000", "cosign_limit": "28700000"},
-     {"receiver": "m06.test", "amount": "21227683", "tier": 3, "r0": "504", "auto_limit": "0", "cosign_limit": "20000000"},
+     {"receiver": "m06.test", "amount": "21227683", "tier": 2, "r0": "28504", "auto_limit": "0", "cosign_limit": "21400000"},
      {"receiver": "m08.test", "amount": "26769886", "tier": 1, "r0": "427852", "auto_limit": "42700000", "cosign_limit": "41350000"},
      {"receiver": "m09.test", "amount": "71525791", "tier": 3, "r0": "59850", "auto_limit": "0", "cosign_limit": "22950000"},
      {"receiver": "m11.test", "amount": "14430642", "tier": 1, "r0": "221622", "auto_limit": "22100000", "cosign_limit": "31050000"},
@@ -1898,7 +1896,7 @@
      ["m03.test", "88189"],
      ["m04.test", "23707"],
      ["m05.test", "192935"],
-     ["m06.test", "51203"],
+     ["m06.test", "76403"],
      ["m07.test", "749"],
      ["m08.test", "449066"],
      ["m09.test", "224865"],
@@ -2145,7 +2143,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test"],
-   "dao_balance": "18036499720",
+   "dao_balance": "18025437019",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -2305,7 +2303,7 @@
      {"receiver": "m02.test", "amount": "64764841", "tier": 3, "r0": "186810", "auto_limit": "18600000", "cosign_limit": "29300000"},
      {"receiver": "m04.test", "amount": "6073829", "tier": 2, "r0": "23707", "auto_limit": "0", "cosign_limit": "21150000"},
      {"receiver": "m05.test", "amount": "36567903", "tier": 3, "r0": "192935", "auto_limit": "19200000", "cosign_limit": "29600000"},
-     {"receiver": "m06.test", "amount": "8260821", "tier": 2, "r0": "51203", "auto_limit": "0", "cosign_limit": "22550000"},
+     {"receiver": "m06.test", "amount": "8260821", "tier": 2, "r0": "76403", "auto_limit": "0", "cosign_limit": "23800000"},
      {"receiver": "m09.test", "amount": "29188236", "tier": 2, "r0": "224865", "auto_limit": "22400000", "cosign_limit": "31200000"},
      {"receiver": "m10.test", "amount": "38703896", "tier": 3, "r0": "99508", "auto_limit": "0", "cosign_limit": "24950000"},
      {"receiver": "m11.test", "amount": "30179535", "tier": 2, "r0": "233959", "auto_limit": "23300000", "cosign_limit": "31650000"},
@@ -2328,7 +2326,7 @@
      ["m03.test", "83370"],
      ["m04.test", "24836"],
      ["m05.test", "256641"],
-     ["m06.test", "64832"],
+     ["m06.test", "87512"],
      ["m07.test", "674"],
      ["m08.test", "404159"],
      ["m09.test", "268628"],
@@ -2589,7 +2587,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "17525170163",
+   "dao_balance": "17514107462",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -2775,7 +2773,7 @@
      ["m03.test", "91033"],
      ["m04.test", "22352"],
      ["m05.test", "322226"],
-     ["m06.test", "59285"],
+     ["m06.test", "79697"],
      ["m07.test", "11106"],
      ["m08.test", "399743"],
      ["m09.test", "282515"],
@@ -3054,7 +3052,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "17031759177",
+   "dao_balance": "17020696476",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -3254,7 +3252,7 @@
      ["m03.test", "105679"],
      ["m04.test", "20428"],
      ["m05.test", "333503"],
-     ["m06.test", "53668"],
+     ["m06.test", "72039"],
      ["m07.test", "12995"],
      ["m08.test", "477768"],
      ["m09.test", "381513"],
@@ -3549,7 +3547,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "16531143283",
+   "dao_balance": "16520080582",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -3742,7 +3740,7 @@
      {"receiver": "m01.test", "amount": "22469969", "tier": 3, "r0": "26663", "auto_limit": "0", "cosign_limit": "21300000"},
      {"receiver": "m02.test", "amount": "14219277", "tier": 1, "r0": "506254", "auto_limit": "50600000", "cosign_limit": "45300000"},
      {"receiver": "m05.test", "amount": "7548505", "tier": 1, "r0": "333503", "auto_limit": "33300000", "cosign_limit": "36650000"},
-     {"receiver": "m06.test", "amount": "5248876", "tier": 2, "r0": "53668", "auto_limit": "0", "cosign_limit": "22650000"},
+     {"receiver": "m06.test", "amount": "5248876", "tier": 2, "r0": "72039", "auto_limit": "0", "cosign_limit": "23600000"},
      {"receiver": "m08.test", "amount": "35548193", "tier": 1, "r0": "477768", "auto_limit": "47700000", "cosign_limit": "43850000"},
      {"receiver": "m09.test", "amount": "16413610", "tier": 1, "r0": "381513", "auto_limit": "38100000", "cosign_limit": "39050000"},
      {"receiver": "m10.test", "amount": "18783489", "tier": 1, "r0": "255446", "auto_limit": "25500000", "cosign_limit": "32750000"},
@@ -3767,7 +3765,7 @@
      ["m03.test", "100548"],
      ["m04.test", "19822"],
      ["m05.test", "321652"],
-     ["m06.test", "61801"],
+     ["m06.test", "78335"],
      ["m07.test", "11695"],
      ["m08.test", "531241"],
      ["m09.test", "390111"],
@@ -4053,7 +4051,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "16029277673",
+   "dao_balance": "16018214972",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4239,7 +4237,7 @@
      {"receiver": "m02.test", "amount": "41704774", "tier": 1, "r0": "496128", "auto_limit": "49600000", "cosign_limit": "44800000"},
      {"receiver": "m03.test", "amount": "26785425", "tier": 3, "r0": "100548", "auto_limit": "10000000", "cosign_limit": "25000000"},
      {"receiver": "m05.test", "amount": "41338942", "tier": 3, "r0": "321652", "auto_limit": "32100000", "cosign_limit": "36050000"},
-     {"receiver": "m06.test", "amount": "21126760", "tier": 2, "r0": "61801", "auto_limit": "0", "cosign_limit": "23050000"},
+     {"receiver": "m06.test", "amount": "21126760", "tier": 2, "r0": "78335", "auto_limit": "0", "cosign_limit": "23900000"},
      {"receiver": "m08.test", "amount": "38778123", "tier": 1, "r0": "531241", "auto_limit": "53100000", "cosign_limit": "46550000"},
      {"receiver": "m09.test", "amount": "34022315", "tier": 1, "r0": "390111", "auto_limit": "39000000", "cosign_limit": "39500000"},
      {"receiver": "m10.test", "amount": "26248399", "tier": 1, "r0": "283401", "auto_limit": "28300000", "cosign_limit": "34150000"},
@@ -4263,7 +4261,7 @@
      ["m03.test", "158493"],
      ["m04.test", "17839"],
      ["m05.test", "402486"],
-     ["m06.test", "113370"],
+     ["m06.test", "128251"],
      ["m07.test", "10525"],
      ["m08.test", "584116"],
      ["m09.test", "444099"],
@@ -4578,7 +4576,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "15520079320",
+   "dao_balance": "15509016619",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -4811,7 +4809,7 @@
      ["m03.test", "157893"],
      ["m04.test", "16055"],
      ["m05.test", "500487"],
-     ["m06.test", "103095"],
+     ["m06.test", "116487"],
      ["m07.test", "14722"],
      ["m08.test", "620704"],
      ["m09.test", "460689"],
@@ -5068,7 +5066,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "15030707219",
+   "dao_balance": "15019644518",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -5225,7 +5223,7 @@
      {"receiver": "m02.test", "amount": "26021066", "tier": 1, "r0": "606463", "auto_limit": "60000000", "cosign_limit": "50300000"},
      {"receiver": "m04.test", "amount": "6054395", "tier": 2, "r0": "16055", "auto_limit": "0", "cosign_limit": "20800000"},
      {"receiver": "m05.test", "amount": "12897398", "tier": 1, "r0": "500487", "auto_limit": "50000000", "cosign_limit": "45000000"},
-     {"receiver": "m06.test", "amount": "19387286", "tier": 2, "r0": "103095", "auto_limit": "10300000", "cosign_limit": "25150000"},
+     {"receiver": "m06.test", "amount": "19387286", "tier": 2, "r0": "116487", "auto_limit": "11600000", "cosign_limit": "25800000"},
      {"receiver": "m08.test", "amount": "47743000", "tier": 1, "r0": "620704", "auto_limit": "60000000", "cosign_limit": "51000000"},
      {"receiver": "m09.test", "amount": "7127509", "tier": 1, "r0": "460689", "auto_limit": "46000000", "cosign_limit": "43000000"},
      {"receiver": "m10.test", "amount": "21156258", "tier": 1, "r0": "346129", "auto_limit": "34600000", "cosign_limit": "37300000"},
@@ -5250,7 +5248,7 @@
      ["m03.test", "142103"],
      ["m04.test", "26449"],
      ["m05.test", "478938"],
-     ["m06.test", "134785"],
+     ["m06.test", "146838"],
      ["m07.test", "13249"],
      ["m08.test", "664133"],
      ["m09.test", "430370"],
@@ -5557,7 +5555,7 @@
     }
    ],
    "members": ["c1.test", "c2.test", "fr1.test", "fr2.test", "m01.test", "m02.test", "m03.test", "m04.test", "m05.test", "m06.test", "m07.test", "m08.test", "m09.test", "m10.test", "m11.test", "m12.test", "m13.test", "m14.test", "m15.test", "m16.test", "m17.test", "m18.test", "m19.test", "new.test"],
-   "dao_balance": "14526160745",
+   "dao_balance": "14515098044",
    "expected": {
     "empty": false,
     "strikes": [],
@@ -5761,7 +5759,7 @@
      {"receiver": "m02.test", "amount": "34444184", "tier": 1, "r0": "603316", "auto_limit": "60000000", "cosign_limit": "50150000"},
      {"receiver": "m03.test", "amount": "7654263", "tier": 1, "r0": "142103", "auto_limit": "14200000", "cosign_limit": "27100000"},
      {"receiver": "m05.test", "amount": "14001701", "tier": 1, "r0": "478938", "auto_limit": "47800000", "cosign_limit": "43900000"},
-     {"receiver": "m06.test", "amount": "7187539", "tier": 1, "r0": "134785", "auto_limit": "13400000", "cosign_limit": "26700000"},
+     {"receiver": "m06.test", "amount": "7187539", "tier": 1, "r0": "146838", "auto_limit": "14600000", "cosign_limit": "27300000"},
      {"receiver": "m07.test", "amount": "6548701", "tier": 2, "r0": "13249", "auto_limit": "0", "cosign_limit": "20650000"},
      {"receiver": "m08.test", "amount": "66834786", "tier": 3, "r0": "664133", "auto_limit": "60000000", "cosign_limit": "53200000"},
      {"receiver": "m09.test", "amount": "55260047", "tier": 3, "r0": "430370", "auto_limit": "43000000", "cosign_limit": "41500000"},
@@ -5787,7 +5785,7 @@
      ["m03.test", "148392"],
      ["m04.test", "23804"],
      ["m05.test", "468544"],
-     ["m06.test", "140556"],
+     ["m06.test", "151404"],
      ["m07.test", "24424"],
      ["m08.test", "776719"],
      ["m09.test", "535333"],

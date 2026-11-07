@@ -18,6 +18,10 @@ Commands:
   python3 sim/hat_tip_sim.py sweep      the parameter sweep only (--write-params writes the pick)
   python3 sim/hat_tip_sim.py scenarios  scenarios, charts and tables with sim/params.json
   python3 sim/hat_tip_sim.py golden     write sim/golden/*.json and sim/replay.json
+  python3 sim/hat_tip_sim.py council    the house council's partner threshold (exit 1 if the
+                                        study picks another value than COUNCIL_PARTNER_MIN);
+                                        writes its table into docs/SIMULATION.md, and with
+                                        --write-params the house block of sim/params.json
   python3 sim/hat_tip_sim.py --check    recompute the golden vectors, the replay and
                                         sim/params.json and compare them with the files
                                         (add --sweep to rerun the sweep as well)
@@ -1129,29 +1133,38 @@ def house_script(seed, cfg, rounds=TESTNET_ROUNDS, newcomer=True, visitors=True,
 # ---------------------------------------------------------------------------
 
 def round_index(res):
-    """Per receiver: counted points by giver; per giver: the receivers it thanked."""
+    """Per receiver: counted points by giver; per giver: the thanks it gave each receiver."""
     cnt = res["count"]
     by_recv, gave_to = {}, {}
     for k, (g, r, t) in enumerate(cnt["rows"]):
         by_recv.setdefault(r, {})[g] = cnt["counted"][k]
-        gave_to.setdefault(g, set()).add(r)
+        gave_to.setdefault(g, {})[r] = t
     return by_recv, gave_to
 
 
-def council_decision(x, res, index):
+# The house council treats the top giver as the receiver's partner only if the receiver thanked
+# it back with at least this many thanks in the round. Picked by `council_study` (the decision
+# rule is in its docstring and in docs/SIMULATION.md, "The house council's partner threshold");
+# it is above welcome_each, so a member's welcome to a guest never makes the guest a partner.
+COUNCIL_PARTNER_MIN = 6
+
+
+def council_decision(x, res, index, partner_min=None):
     """The house council's published rule. Tier 2: approve unless more than half of the
-    receiver's points came from one giver whom the receiver also thanked this round.
-    Tier 3: approve only if at least three givers stand behind the points."""
+    receiver's points came from one giver whom the receiver also thanked with at least
+    COUNCIL_PARTNER_MIN thanks this round. Tier 3: approve only if at least three givers stand
+    behind the points."""
     if x["tier"] == 1:
         return "paid"
+    pmin = COUNCIL_PARTNER_MIN if partner_min is None else partner_min
     recv = x["receiver"]
     givers = index[0].get(recv, {})
-    gave_to = index[1].get(recv, set())
+    gave_to = index[1].get(recv, {})
     p = res["points"].get(recv, 0)
     if x["tier"] == 2:
         if givers:
             top_g = max(sorted(givers), key=lambda g: givers[g])
-            if givers[top_g] * 2 > p and top_g in gave_to:
+            if givers[top_g] * 2 > p and gave_to.get(top_g, 0) >= pmin:
                 return "rejected"
         return "paid"
     return "paid" if sum(1 for v in givers.values() if v > 0) >= 3 else "rejected"
@@ -1160,8 +1173,10 @@ def council_decision(x, res, index):
 BIG_BALANCE = 10 ** 6 * U
 
 
-def play(cfg, script, council=True, balance=BIG_BALANCE, keep=False):
-    """Plays a script through the model. Returns totals per account and per round."""
+def play(cfg, script, council=True, balance=BIG_BALANCE, keep=False, partner_min=None, tally=None):
+    """Plays a script through the model. Returns totals per account and per round.
+    partner_min: the council's partner threshold (default COUNCIL_PARTNER_MIN); tally: a list
+    that gets (round, tier, receiver, status, top giver) of every tier-2 and tier-3 payout."""
     hat = Hat(cfg)
     acc = {}
     rounds = []
@@ -1188,7 +1203,11 @@ def play(cfg, script, council=True, balance=BIG_BALANCE, keep=False):
                 rec["n"] += 1
                 rec["tiers"][x["tier"]] += 1
                 rec["planned"] += x["amount"]
-                status = council_decision(x, res, index) if council else "paid"
+                status = council_decision(x, res, index, partner_min) if council else "paid"
+                if tally is not None and x["tier"] > 1:
+                    gv = index[0].get(x["receiver"], {}) if index else {}
+                    top = max(sorted(gv), key=lambda g: gv[g]) if gv else None
+                    tally.append((r, x["tier"], x["receiver"], status, top))
                 hat.resolve(r, x["receiver"], status)
                 if status == "paid":
                     a["paid"] += x["amount"]
@@ -2101,6 +2120,104 @@ def run_testnet(cfg_launch, cfg_none, workers, seeds=S_SEEDS):
 
 
 # ---------------------------------------------------------------------------
+# The house council's partner threshold
+# ---------------------------------------------------------------------------
+
+COUNCIL_CANDIDATES = [1, 6, 8, 10, 12, 15, 20, 25]
+COUNCIL_SETTINGS = [("House, visitors and a newcomer", {}),
+                    ("Busy demo: visitors at 2 per round", {"visit_rate": 2.0})]
+
+
+def _task_council(args):
+    seed, cfg = args
+    out = {}
+    for label, kw in COUNCIL_SETTINGS:
+        house, script = house_script(seed, cfg, **kw)
+        kinds = {m.name: m.kind for m in house}
+        for t in COUNCIL_CANDIDATES:
+            tally = []
+            play(cfg, script, partner_min=t, tally=tally)
+            c = {"pair": [0, 0], "honest": [0, 0], "welcome": 0, "t3": [0, 0]}
+            for _, tier, recv, status, top in tally:
+                rej = status == "rejected"
+                if tier == 3:
+                    c["t3"][0] += 1
+                    c["t3"][1] += rej
+                    continue
+                kind = "pair" if kinds.get(recv) == "pair" else (
+                    "honest" if kinds.get(recv) == "honest" else None)
+                if kind:
+                    c[kind][0] += 1
+                    c[kind][1] += rej
+                if rej and top is not None and is_implicit(top):
+                    c["welcome"] += 1
+            out[(label, t)] = c
+    return seed, out
+
+
+def council_study(pick, workers, seeds=S_SEEDS, log=print):
+    """Picks the council's partner threshold T: the receiver must have thanked its top giver
+    with at least T thanks for the council to reject a tier-2 payout as a partnership.
+
+    Decision rule, written before the first run: candidates COUNCIL_CANDIDATES, T = 1 being the
+    old rule (any thanks back). Settings: the testnet house community with visitors and the
+    newcomer, and the busy demo (2 visitors a round), 8 seeds, 144 rounds, launch values, all
+    rounds. Metrics, summed over seeds: the share of the colluding pair's tier-2 payouts the rule
+    rejects (pair), the share of the honest members' tier-2 payouts it rejects (honest), and the
+    rejections whose top giver is a guest (welcome). (1) T must exceed welcome_each, so that a
+    welcome alone never makes a guest a partner. (2) The pair must stay caught: in each setting
+    its rejected share at least that of T = 1 less one percentage point. (3) Among the candidates
+    left, the lowest T whose honest share, in each setting, is within one percentage point of the
+    lowest honest share among them: the lowest, because a lower threshold is the harder one for a
+    pair to slip under."""
+    _, cfg_t = launch_configs(pick)
+    results = run_pool(_task_council, [(s, cfg_t) for s in seeds], workers)
+    rows = {}
+    for label, _ in COUNCIL_SETTINGS:
+        for t in COUNCIL_CANDIDATES:
+            agg = {"pair": [0, 0], "honest": [0, 0], "welcome": 0, "t3": [0, 0]}
+            for _, out in results:
+                c = out[(label, t)]
+                for k in ("pair", "honest", "t3"):
+                    agg[k][0] += c[k][0]
+                    agg[k][1] += c[k][1]
+                agg["welcome"] += c["welcome"]
+            pct = lambda a: 100.0 * a[1] / a[0] if a[0] else 0.0
+            rows[(label, t)] = {"pair": pct(agg["pair"]), "honest": pct(agg["honest"]),
+                                "welcome": agg["welcome"], "t3": pct(agg["t3"]),
+                                "pair_n": agg["pair"][0], "honest_n": agg["honest"][0]}
+    labels = [lb for lb, _ in COUNCIL_SETTINGS]
+    ok = [t for t in COUNCIL_CANDIDATES if t > HOUSE_BEH["welcome_each"]
+          and all(rows[(lb, t)]["pair"] >= rows[(lb, 1)]["pair"] - 1.0 for lb in labels)]
+    best = {lb: min(rows[(lb, t)]["honest"] for t in ok) for lb in labels} if ok else {}
+    pickt = next((t for t in ok if all(rows[(lb, t)]["honest"] <= best[lb] + 1.0 for lb in labels)),
+                 None)
+    for lb in labels:
+        log(lb)
+        log("  T   pair rejected   honest rejected   welcome rejections   tier 3 rejected")
+        for t in COUNCIL_CANDIDATES:
+            r = rows[(lb, t)]
+            log("  %-3d %6.1f %% of %-4d %6.1f %% of %-5d %8d            %6.1f %%%s" % (
+                t, r["pair"], r["pair_n"], r["honest"], r["honest_n"], r["welcome"], r["t3"],
+                "   <- pick" if t == pickt else ""))
+    return pickt, rows, labels
+
+
+def md_council(pickt, rows, labels):
+    out = ["| T (thanks back) | " + " | ".join(
+        "%s: pair / honest rejected, welcome rejections" % lb for lb in labels) + " |",
+           "|---|" + "---|" * len(labels)]
+    for t in COUNCIL_CANDIDATES:
+        cells = []
+        for lb in labels:
+            r = rows[(lb, t)]
+            cells.append("%.1f %% / %.1f %%, %d" % (r["pair"], r["honest"], r["welcome"]))
+        name = ("**%d** (pick)" % t) if t == pickt else ("%d (old rule: any thanks back)" % t if t == 1 else str(t))
+        out.append("| %s | %s |" % (name, " | ".join(cells)))
+    return "\n".join(out)
+
+
+# ---------------------------------------------------------------------------
 # Charts: static SVG, no plotting library
 # ---------------------------------------------------------------------------
 
@@ -2406,9 +2523,11 @@ HOUSE_TEXT = {
                    "read as one item), and never gives thanks."),
     "council": ("Votes in the DAO by the published rule, at least two minutes after the payout "
                 "is filed. Tier 2: approve, unless more than half of the receiver's points this "
-                "round came from one giver whom the receiver also thanked this round; then "
-                "reject. Tier 3: approve if at least three givers stand behind the receiver's "
-                "points this round; otherwise reject."),
+                "round came from one giver whom the receiver also thanked with at least "
+                "council_rule.partner_min thanks this round (a partner; a welcome of "
+                "welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at "
+                "least three givers stand behind the receiver's points this round; otherwise "
+                "reject."),
 }
 
 
@@ -2438,6 +2557,11 @@ def house_document():
         "members": members,
         "council": [{"name": c, "kind": "council", "strategy": HOUSE_TEXT["council"]}
                     for c in HOUSE_COUNCIL],
+        "council_rule": {"partner_min": COUNCIL_PARTNER_MIN,
+                         "about": "The fewest thanks the receiver must have given its top giver "
+                                  "in the round for the council to read the pair as partners; "
+                                  "picked by sim/hat_tip_sim.py council (docs/SIMULATION.md, "
+                                  "'The house council's partner threshold')."},
         "optional_newcomer": {"name": n, "kind": k, "parameters": {"items_mean": items},
                               "join_round": HOUSE_NEWCOMER_JOIN,
                               "note": "Simulated to check the newcomer target; the demo may "
@@ -2483,11 +2607,11 @@ def params_document(pick):
     }
 
 
-def load_pick():
+def load_pick(strict=True):
     with open(PARAMS_FILE) as fh:
         doc = json.load(fh)
     pick = doc["pick"]
-    if params_document(pick) != doc:
+    if strict and params_document(pick) != doc:
         raise SystemExit("sim/params.json differs from what its pick block produces")
     return pick
 
@@ -3074,7 +3198,7 @@ def check(rerun_sweep, workers):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=NAME + " simulation")
     ap.add_argument("command", nargs="?", default="all",
-                    choices=["all", "sweep", "scenarios", "golden"])
+                    choices=["all", "sweep", "scenarios", "golden", "council"])
     ap.add_argument("--check", action="store_true",
                     help="recompute the golden vectors, the replay and params.json and "
                          "compare them with the files")
@@ -3086,6 +3210,17 @@ def main(argv=None):
     sys.dont_write_bytecode = True
     if args.check:
         return check(args.sweep, args.workers)
+    if args.command == "council":
+        pick = load_pick(strict=False)
+        pickt, rows, labels = council_study(pick, args.workers)
+        print("pick: partner_min = %s (COUNCIL_PARTNER_MIN in this file is %d)" % (pickt, COUNCIL_PARTNER_MIN))
+        if pickt != COUNCIL_PARTNER_MIN:
+            return 1
+        if args.write_params:
+            write_json(PARAMS_FILE, params_document(pick))
+            print("wrote sim/params.json (the house block's council rule)")
+        inject({"council": md_council(pickt, rows, labels)})
+        return 0
     if args.command in ("all", "sweep"):
         pick, summary = sweep(args.workers)
         if args.command == "all" or args.write_params:

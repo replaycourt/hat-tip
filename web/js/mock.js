@@ -8,8 +8,9 @@
 // contract (logic.js Hat, checked against the golden vectors); every payout becomes a proposal in a
 // stand-in Sputnik DAO, where tier 1 is approved by the contract's own vote at once, tier 2 waits
 // for one house council vote and tier 3 for two. The council votes by the published rule: it
-// rejects a tier-2 payout whose points came mostly from one reciprocal partner and a tier-3 payout
-// with fewer than three givers. The council votes seconds after filing, not minutes, so that a
+// rejects a tier-2 payout whose points came mostly from one partner (a giver the receiver thanked
+// back with at least COUNCIL_PARTNER_MIN thanks; a welcome is not one) and a tier-3 payout with
+// fewer than three givers. The council votes seconds after filing, not minutes, so that a
 // whole round fits in a few minutes. The history is played until a round closes with payouts in
 // all three tiers and the live round will too (with the newcomer's first payout).
 //
@@ -110,6 +111,8 @@ function people(h) {
   ].map((p) => ({ ...p, account: acc(p.name) }))
 }
 const COUNCIL = ['council-a', 'council-b', 'council-c'].map(acc)
+/** sim/params.json house.council_rule.partner_min: thanks back that make the top giver a partner. */
+export const COUNCIL_PARTNER_MIN = 6
 const VISITOR_NOTES = ['brought cake for the volunteers', 'swept the floor after closing', 'helped carry the toolbox', 'brought a broken radio']
 
 // ---- deterministic randomness ------------------------------------------------------------------
@@ -441,8 +444,8 @@ export class MockWorld {
     log.payouts = res.payouts.map((x) => x.id)
     for (const x of res.payouts) {
       const rows = res.count.rows.filter((y) => y.receiver === x.receiver && y.counted > 0n)
-      // the council's rule: mostly from one reciprocal partner?
-      const partner = rows.find((y) => res.count.rows.some((z) => z.giver === x.receiver && z.receiver === y.giver) && y.counted * 2n > x.points)
+      // the council's rule: mostly from one partner (thanked back with at least COUNCIL_PARTNER_MIN)?
+      const partner = rows.find((y) => res.count.rows.some((z) => z.giver === x.receiver && z.receiver === y.giver && z.thanks >= COUNCIL_PARTNER_MIN) && y.counted * 2n > x.points)
       this.meta.set(x.id, { proposal: null, givers: rows.length, kind: x.tier === 2 ? 'function_call' : 'transfer', partner: Boolean(partner) })
     }
     return res

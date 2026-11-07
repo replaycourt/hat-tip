@@ -8,6 +8,7 @@
 //                              [--quiet <k,...>] [--guest <k,...>] [--remove <k,...>] [--log <file.jsonl>] [--dry-run]
 //   node scripts/house.mjs report [--section staging]          balances; LOW lines when something runs low
 //   node scripts/house.mjs export-secret [--section staging]   the HOUSE_KEYS value for GitHub
+//   node scripts/house.mjs council-replay [--section staging]  the council rule on every recorded payout
 //   node scripts/house.mjs summary [--section staging] [--log <file.jsonl,...>] [--from <round>]
 //       per round: budget, payouts with tier, status and DAO proposal; payouts by tier and status;
 //       audit(); the house members' reputation and limits; with --log the events by kind and a
@@ -28,11 +29,13 @@
 //   keys on the gas account. An Approved proposal is checked twice, on two ticks at least 5 s
 //   apart: the contract books `paid` only on a second Approved answer 3 blocks after the first.
 // - council: at least two minutes after a tier-2 or tier-3 payout is filed, house council members
-//   vote on its DAO proposal by the published rule (sim/hat_tip_sim.py `council_decision`): tier 2,
-//   one vote: approve unless more than half of the receiver's points this round came from one
-//   giver whom the receiver also thanked this round, then reject; tier 3, two votes: approve if at
-//   least three givers stand behind the receiver's points this round, else reject. A proposal a
-//   human already decided is left alone; votes already cast count.
+//   vote on its DAO proposal by the published rule (sim/hat_tip_sim.py `council_decision`,
+//   hat-tip-lib.mjs `councilDecision`): tier 2, one vote: approve unless more than half of the
+//   receiver's points this round came from one giver whom the receiver also thanked with at least
+//   council_rule.partner_min (6) thanks this round, then reject (a welcome of 5 thanks to a guest
+//   does not make the guest a partner); tier 3, two votes: approve if at least three givers stand
+//   behind the receiver's points this round, else reject. A proposal a human already decided is
+//   left alone; votes already cast count.
 //
 // Keys: the environment variable HOUSE_KEYS (JSON, .github/workflows/house.yml passes the secret of
 // that name), else the git-ignored .secrets/house-keys-<contract>.json. Format:
@@ -60,7 +63,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { accessKeys, hex, nearPublicKey, newKey, rpc, sign, view } from './near-lite.mjs'
 import {
-  FINAL_STATUSES, GAS, MEMBER_METHODS, COUNCIL_METHODS, RELAY_METHODS, Recorder, cli, deployment, freeBalance, houseKeysFile, itemsOf, readWindow,
+  FINAL_STATUSES, GAS, MEMBER_METHODS, COUNCIL_METHODS, RELAY_METHODS, Recorder, cli, councilDecision, deployment, freeBalance, houseKeysFile, itemsOf, readWindow,
   loadParams, nearStr, publicKeyOfSeed, readJson, seedSigner, short, sleep, split, stamp, stream, tryView, tusd, writeSecret,
 } from './hat-tip-lib.mjs'
 
@@ -233,30 +236,6 @@ function allocationFor(m, r, seed, rv, cfg, house) {
 
 // ---- the house council's rule -------------------------------------------------------------------------
 
-/** sim/hat_tip_sim.py `council_decision`, on the round as the contract recorded it. */
-export function councilDecision(tier, receiver, rv) {
-  const givers = new Map()
-  const gaveTo = new Set()
-  let points = 0n
-  for (const [g, r, given, counted] of rv.gifts) {
-    if (r === receiver) {
-      givers.set(g, BigInt(counted))
-      points += BigInt(counted)
-    }
-    if (g === receiver && given > 0) gaveTo.add(r)
-  }
-  if (tier === 2) {
-    if (givers.size) {
-      let top = null
-      for (const g of [...givers.keys()].sort()) if (top === null || givers.get(g) > givers.get(top)) top = g
-      if (givers.get(top) * 2n > points && gaveTo.has(top)) return { approve: false, why: `${short(top)} gave more than half of the points and was thanked back` }
-    }
-    return { approve: true, why: 'no reciprocal partner behind most of the points' }
-  }
-  const n = [...givers.values()].filter((v) => v > 0n).length
-  return n >= 3 ? { approve: true, why: `${n} givers stand behind it` } : { approve: false, why: `only ${n} giver${n === 1 ? '' : 's'} behind it` }
-}
-
 // ---- run ------------------------------------------------------------------------------------------
 
 async function run() {
@@ -420,7 +399,7 @@ async function run() {
       if (!dec) {
         const rv = await view(d.contract, 'round', { n: p.round })
         if (!rv) continue
-        dec = councilDecision(p.tier, p.receiver, rv)
+        dec = councilDecision(p.tier, p.receiver, rv, H.council_rule?.partner_min ?? 6)
         // staging test: on a --remove round the first tier-2 payout is removed instead (one vote)
         if (p.tier === 2 && removeK.has(p.round - first + 1) && !removedRounds.has(p.round)) {
           removedRounds.add(p.round)
@@ -662,9 +641,33 @@ async function summary() {
   console.log(JSON.stringify(out, null, 1))
 }
 
-const cmds = { run, report: async () => { const k = loadKeys(); await report(k ? await loadHouse(k) : null, await view(d.contract, 'config')) }, 'export-secret': exportSecret, summary }
+/** The house council's current rule applied to every recorded tier-2 and tier-3 payout: where it
+ *  would decide otherwise than the DAO did (for instance a rule change since). Read-only. */
+async function councilReplay() {
+  const st = await view(d.contract, 'state')
+  const min = H.council_rule?.partner_min ?? 6
+  const rounds = new Map()
+  let n = 0
+  const differ = []
+  for (let at = st.oldest_payout; at < st.next_payout; at += 100) {
+    for (const p of await view(d.contract, 'payouts', { from: at, limit: 100 })) {
+      if (p.tier === 1 || !['paid', 'rejected'].includes(p.status)) continue
+      if (!rounds.has(p.round)) rounds.set(p.round, await view(d.contract, 'round', { n: p.round }))
+      const rv = rounds.get(p.round)
+      if (!rv) continue
+      n++
+      const dec = councilDecision(p.tier, p.receiver, rv, min)
+      const now = dec.approve ? 'paid' : 'rejected'
+      if (now !== p.status) differ.push(`payout ${p.id} (r${p.round}, tier ${p.tier}, ${short(p.receiver)}, DAO #${p.dao_proposal}): recorded ${p.status}, the rule now: ${now}, ${dec.why}`)
+    }
+  }
+  console.log(`${n} decided tier-2/3 payouts, partner_min ${min}: ${differ.length} decided otherwise now`)
+  for (const l of differ) console.log(`  ${l}`)
+}
+
+const cmds = { run, 'council-replay': councilReplay, report: async () => { const k = loadKeys(); await report(k ? await loadHouse(k) : null, await view(d.contract, 'config')) }, 'export-secret': exportSecret, summary }
 if (!cmds[cmd]) {
-  console.error('usage: house.mjs run|report|export-secret|summary [--section staging] ...')
+  console.error('usage: house.mjs run|report|export-secret|summary|council-replay [--section staging] ...')
   process.exit(64)
 }
 cmds[cmd]().catch((e) => {

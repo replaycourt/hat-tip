@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import * as L from '../js/logic.js'
-import { BEHAVIOUR, MOCK_IDS, MockClient, MockWorld, mockConfig, splitThanks } from '../js/mock.js'
+import { BEHAVIOUR, MOCK_IDS, MockClient, MockWorld, mockConfig, splitThanks, COUNCIL_PARTNER_MIN } from '../js/mock.js'
 import * as N from '../js/near.js'
 
 const ROUND = 180_000
@@ -198,6 +198,7 @@ test('the mock plays the launch parameters and the published house of sim/params
     assert.deepEqual(mine[k], v, k)
   }
   for (const [k, v] of Object.entries(BEHAVIOUR)) assert.equal(p.house.behaviour[k], v, k)
+  assert.equal(COUNCIL_PARTNER_MIN, p.house.council_rule.partner_min, 'the council rule of the mock is the published one')
   const { w } = world()
   const house = new Map(w.people.map((x) => [x.name, x]))
   for (const m of p.house.members) {

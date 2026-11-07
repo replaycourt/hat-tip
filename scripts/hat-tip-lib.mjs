@@ -399,3 +399,42 @@ export async function readWindow(viewPayouts, { openFrom, earlier = [], held = [
   const list = [...read.values()].sort((a, b) => a.id - b.id)
   return { list, ...nextWindow(list, from, nextPayout) }
 }
+
+// ---- the house council's published rule ---------------------------------------------------------------
+
+/**
+ * sim/hat_tip_sim.py `council_decision`, on a round as the contract's `round(n)` records it
+ * (`gifts`: [giver, receiver, given, counted]). Tier 2: approve, unless more than half of the
+ * receiver's points came from one giver whom the receiver also thanked with at least `partnerMin`
+ * thanks this round (sim/params.json house.council_rule.partner_min): then reject. A welcome of
+ * welcome_each (5) thanks to a guest is below it, so a welcomed guest is never a partner. Tier 3:
+ * approve only if at least three givers stand behind the points. Ties for the top giver go to the
+ * first account id.
+ */
+export function councilDecision(tier, receiver, rv, partnerMin = 6) {
+  const givers = new Map()
+  const gaveTo = new Map()
+  let points = 0n
+  for (const [g, r, given, counted] of rv.gifts) {
+    if (r === receiver) {
+      givers.set(g, BigInt(counted))
+      points += BigInt(counted)
+    }
+    if (g === receiver) gaveTo.set(r, Number(given))
+  }
+  const name = (a) => (/^[0-9a-f]{64}$/.test(a) ? `guest ${a.slice(0, 8)}...` : a.split('.')[0])
+  if (tier === 2) {
+    if (givers.size) {
+      let top = null
+      for (const g of [...givers.keys()].sort()) if (top === null || givers.get(g) > givers.get(top)) top = g
+      const back = gaveTo.get(top) ?? 0
+      if (givers.get(top) * 2n > points) {
+        if (back >= partnerMin) return { approve: false, why: `${name(top)} gave more than half of the points and was thanked back with ${back}` }
+        return { approve: true, why: `${name(top)} gave more than half of the points but ${back ? `was thanked back with only ${back} (< ${partnerMin})` : 'was not thanked back'}: no partner` }
+      }
+    }
+    return { approve: true, why: 'no giver behind more than half of the points' }
+  }
+  const n = [...givers.values()].filter((v) => v > 0n).length
+  return n >= 3 ? { approve: true, why: `${n} givers stand behind it` } : { approve: false, why: `only ${n} giver${n === 1 ? '' : 's'} behind it` }
+}

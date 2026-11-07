@@ -171,19 +171,23 @@
    {
     "name": "council-a",
     "kind": "council",
-    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
    },
    {
     "name": "council-b",
     "kind": "council",
-    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
    },
    {
     "name": "council-c",
     "kind": "council",
-    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked this round; then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    "strategy": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
    }
   ],
+  "council_rule": {
+   "partner_min": 6,
+   "about": "The fewest thanks the receiver must have given its top giver in the round for the council to read the pair as partners; picked by sim/hat_tip_sim.py council (docs/SIMULATION.md, 'The house council's partner threshold')."
+  },
   "optional_newcomer": {
    "name": "ivy",
    "kind": "honest",

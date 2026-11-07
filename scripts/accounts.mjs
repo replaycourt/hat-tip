@@ -149,6 +149,7 @@ async function create() {
       strategies: 'sim/params.json, house; played by scripts/house.mjs',
       members: n.members.map((m) => ({ account: m.account, name: m.name, kind: m.kind, label: m.label || null, strategy: m.strategy })),
       council: n.council.map((c) => ({ account: c.account, name: c.name, rule: c.strategy })),
+      council_rule: loadParams().house.council_rule ?? null,
     },
   })
   console.log(`house function-call keys: .secrets/house-keys-${n.contract}.json (${Object.keys(house.members).length} members, ${Object.keys(house.council).length} council)`)

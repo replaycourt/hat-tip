@@ -124,7 +124,7 @@ Added after stages A, C and B had run, when the contract gained `guest_receive_c
 | free rider (testnet) | never; its note claims one item half of the time | never | - |
 | visitor (testnet) | - | 9 times in 10 | arrives at 0.5 per round (Poisson), comes back for the next round with chance 0.4, posts a note 8 times in 10, gives 100 thanks to 2-5 members by the items in their notes x noise |
 | guest farm (testnet) | - | every round | one person holds all six guest seats every round and posts a note in each; outsider: spreads each seat's thanks over three random members; with an accomplice: each seat gives the free rider the cap, and the free rider gives its 100 thanks to three of the seats |
-| house council | - | - | approves a tier-2 payout unless more than half of the receiver's points came from one giver whom the receiver also thanked that round; approves a tier-3 payout only if at least three givers stand behind it; rejects otherwise |
+| house council | - | - | approves a tier-2 payout unless more than half of the receiver's points came from one giver whom the receiver also thanked with at least 6 thanks that round (`council_rule.partner_min`, see "The house council's partner threshold"); approves a tier-3 payout only if at least three givers stand behind it; rejects otherwise |
 
 Every member has its own random stream, so scenarios that share members draw the same work and noise for them, and the two colluder strategies and all rule sets of a seed see the same honest community.
 
@@ -317,7 +317,7 @@ Medians over 8 seeds, 144 rounds, testnet launch values; 1 of 9 values meet ever
 |---|---|---|---|---|---|---|---|---|---|
 | House, visitors and a newcomer | 6.84 | 72 / 22 / 5 | 8 | +2.7 | 4 % | 2.7 % | 2.6 % | - | 3.19 |
 | The same without dampening | 7.40 | 76 / 18 / 6 | 5 | +10.0 | 14 % | 1.2 % | 2.3 % | - | 1.45 |
-| House only (no visitors, no newcomer) | 6.10 | 70 / 19 / 10 | - | +4.5 | 3 % | 3.8 % | 0.0 % | - | 4.59 |
+| House only (no visitors, no newcomer) | 6.10 | 70 / 19 / 10 | - | +4.5 | 2 % | 3.8 % | 0.0 % | - | 4.59 |
 | Busy demo: visitors at 2 per round | 7.10 | 72 / 23 / 5 | 5.5 | +1.4 | 3 % | 2.2 % | 4.4 % | - | 2.62 |
 | Guest farm, outsider | 8.83 | 73 / 27 / 1 | 5 | +4.4 | 0 % | 5.7 % | 7.3 % | 8.77 | 6.85 |
 | Guest farm with the free rider as accomplice | 9.41 | 73 / 26 / 0 | 5.5 | +3.7 | 0 % | 8.3 % | 8.0 % | 9.54 | 9.99 |
@@ -332,6 +332,34 @@ Medians over 8 seeds, 144 rounds of 20 minutes, testnet launch values. Tier shar
 - **The labelled free rider** gets 2.7 % of the payouts (3.19 tUSD a round): idle is off, so a member who never gives is not discounted, and honest house members thank its vague notes a little.
 - **Guest farm.** One person holding all six seats takes 8.8 tUSD a round (7 % of the budget) from the house members' welcome thanks alone, and keeps every real visitor out. With a member as accomplice, who gives his 100 thanks to the farm's seats while the seats give him the cap, the seats take 9.5 tUSD and the accomplice 10 tUSD a round: about a sixth of the budget. Without the receive cap it was 20 and 9 tUSD (a quarter), without any dampening 34 tUSD. The giving cap bounds what the seats give the accomplice; the receive cap bounds what they receive.
 - **Busy demo.** With two new visitors a round, guests get 4.4 % of the payouts (6.2 % without the receive cap) and payouts rise to 7.1 a round.
+
+### The house council's partner threshold
+
+Added after the stage runs on testnet: an honest member (emil) was struck because the guest he had welcomed with 5 thanks became his biggest giver, and the house council's rule read any giver the receiver had thanked back as a partner. The rule now asks for at least T thanks back; T is picked here. Written and committed before the study ran (`python3 sim/hat_tip_sim.py council`, function `council_study`).
+
+**Setting.** The testnet launch values, 144 rounds, 8 seeds, all rounds, two variants: the house community with visitors and the newcomer, and the busy demo (2 visitors a round). The behaviour scripts do not depend on the council, so every candidate plays the same gifts; strikes still change later reputation and tiers.
+
+**Candidates.** T in {1 (the old rule: any thanks back), 6, 8, 10, 12, 15, 20, 25}.
+
+**Criteria**, summed over seeds: (1) T is above `welcome_each` (5), so that a welcome alone never makes a guest a partner; (2) the pair stays caught: in each variant the share of the colluding pair's tier-2 payouts the rule rejects is at least that of T = 1 less one percentage point; (3) among the candidates left, the lowest T whose share of honest members' tier-2 payouts rejected is, in each variant, within one percentage point of the lowest such share among them. The lowest, because a lower threshold is the harder one for a pair to slip under.
+
+Shares of tier-2 payouts the rule rejects (pair / honest members) and the rejections whose top giver was a guest:
+
+<!-- BEGIN generated:council -->
+| T (thanks back) | House, visitors and a newcomer: pair / honest rejected, welcome rejections | Busy demo: visitors at 2 per round: pair / honest rejected, welcome rejections |
+|---|---|---|
+| 1 (old rule: any thanks back) | 4.4 % / 0.7 %, 0 | 3.1 % / 0.4 %, 1 |
+| **6** (pick) | 3.9 % / 0.7 %, 0 | 2.7 % / 0.4 %, 0 |
+| 8 | 3.7 % / 0.7 %, 0 | 2.7 % / 0.2 %, 0 |
+| 10 | 2.5 % / 0.5 %, 0 | 2.0 % / 0.2 %, 0 |
+| 12 | 2.0 % / 0.4 %, 0 | 1.6 % / 0.1 %, 0 |
+| 15 | 1.5 % / 0.3 %, 0 | 0.8 % / 0.1 %, 0 |
+| 20 | 1.3 % / 0.2 %, 0 | 0.8 % / 0.1 %, 0 |
+| 25 | 1.3 % / 0.2 %, 0 | 0.8 % / 0.1 %, 0 |
+<!-- END generated:council -->
+
+- **6 meets every criterion; 8 is the only other candidate that does.** From 10 on, the pair's rejected share falls below the old rule's by more than a point (house: 2.5 % against 4.4 %; at 20, 1.3 %). Most of the pair's rejections do not come from the partner, whose 25 thanks count 6.25 after reciprocity and seldom make him the top giver, but from an honest top giver the pair member thanked back moderately: in the house variant 12 of the old rule's 18 rejected pair payouts, 11 of 16 at 6, none at 25. A high threshold would let the pair through.
+- **What 6 changes.** A guest welcomed with 5 thanks is never a partner, and the honest members' rejected share stays as low as before (0.7 % and 0.4 %); welcomes were rarely the cause in the simulation (one rejection in the busy demo), but on the staging chain they struck an honest member in a thin early round. `sim/golden/launch_community.json` changed with it: an honest member's tier-2 payout in round 3, rejected under the old rule, is paid now (and the later rounds follow from that). `launch_testnet.json` and `sim/replay.json` are unchanged.
 
 ## Launch parameters
 
