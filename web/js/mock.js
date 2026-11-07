@@ -220,7 +220,8 @@ export class MockWorld {
   /**
    * How many rounds to play before the live one: the first round from `from` on whose close has
    * payouts in all three tiers and after which the live round, with the newcomer's first payout,
-   * will close with all three too (if no visitor changes it much).
+   * closes with all three too: without a visitor, and with one who writes a note and gives 25
+   * thanks to each of the four members whose notes name the most work.
    */
   static pickHistory(seed, from = 36, to = 160) {
     const w = new MockWorld({ seed, history: to, now: () => 0, probe: true })
@@ -230,9 +231,7 @@ export class MockWorld {
       const res = w.playPast(r, 'past')
       if (r < from || !hasAllTiers(res)) continue
       ivy.from = r + 1
-      const trial = cloneHat(w.hat).close(r + 1, w.membersAt(r + 1), [], new Map(w.people.map((p) => [p.account, w.houseGifts(p, r + 1)])), w.dao.balance)
-      w.logs.delete(r + 1)
-      if (hasAllTiers(trial)) return r
+      if (w.trial(r + 1, false) && w.trial(r + 1, true)) return r
       ivy.from = Infinity
     }
     return from
@@ -270,6 +269,22 @@ export class MockWorld {
       if (!this.events.length || this.events[0].at > t) break
       this.events.shift().fn()
     }
+  }
+
+  /** Closes round r on a copy of the engine with the house's thanks (and a typical visitor). */
+  trial(r, visitor) {
+    const log = this.log(r)
+    if (visitor) {
+      const guest = 'f'.repeat(64)
+      const top = this.people.filter((p) => p.from <= r && this.items(p, r) > 0).sort((a, b) => this.items(b, r) - this.items(a, r)).slice(0, 4)
+      log.seats.push(guest)
+      log.notes.set(guest, VISITOR_NOTES[0])
+      log.allocs.set(guest, top.map((p) => [p.account, 25]))
+    }
+    for (const p of this.people) this.allocate(r, p.account, this.houseGifts(p, r))
+    const res = cloneHat(this.hat).close(r, this.membersAt(r), log.seats, log.allocs, this.dao.balance)
+    this.logs.delete(r)
+    return hasAllTiers(res)
   }
 
   // -- behaviour (sim/params.json, house) --

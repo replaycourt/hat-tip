@@ -405,10 +405,19 @@ function renderGuests(notes, givenTo) {
     .map((g) => {
       const x = S.preview.byAccount.get(g)
       const gave = (S.open?.gifts ?? []).filter((e) => e[0] === g).reduce((a, e) => a + Number(e[2]), 0)
+      const pay = x?.tier ? `≈ ${U.esc(U.tusd(x.amount))} ${U.pill(x.tier)}` : x?.carried ? `<span class="muted">${U.esc(U.tusd(x.carried))} kept for later</span>` : ''
+      const reasons = L.explainReceiver(S.cfg, S.preview.count, g).reasons
+      const mutual = reasons.find((r) => r.kind === 'mutual')
+      const why = mutual
+        ? `Thanks between ${g === S.me ? 'you and the people you thanked' : 'this guest and the people they thanked'} count ${L.fmtPct(mutual.bp)} both ways.`
+        : reasons.find((r) => r.kind === 'receiveCap')
+          ? L.reasonText(reasons.find((r) => r.kind === 'receiveCap'))
+          : ''
       return `<div class="guest${g === S.me ? ' me' : ''}">${U.avatarHtml(g, name(g))}<div class="g-body">
-        <div class="g-top"><b>${U.esc(name(g))}</b>${x?.tier ? `<span class="g-pay">≈ ${U.esc(U.tusd(x.amount))} ${U.pill(x.tier)}</span>` : ''}</div>
+        <div class="g-top"><b>${U.esc(name(g))}</b>${pay ? `<span class="g-pay">${pay}</span>` : ''}</div>
         <span class="muted">gave ${gave} thanks${givenTo.get(g) ? ` · got ${givenTo.get(g)} from members` : ''}</span>
-        <p class="g-note">${notes.get(g) ? `“${U.esc(notes.get(g))}”` : '<span class="muted">no note</span>'}</p></div></div>`
+        <p class="g-note">${notes.get(g) ? `“${U.esc(notes.get(g))}”` : '<span class="muted">no note</span>'}</p>
+        ${why ? `<p class="g-why">${U.esc(why)}</p>` : ''}</div></div>`
     })
     .join('')
 }
@@ -451,7 +460,8 @@ function renderYou() {
   if (seated) lines.push(`Seat ${S.open.seats.indexOf(S.me) + 1} of ${S.cfg.guest_seats} in round ${S.open.n}${mine.length ? ` · you gave ${mine.reduce((a, g) => a + g[1], 0)} thanks to ${mine.length}` : ''}.`)
   const x = S.preview?.byAccount.get(S.me)
   const note = (S.open?.notes ?? []).find(([a]) => a === S.me)
-  if (x?.tier) lines.push(`If the round closed now: ≈ ${U.tusd(x.amount)} to you, ${L.TIER_NAMES[x.tier].toLowerCase()}.`)
+  if (x?.tier) lines.push(`If the round closed now: ≈ ${U.tusd(x.amount)} to you; it ${x.tier === 2 ? 'needs one council vote' : x.tier === 3 ? 'needs a council majority' : 'is paid at once'}.`)
+  else if (x?.carried) lines.push(`If the round closed now: ${U.tusd(x.carried)} to you, below the ${U.tusd(S.cfg.min_payout)} minimum, so it waits for a later round.`)
   else if (seated && !note) lines.push('House members thank guests who write a note and give thanks.')
   else if (seated && x?.given) lines.push(`Members gave you ${x.given} thanks so far.`)
   else if (seated && mine.length) lines.push('House members thank guests who write a note and give thanks; give them a moment.')
