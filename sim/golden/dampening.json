@@ -1,0 +1,905 @@
+{
+ "name": "dampening",
+ "about": "Every dampening rule on at a non-trivial value: reciprocity 50 %, quadratic aggregation, breadth (fewer than 3 givers count half), idle (a member who gave nothing counts half), cap 34 per receiver. A colluding pair, a one-way ring of three, a member who rarely gives, strikes from a rejected and a removed payout (one of them two rounds old, across an empty round), an expired and a paid one, and a five-way tie in the tier-1 round cap (equal amounts move in account order).",
+ "format": "hat-tip golden v1; see sim/golden/README.md",
+ "config": {
+  "dao": "dao.test",
+  "token": "tusd.test",
+  "members_role": "members",
+  "council_role": "council",
+  "thanks_role": "thanks",
+  "genesis_ms": 1800000000000,
+  "round_ms": 1200000,
+  "thanks_per_round": 100,
+  "cap_per_receiver": 34,
+  "max_receivers": 10,
+  "reciprocal_bp": 5000,
+  "quadratic": true,
+  "breadth_k": 3,
+  "breadth_bp": 5000,
+  "idle_bp": 5000,
+  "decay_bp": 500,
+  "round_budget": "100000000",
+  "min_payout": "2000000",
+  "carry_rounds": 3,
+  "reserve": "0",
+  "auto_rep_min": 20,
+  "auto_per_thanks": "150000",
+  "auto_max": "13000000",
+  "cosign_base": "8000000",
+  "cosign_per_thanks": "100000",
+  "cosign_max": "30000000",
+  "auto_share_bp": 3000,
+  "guest_seats": 6,
+  "guest_weight_bp": 5000,
+  "guest_cap_bp": 2000,
+  "max_members": 24,
+  "max_catchup": 36,
+  "log_keep": 108,
+  "note_max_bytes": 80
+ },
+ "initial_members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+ "rounds": [
+  {
+   "round": 1,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 20],
+      ["cleo.test", 20],
+      ["dina.test", 20],
+      ["emil.test", 20],
+      ["hugo.test", 20]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 30],
+      ["cleo.test", 30],
+      ["emil.test", 30],
+      ["finn.test", 10]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 25],
+      ["cleo.test", 25],
+      ["emil.test", 25],
+      ["hugo.test", 25]
+     ]
+    },
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["ana.test", 10],
+      ["ben.test", 10],
+      ["cleo.test", 10],
+      ["dina.test", 10],
+      ["gus.test", 10],
+      ["hugo.test", 10]
+     ]
+    },
+    {
+     "giver": "finn.test",
+     "gifts": [
+      ["gus.test", 34],
+      ["ana.test", 33],
+      ["ben.test", 33]
+     ]
+    },
+    {
+     "giver": "gus.test",
+     "gifts": [
+      ["finn.test", 34],
+      ["cleo.test", 33],
+      ["dina.test", 33]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "10000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 20, "20000", "10000", "12858", "12858"],
+     ["ana.test", "cleo.test", 20, "20000", "10000", "16772", "16772"],
+     ["ana.test", "dina.test", 20, "20000", "10000", "13494", "13494"],
+     ["ana.test", "emil.test", 20, "20000", "15000", "14074", "14074"],
+     ["ana.test", "hugo.test", 20, "20000", "20000", "15386", "7693"],
+     ["ben.test", "ana.test", 30, "30000", "20000", "25847", "25847"],
+     ["ben.test", "cleo.test", 30, "30000", "15000", "20542", "20542"],
+     ["ben.test", "emil.test", 30, "30000", "25000", "18169", "18169"],
+     ["ben.test", "finn.test", 10, "10000", "5000", "3872", "1936"],
+     ["cleo.test", "ana.test", 34, "34000", "24000", "28314", "28314"],
+     ["cleo.test", "ben.test", 33, "33000", "18000", "17251", "17251"],
+     ["cleo.test", "dina.test", 33, "33000", "20500", "19320", "19320"],
+     ["dina.test", "ana.test", 25, "25000", "15000", "22384", "22384"],
+     ["dina.test", "cleo.test", 25, "25000", "12500", "18752", "18752"],
+     ["dina.test", "emil.test", 25, "25000", "20000", "16251", "16251"],
+     ["dina.test", "hugo.test", 25, "25000", "25000", "17202", "8601"],
+     ["emil.test", "ana.test", 10, "10000", "5000", "12923", "12923"],
+     ["emil.test", "ben.test", 10, "10000", "5000", "9092", "9092"],
+     ["emil.test", "cleo.test", 10, "10000", "10000", "16772", "16772"],
+     ["emil.test", "dina.test", 10, "10000", "5000", "9541", "9541"],
+     ["emil.test", "gus.test", 10, "10000", "10000", "6273", "3136"],
+     ["emil.test", "hugo.test", 10, "10000", "10000", "10879", "5439"],
+     ["finn.test", "ana.test", 33, "33000", "33000", "33201", "33201"],
+     ["finn.test", "ben.test", 33, "33000", "28000", "21516", "21516"],
+     ["finn.test", "gus.test", 34, "34000", "17000", "8179", "4089"],
+     ["gus.test", "cleo.test", 33, "33000", "33000", "30468", "30468"],
+     ["gus.test", "dina.test", 33, "33000", "33000", "24513", "24513"],
+     ["gus.test", "finn.test", 34, "34000", "17000", "7139", "3569"]
+    ],
+    "dropped": [],
+    "members_weight": "660000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "122669"],
+     ["ben.test", "60717"],
+     ["cleo.test", "103306"],
+     ["dina.test", "66868"],
+     ["emil.test", "48494"],
+     ["finn.test", "5505"],
+     ["gus.test", "7225"],
+     ["hugo.test", "21733"]
+    ],
+    "budget": "100000000",
+    "dust": "4",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "28101769", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"},
+     {"receiver": "ben.test", "amount": "13909423", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"},
+     {"receiver": "cleo.test", "amount": "23665974", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"},
+     {"receiver": "dina.test", "amount": "15318532", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"},
+     {"receiver": "emil.test", "amount": "11109303", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"},
+     {"receiver": "hugo.test", "amount": "4978729", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "8000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "122669"],
+     ["ben.test", "60717"],
+     ["cleo.test", "103306"],
+     ["dina.test", "66868"],
+     ["emil.test", "48494"],
+     ["finn.test", "5505"],
+     ["gus.test", "7225"],
+     ["hugo.test", "21733"]
+    ],
+    "carry": [
+     ["finn.test", "1261119", 1],
+     ["gus.test", "1655147", 1]
+    ],
+    "audit": {"budget": "100000000", "planned": "97083730", "carry": "2916266", "lapsed": "0", "dust": "4", "balanced": true}
+   }
+  },
+  {
+   "round": 2,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 34],
+      ["cleo.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["cleo.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 33],
+      ["cleo.test", 33]
+     ]
+    },
+    {
+     "giver": "finn.test",
+     "gifts": [
+      ["gus.test", 34]
+     ]
+    },
+    {
+     "giver": "gus.test",
+     "gifts": [
+      ["finn.test", 34]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "9900000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 34, "34000", "17000", "18629", "18629"],
+     ["ana.test", "cleo.test", 33, "33000", "16500", "18261", "18261"],
+     ["ana.test", "dina.test", 33, "33000", "16500", "18261", "18261"],
+     ["ben.test", "ana.test", 34, "34000", "17000", "18998", "18998"],
+     ["ben.test", "cleo.test", 33, "33000", "16500", "18261", "18261"],
+     ["ben.test", "dina.test", 33, "33000", "16500", "18261", "18261"],
+     ["cleo.test", "ana.test", 34, "34000", "17500", "19275", "19275"],
+     ["cleo.test", "ben.test", 33, "33000", "16500", "18353", "18353"],
+     ["cleo.test", "dina.test", 33, "33000", "16500", "18261", "18261"],
+     ["dina.test", "ana.test", 34, "34000", "17500", "19275", "19275"],
+     ["dina.test", "ben.test", 33, "33000", "16500", "18353", "18353"],
+     ["dina.test", "cleo.test", 33, "33000", "16500", "18261", "18261"],
+     ["finn.test", "gus.test", 34, "34000", "17000", "6271", "3135"],
+     ["gus.test", "finn.test", 34, "34000", "17000", "6271", "3135"]
+    ],
+    "dropped": [],
+    "members_weight": "468000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "57548"],
+     ["ben.test", "55335"],
+     ["cleo.test", "54783"],
+     ["dina.test", "54783"],
+     ["finn.test", "3135"],
+     ["gus.test", "3135"]
+    ],
+    "budget": "100000000",
+    "dust": "3",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "25161005", "tier": 3, "r0": "122669", "auto_limit": "13000000", "cosign_limit": "20200000"},
+     {"receiver": "ben.test", "amount": "24193442", "tier": 3, "r0": "60717", "auto_limit": "9000000", "cosign_limit": "14000000"},
+     {"receiver": "cleo.test", "amount": "23952098", "tier": 3, "r0": "103306", "auto_limit": "13000000", "cosign_limit": "18300000"},
+     {"receiver": "dina.test", "amount": "23952098", "tier": 3, "r0": "66868", "auto_limit": "9900000", "cosign_limit": "14600000"},
+     {"receiver": "finn.test", "amount": "2631796", "tier": 2, "r0": "5505", "auto_limit": "0", "cosign_limit": "8500000"},
+     {"receiver": "gus.test", "amount": "3025824", "tier": 2, "r0": "7225", "auto_limit": "0", "cosign_limit": "8700000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "174083"],
+     ["ben.test", "113016"],
+     ["cleo.test", "152923"],
+     ["dina.test", "118307"],
+     ["emil.test", "46069"],
+     ["finn.test", "8364"],
+     ["gus.test", "9998"],
+     ["hugo.test", "20646"]
+    ],
+    "carry": [],
+    "audit": {"budget": "200000000", "planned": "199999993", "carry": "0", "lapsed": "0", "dust": "7", "balanced": true}
+   }
+  },
+  {
+   "round": 3,
+   "outcomes": [
+    {"round": 2, "receiver": "finn.test", "status": "rejected"},
+    {"round": 2, "receiver": "gus.test", "status": "removed"},
+    {"round": 1, "receiver": "ana.test", "status": "paid"}
+   ],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 25],
+      ["cleo.test", 25],
+      ["hugo.test", 25],
+      ["emil.test", 25]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 25],
+      ["cleo.test", 25],
+      ["hugo.test", 25],
+      ["emil.test", 25]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["dina.test", 34]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["emil.test", 34]
+     ]
+    },
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["cleo.test", 34]
+     ]
+    },
+    {
+     "giver": "finn.test",
+     "gifts": [
+      ["gus.test", 34],
+      ["ana.test", 10]
+     ]
+    },
+    {
+     "giver": "gus.test",
+     "gifts": [
+      ["finn.test", 34],
+      ["ben.test", 10]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "9800000000",
+   "expected": {
+    "empty": false,
+    "strikes": [
+     ["finn.test", 2, "rejected", "3135"],
+     ["gus.test", 2, "removed", "3135"]
+    ],
+    "entries": [
+     ["ana.test", "ben.test", 25, "25000", "12500", "10327", "5163"],
+     ["ana.test", "cleo.test", 25, "25000", "25000", "34521", "34521"],
+     ["ana.test", "emil.test", 25, "25000", "25000", "34521", "34521"],
+     ["ana.test", "hugo.test", 25, "25000", "25000", "21806", "5451"],
+     ["ben.test", "ana.test", 25, "25000", "12500", "10327", "5163"],
+     ["ben.test", "cleo.test", 25, "25000", "25000", "34521", "34521"],
+     ["ben.test", "emil.test", 25, "25000", "25000", "34521", "34521"],
+     ["ben.test", "hugo.test", 25, "25000", "25000", "21806", "5451"],
+     ["cleo.test", "dina.test", 34, "34000", "34000", "14828", "7414"],
+     ["dina.test", "emil.test", 34, "34000", "34000", "40258", "40258"],
+     ["emil.test", "cleo.test", 34, "34000", "34000", "40258", "40258"],
+     ["finn.test", "ana.test", 10, "10000", "10000", "9237", "4618"],
+     ["finn.test", "gus.test", 34, "34000", "17000", "7414", "3707"],
+     ["gus.test", "ben.test", 10, "10000", "10000", "9237", "4618"],
+     ["gus.test", "finn.test", 34, "34000", "17000", "7414", "3707"]
+    ],
+    "dropped": [],
+    "members_weight": "390000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "9781"],
+     ["ben.test", "9781"],
+     ["cleo.test", "109300"],
+     ["dina.test", "7414"],
+     ["emil.test", "109300"],
+     ["finn.test", "3707"],
+     ["gus.test", "3707"],
+     ["hugo.test", "10902"]
+    ],
+    "budget": "100000000",
+    "dust": "3",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "3706440", "tier": 1, "r0": "174083", "auto_limit": "13000000", "cosign_limit": "25400000"},
+     {"receiver": "ben.test", "amount": "3706440", "tier": 1, "r0": "113016", "auto_limit": "13000000", "cosign_limit": "19300000"},
+     {"receiver": "cleo.test", "amount": "41418459", "tier": 3, "r0": "152923", "auto_limit": "13000000", "cosign_limit": "23200000"},
+     {"receiver": "dina.test", "amount": "2809482", "tier": 1, "r0": "118307", "auto_limit": "13000000", "cosign_limit": "19800000"},
+     {"receiver": "emil.test", "amount": "41418459", "tier": 3, "r0": "46069", "auto_limit": "6900000", "cosign_limit": "12600000"},
+     {"receiver": "hugo.test", "amount": "4131235", "tier": 2, "r0": "20646", "auto_limit": "3000000", "cosign_limit": "10000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "175159"],
+     ["ben.test", "117146"],
+     ["cleo.test", "254576"],
+     ["dina.test", "119805"],
+     ["emil.test", "153065"],
+     ["finn.test", "8674"],
+     ["gus.test", "10226"],
+     ["hugo.test", "30515"]
+    ],
+    "carry": [
+     ["finn.test", "1404741", 3],
+     ["gus.test", "1404741", 3]
+    ],
+    "audit": {"budget": "300000000", "planned": "297190508", "carry": "2809482", "lapsed": "0", "dust": "10", "balanced": true}
+   }
+  },
+  {
+   "round": 4,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 30],
+      ["ben.test", 30],
+      ["dina.test", 20],
+      ["emil.test", 20]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 30],
+      ["ben.test", 30],
+      ["cleo.test", 20],
+      ["emil.test", 20]
+     ]
+    },
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["ana.test", 30],
+      ["ben.test", 30],
+      ["cleo.test", 20],
+      ["dina.test", 20]
+     ]
+    },
+    {
+     "giver": "hugo.test",
+     "gifts": [
+      ["ana.test", 5],
+      ["ben.test", 5]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "9700000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["cleo.test", "ana.test", 30, "30000", "30000", "31288", "15644"],
+     ["cleo.test", "ben.test", 30, "30000", "30000", "31288", "15644"],
+     ["cleo.test", "dina.test", 20, "20000", "10000", "6120", "3060"],
+     ["cleo.test", "emil.test", 20, "20000", "10000", "6120", "3060"],
+     ["dina.test", "ana.test", 30, "30000", "30000", "31288", "15644"],
+     ["dina.test", "ben.test", 30, "30000", "30000", "31288", "15644"],
+     ["dina.test", "cleo.test", 20, "20000", "10000", "6120", "3060"],
+     ["dina.test", "emil.test", 20, "20000", "10000", "6120", "3060"],
+     ["emil.test", "ana.test", 30, "30000", "30000", "31288", "15644"],
+     ["emil.test", "ben.test", 30, "30000", "30000", "31288", "15644"],
+     ["emil.test", "cleo.test", 20, "20000", "10000", "6120", "3060"],
+     ["emil.test", "dina.test", 20, "20000", "10000", "6120", "3060"],
+     ["hugo.test", "ana.test", 5, "5000", "5000", "12773", "6386"],
+     ["hugo.test", "ben.test", 5, "5000", "5000", "12773", "6386"]
+    ],
+    "dropped": [],
+    "members_weight": "310000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "53318"],
+     ["ben.test", "53318"],
+     ["cleo.test", "6120"],
+     ["dina.test", "6120"],
+     ["emil.test", "6120"]
+    ],
+    "budget": "100000000",
+    "dust": "4",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "42655764", "tier": 3, "r0": "175159", "auto_limit": "13000000", "cosign_limit": "25500000"},
+     {"receiver": "ben.test", "amount": "42655764", "tier": 3, "r0": "117146", "auto_limit": "13000000", "cosign_limit": "19700000"},
+     {"receiver": "cleo.test", "amount": "4896156", "tier": 1, "r0": "254576", "auto_limit": "13000000", "cosign_limit": "30000000"},
+     {"receiver": "dina.test", "amount": "4896156", "tier": 1, "r0": "119805", "auto_limit": "13000000", "cosign_limit": "19900000"},
+     {"receiver": "emil.test", "amount": "4896156", "tier": 1, "r0": "153065", "auto_limit": "13000000", "cosign_limit": "23300000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "219719"],
+     ["ben.test", "164606"],
+     ["cleo.test", "247967"],
+     ["dina.test", "119934"],
+     ["emil.test", "151531"],
+     ["finn.test", "8240"],
+     ["gus.test", "9714"],
+     ["hugo.test", "28989"]
+    ],
+    "carry": [
+     ["finn.test", "1404741", 3],
+     ["gus.test", "1404741", 3]
+    ],
+    "audit": {"budget": "400000000", "planned": "397190504", "carry": "2809482", "lapsed": "0", "dust": "14", "balanced": true}
+   }
+  },
+  {
+   "round": 5,
+   "outcomes": [
+    {"round": 2, "receiver": "ben.test", "status": "expired"},
+    {"round": 3, "receiver": "hugo.test", "status": "rejected"}
+   ],
+   "seats": [],
+   "notes": [],
+   "allocations": [],
+   "members": null,
+   "dao_balance": null,
+   "expected": {
+    "empty": true,
+    "strikes": [
+     ["hugo.test", 3, "rejected", "10356"]
+    ],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "208733"],
+     ["ben.test", "156375"],
+     ["cleo.test", "235568"],
+     ["dina.test", "113937"],
+     ["emil.test", "143954"],
+     ["finn.test", "7828"],
+     ["gus.test", "9228"],
+     ["hugo.test", "17701"]
+    ],
+    "carry": [
+     ["finn.test", "1404741", 3],
+     ["gus.test", "1404741", 3]
+    ],
+    "audit": {"budget": "400000000", "planned": "397190504", "carry": "2809482", "lapsed": "0", "dust": "14", "balanced": true}
+   }
+  },
+  {
+   "round": 6,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 34],
+      ["cleo.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["cleo.test", 33],
+      ["dina.test", 33]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 34],
+      ["dina.test", 32]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 34],
+      ["cleo.test", 32]
+     ]
+    },
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["ana.test", 1],
+      ["finn.test", 1]
+     ]
+    },
+    {
+     "giver": "finn.test",
+     "gifts": [
+      ["gus.test", 34],
+      ["hugo.test", 34],
+      ["emil.test", 32]
+     ]
+    },
+    {
+     "giver": "gus.test",
+     "gifts": [
+      ["finn.test", 34],
+      ["hugo.test", 34],
+      ["emil.test", 32]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "9600000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 34, "34000", "17000", "20317", "20317"],
+     ["ana.test", "cleo.test", 33, "33000", "16500", "19430", "19430"],
+     ["ana.test", "dina.test", 33, "33000", "16500", "19430", "19430"],
+     ["ben.test", "ana.test", 34, "34000", "17000", "21943", "21943"],
+     ["ben.test", "cleo.test", 33, "33000", "16500", "19430", "19430"],
+     ["ben.test", "dina.test", 33, "33000", "16500", "19430", "19430"],
+     ["cleo.test", "ana.test", 34, "34000", "17500", "22264", "22264"],
+     ["cleo.test", "ben.test", 34, "34000", "17500", "20613", "20613"],
+     ["cleo.test", "dina.test", 32, "32000", "16000", "19133", "19133"],
+     ["dina.test", "ana.test", 34, "34000", "17500", "22264", "22264"],
+     ["dina.test", "ben.test", 34, "34000", "17500", "20613", "20613"],
+     ["dina.test", "cleo.test", 32, "32000", "16000", "19133", "19133"],
+     ["emil.test", "ana.test", 1, "1000", "1000", "5322", "5322"],
+     ["emil.test", "finn.test", 1, "1000", "500", "1347", "673"],
+     ["finn.test", "emil.test", 32, "32000", "31500", "24953", "12476"],
+     ["finn.test", "gus.test", 34, "34000", "17000", "6707", "3353"],
+     ["finn.test", "hugo.test", 34, "34000", "34000", "26828", "6707"],
+     ["gus.test", "emil.test", 32, "32000", "32000", "25151", "12575"],
+     ["gus.test", "finn.test", 34, "34000", "17000", "7857", "3928"],
+     ["gus.test", "hugo.test", 34, "34000", "34000", "26828", "6707"]
+    ],
+    "dropped": [],
+    "members_weight": "602000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "71793"],
+     ["ben.test", "61543"],
+     ["cleo.test", "57993"],
+     ["dina.test", "57993"],
+     ["emil.test", "25051"],
+     ["finn.test", "4601"],
+     ["gus.test", "3353"],
+     ["hugo.test", "13414"]
+    ],
+    "budget": "100000000",
+    "dust": "4",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "24275633", "tier": 2, "r0": "208733", "auto_limit": "13000000", "cosign_limit": "28800000"},
+     {"receiver": "ben.test", "amount": "20809762", "tier": 2, "r0": "156375", "auto_limit": "13000000", "cosign_limit": "23600000"},
+     {"receiver": "cleo.test", "amount": "19609387", "tier": 2, "r0": "235568", "auto_limit": "13000000", "cosign_limit": "30000000"},
+     {"receiver": "dina.test", "amount": "19609387", "tier": 3, "r0": "113937", "auto_limit": "13000000", "cosign_limit": "19300000"},
+     {"receiver": "emil.test", "amount": "8470587", "tier": 1, "r0": "143954", "auto_limit": "13000000", "cosign_limit": "22300000"},
+     {"receiver": "finn.test", "amount": "2960494", "tier": 2, "r0": "7828", "auto_limit": "0", "cosign_limit": "8700000"},
+     {"receiver": "gus.test", "amount": "2538503", "tier": 2, "r0": "9228", "auto_limit": "0", "cosign_limit": "8900000"},
+     {"receiver": "hugo.test", "amount": "4535725", "tier": 2, "r0": "17701", "auto_limit": "0", "cosign_limit": "9700000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "270089"],
+     ["ben.test", "210099"],
+     ["cleo.test", "281782"],
+     ["dina.test", "166233"],
+     ["emil.test", "161807"],
+     ["finn.test", "12037"],
+     ["gus.test", "12119"],
+     ["hugo.test", "30229"]
+    ],
+    "carry": [],
+    "audit": {"budget": "500000000", "planned": "499999982", "carry": "0", "lapsed": "0", "dust": "18", "balanced": true}
+   }
+  },
+  {
+   "round": 7,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "finn.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["gus.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "gus.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["hugo.test", 14]
+     ]
+    },
+    {
+     "giver": "hugo.test",
+     "gifts": [
+      ["ana.test", 14],
+      ["ben.test", 14],
+      ["cleo.test", 14],
+      ["dina.test", 14],
+      ["emil.test", 14],
+      ["finn.test", 14],
+      ["gus.test", 14]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "finn.test", "gus.test", "hugo.test"],
+   "dao_balance": "9500000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["ana.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["ben.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["cleo.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["dina.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["emil.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "gus.test", 14, "14000", "7000", "7000", "7000"],
+     ["finn.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["gus.test", "hugo.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "ana.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "ben.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "cleo.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "dina.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "emil.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "finn.test", 14, "14000", "7000", "7000", "7000"],
+     ["hugo.test", "gus.test", 14, "14000", "7000", "7000", "7000"]
+    ],
+    "dropped": [],
+    "members_weight": "784000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "49000"],
+     ["ben.test", "49000"],
+     ["cleo.test", "49000"],
+     ["dina.test", "49000"],
+     ["emil.test", "49000"],
+     ["finn.test", "49000"],
+     ["gus.test", "49000"],
+     ["hugo.test", "49000"]
+    ],
+    "budget": "100000000",
+    "dust": "0",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "12500000", "tier": 2, "r0": "270089", "auto_limit": "13000000", "cosign_limit": "30000000"},
+     {"receiver": "ben.test", "amount": "12500000", "tier": 2, "r0": "210099", "auto_limit": "13000000", "cosign_limit": "29000000"},
+     {"receiver": "cleo.test", "amount": "12500000", "tier": 2, "r0": "281782", "auto_limit": "13000000", "cosign_limit": "30000000"},
+     {"receiver": "dina.test", "amount": "12500000", "tier": 1, "r0": "166233", "auto_limit": "13000000", "cosign_limit": "24600000"},
+     {"receiver": "emil.test", "amount": "12500000", "tier": 1, "r0": "161807", "auto_limit": "13000000", "cosign_limit": "24100000"},
+     {"receiver": "finn.test", "amount": "12500000", "tier": 3, "r0": "12037", "auto_limit": "0", "cosign_limit": "9200000"},
+     {"receiver": "gus.test", "amount": "12500000", "tier": 3, "r0": "12119", "auto_limit": "0", "cosign_limit": "9200000"},
+     {"receiver": "hugo.test", "amount": "12500000", "tier": 3, "r0": "30229", "auto_limit": "4500000", "cosign_limit": "11000000"}
+    ],
+    "moved_to_tier2": ["ana.test", "ben.test", "cleo.test"],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "305584"],
+     ["ben.test", "248594"],
+     ["cleo.test", "316692"],
+     ["dina.test", "206921"],
+     ["emil.test", "202716"],
+     ["finn.test", "60435"],
+     ["gus.test", "60513"],
+     ["hugo.test", "77717"]
+    ],
+    "carry": [],
+    "audit": {"budget": "600000000", "planned": "599999982", "carry": "0", "lapsed": "0", "dust": "18", "balanced": true}
+   }
+  }
+ ]
+}

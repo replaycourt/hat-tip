@@ -1,0 +1,429 @@
+{
+ "name": "guests",
+ "about": "Seated guests (testnet demo): guest weight 33.33 % (rounding of thanks * guest_weight_bp / 10), the guests' cap at 20 % binding and not binding, reciprocity between a guest and a member at 75 %, a guest never in tier 1, a guest's entry to a member removed at the close, a guest's reputation set to 0 once it falls below one thanks, a carry lapsing, a guest whose reputation would allow tier 1 filed in tier 2.",
+ "format": "hat-tip golden v1; see sim/golden/README.md",
+ "config": {
+  "dao": "dao.test",
+  "token": "tusd.test",
+  "members_role": "members",
+  "council_role": "council",
+  "thanks_role": "thanks",
+  "genesis_ms": 1800000000000,
+  "round_ms": 1200000,
+  "thanks_per_round": 100,
+  "cap_per_receiver": 50,
+  "max_receivers": 10,
+  "reciprocal_bp": 7500,
+  "quadratic": false,
+  "breadth_k": 0,
+  "breadth_bp": 10000,
+  "idle_bp": 10000,
+  "decay_bp": 5000,
+  "round_budget": "100000000",
+  "min_payout": "2000000",
+  "carry_rounds": 1,
+  "reserve": "0",
+  "auto_rep_min": 10,
+  "auto_per_thanks": "1000000",
+  "auto_max": "50000000",
+  "cosign_base": "5000000",
+  "cosign_per_thanks": "100000",
+  "cosign_max": "40000000",
+  "auto_share_bp": 10000,
+  "guest_seats": 6,
+  "guest_weight_bp": 3333,
+  "guest_cap_bp": 2000,
+  "max_members": 24,
+  "max_catchup": 36,
+  "log_keep": 108,
+  "note_max_bytes": 80
+ },
+ "initial_members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+ "rounds": [
+  {
+   "round": 1,
+   "outcomes": [],
+   "seats": ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1", "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9"],
+   "notes": [
+    ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "brought a broken toaster"],
+    ["3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1", "first visit"]
+   ],
+   "allocations": [
+    {
+     "giver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    },
+    {
+     "giver": "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9",
+     "gifts": [
+      ["ana.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1",
+     "gifts": [
+      ["ana.test", 40],
+      ["dina.test", 30],
+      ["ben.test", 29]
+     ]
+    },
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 10],
+      ["ben.test", 45],
+      ["cleo.test", 45]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 1],
+      ["ana.test", 49],
+      ["dina.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+   "dao_balance": "1000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "ana.test", 50, "12541", "10041", "10041", "10041"],
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "ben.test", 50, "12541", "12541", "12541", "12541"],
+     ["3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1", "ana.test", 40, "10033", "10033", "10033", "10033"],
+     ["3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1", "ben.test", 29, "7273", "7273", "7273", "7273"],
+     ["3af275364156093f67a5d90dd1e1423a554447234d548960988161be41ea2ef1", "dina.test", 30, "7525", "7525", "7525", "7525"],
+     ["ana.test", "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 10, "10000", "7500", "7500", "7500"],
+     ["ana.test", "ben.test", 45, "45000", "33750", "33750", "33750"],
+     ["ana.test", "cleo.test", 45, "45000", "33750", "33750", "33750"],
+     ["ben.test", "ana.test", 49, "49000", "37750", "37750", "37750"],
+     ["ben.test", "dina.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 1, "1000", "1000", "1000", "1000"],
+     ["cleo.test", "ana.test", 50, "50000", "38750", "38750", "38750"],
+     ["cleo.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "ana.test", 50, "12541", "12541", "12541", "12541"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "cleo.test", 50, "12541", "12541", "12541", "12541"]
+    ],
+    "dropped": [],
+    "members_weight": "300000",
+    "guests_weight": "99656",
+    "guest_scaled": true,
+    "points": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "7500"],
+     ["ana.test", "109115"],
+     ["ben.test", "103564"],
+     ["cleo.test", "46291"],
+     ["dina.test", "57525"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "1000"]
+    ],
+    "budget": "100000000",
+    "dust": "3",
+    "payouts": [
+     {"receiver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "amount": "2307727", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"},
+     {"receiver": "ana.test", "amount": "33574362", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"},
+     {"receiver": "ben.test", "amount": "31866336", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"},
+     {"receiver": "cleo.test", "amount": "14243603", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"},
+     {"receiver": "dina.test", "amount": "17700272", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "7500"],
+     ["ana.test", "109115"],
+     ["ben.test", "103564"],
+     ["cleo.test", "46291"],
+     ["dina.test", "57525"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "1000"]
+    ],
+    "carry": [
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "307697", 1]
+    ],
+    "audit": {"budget": "100000000", "planned": "99692300", "carry": "307697", "lapsed": "0", "dust": "3", "balanced": true}
+   }
+  },
+  {
+   "round": 2,
+   "outcomes": [],
+   "seats": ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05"],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05",
+     "gifts": [
+      ["dina.test", 30],
+      ["ana.test", 7]
+     ]
+    },
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 50],
+      ["ben.test", 50]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 50],
+      ["ana.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 40],
+      ["ana.test", 30],
+      ["ben.test", 30]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test"],
+   "dao_balance": "1000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "ana.test", 7, "2333", "1750", "1750", "1750"],
+     ["ana.test", "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 50, "50000", "49417", "49417", "49417"],
+     ["ana.test", "ben.test", 50, "50000", "37500", "37500", "37500"],
+     ["ben.test", "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "ana.test", 50, "50000", "37500", "37500", "37500"],
+     ["cleo.test", "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 40, "40000", "40000", "40000", "40000"],
+     ["cleo.test", "ana.test", 30, "30000", "30000", "30000", "30000"],
+     ["cleo.test", "ben.test", 30, "30000", "30000", "30000", "30000"]
+    ],
+    "dropped": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "dina.test", 30, "not a member or seated guest"],
+     ["dina.test", "ana.test", 50, "not a member or seated guest"],
+     ["dina.test", "ben.test", 50, "not a member or seated guest"]
+    ],
+    "members_weight": "300000",
+    "guests_weight": "2333",
+    "guest_scaled": false,
+    "points": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "139417"],
+     ["ana.test", "69250"],
+     ["ben.test", "67500"]
+    ],
+    "budget": "100000000",
+    "dust": "1",
+    "payouts": [
+     {"receiver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "amount": "50482860", "tier": 3, "r0": "7500", "auto_limit": "0", "cosign_limit": "5700000"},
+     {"receiver": "ana.test", "amount": "25075407", "tier": 1, "r0": "109115", "auto_limit": "50000000", "cosign_limit": "15900000"},
+     {"receiver": "ben.test", "amount": "24441732", "tier": 1, "r0": "103564", "auto_limit": "50000000", "cosign_limit": "15300000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "307697", 1]
+    ],
+    "reputation": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "143167"],
+     ["ana.test", "123807"],
+     ["ben.test", "119282"],
+     ["cleo.test", "23145"],
+     ["dina.test", "28762"]
+    ],
+    "carry": [],
+    "audit": {"budget": "200000000", "planned": "199692299", "carry": "0", "lapsed": "307697", "dust": "4", "balanced": true}
+   }
+  },
+  {
+   "round": 3,
+   "outcomes": [
+    {"round": 1, "receiver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "status": "paid"}
+   ],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test"],
+   "dao_balance": "1000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 50, "50000", "37500", "37500", "37500"],
+     ["ana.test", "cleo.test", 50, "50000", "37500", "37500", "37500"],
+     ["ben.test", "ana.test", 50, "50000", "37500", "37500", "37500"],
+     ["ben.test", "cleo.test", 50, "50000", "37500", "37500", "37500"],
+     ["cleo.test", "ana.test", 50, "50000", "37500", "37500", "37500"],
+     ["cleo.test", "ben.test", 50, "50000", "37500", "37500", "37500"]
+    ],
+    "dropped": [],
+    "members_weight": "300000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "75000"],
+     ["ben.test", "75000"],
+     ["cleo.test", "75000"]
+    ],
+    "budget": "100000000",
+    "dust": "1",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "33333333", "tier": 1, "r0": "123807", "auto_limit": "50000000", "cosign_limit": "17300000"},
+     {"receiver": "ben.test", "amount": "33333333", "tier": 1, "r0": "119282", "auto_limit": "50000000", "cosign_limit": "16900000"},
+     {"receiver": "cleo.test", "amount": "33333333", "tier": 3, "r0": "23145", "auto_limit": "23000000", "cosign_limit": "7300000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "71583"],
+     ["ana.test", "136903"],
+     ["ben.test", "134641"],
+     ["cleo.test", "86572"],
+     ["dina.test", "14381"]
+    ],
+    "carry": [],
+    "audit": {"budget": "300000000", "planned": "299692298", "carry": "0", "lapsed": "307697", "dust": "5", "balanced": true}
+   }
+  },
+  {
+   "round": 4,
+   "outcomes": [],
+   "seats": ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9"],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    },
+    {
+     "giver": "a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5",
+     "gifts": [
+      ["cleo.test", 50],
+      ["ben.test", 50]
+     ]
+    },
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 20],
+      ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 10],
+      ["ben.test", 40],
+      ["cleo.test", 30]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 20],
+      ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", 20],
+      ["ana.test", 30],
+      ["cleo.test", 30]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", 5],
+      ["ana.test", 45],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test"],
+   "dao_balance": "1000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "ben.test", 50, "16665", "12499", "12499", "12499"],
+     ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "cleo.test", 50, "16665", "15415", "15415", "15415"],
+     ["ana.test", "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", 10, "10000", "10000", "10000", "10000"],
+     ["ana.test", "ben.test", 40, "40000", "32500", "32500", "32500"],
+     ["ana.test", "cleo.test", 30, "30000", "22500", "22500", "22500"],
+     ["ana.test", "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 20, "20000", "15834", "15834", "15834"],
+     ["ben.test", "a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", 20, "20000", "15834", "15834", "15834"],
+     ["ben.test", "ana.test", 30, "30000", "22500", "22500", "22500"],
+     ["ben.test", "cleo.test", 30, "30000", "22500", "22500", "22500"],
+     ["ben.test", "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", 20, "20000", "15834", "15834", "15834"],
+     ["cleo.test", "a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", 5, "5000", "3750", "3750", "3750"],
+     ["cleo.test", "ana.test", 45, "45000", "37500", "37500", "37500"],
+     ["cleo.test", "ben.test", 50, "50000", "42500", "42500", "42500"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "ana.test", 50, "16665", "12499", "12499", "12499"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "ben.test", 50, "16665", "12499", "12499", "12499"]
+    ],
+    "dropped": [],
+    "members_weight": "300000",
+    "guests_weight": "66660",
+    "guest_scaled": false,
+    "points": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "10000"],
+     ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "19584"],
+     ["ana.test", "72499"],
+     ["ben.test", "99998"],
+     ["cleo.test", "60415"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "31668"]
+    ],
+    "budget": "100000000",
+    "dust": "3",
+    "payouts": [
+     {"receiver": "28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "amount": "3399464", "tier": 2, "r0": "71583", "auto_limit": "0", "cosign_limit": "12100000"},
+     {"receiver": "a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "amount": "6657510", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"},
+     {"receiver": "ana.test", "amount": "24645775", "tier": 1, "r0": "136903", "auto_limit": "50000000", "cosign_limit": "18600000"},
+     {"receiver": "ben.test", "amount": "33993962", "tier": 1, "r0": "134641", "auto_limit": "50000000", "cosign_limit": "18400000"},
+     {"receiver": "cleo.test", "amount": "20537863", "tier": 1, "r0": "86572", "auto_limit": "50000000", "cosign_limit": "13600000"},
+     {"receiver": "e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "amount": "10765423", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "5000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["28640432896f6888e7efcf130554cfc63063682beacc552574201bb14306ad05", "45791"],
+     ["a7a4ccb6e99e491cd3c0f48fbb97287988ff24eede722ec65cb5e866a5f3bcd5", "19584"],
+     ["ana.test", "140950"],
+     ["ben.test", "167318"],
+     ["cleo.test", "103701"],
+     ["dina.test", "7190"],
+     ["e2594b8e32718260d841a705b75410e1e7fd3a28e36b67c494c7fcc1fb025df9", "31668"]
+    ],
+    "carry": [],
+    "audit": {"budget": "400000000", "planned": "399692295", "carry": "0", "lapsed": "307697", "dust": "8", "balanced": true}
+   }
+  }
+ ]
+}

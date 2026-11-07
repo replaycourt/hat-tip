@@ -1,0 +1,733 @@
+{
+ "name": "linear",
+ "about": "All dampening off (reciprocal_bp 10000, linear, no breadth or idle rule). A replaced allocation, policy entries the contract ignores (0x and implicit accounts), two empty rounds, a DAO that holds less than the budget and then nothing, a member removed at a close, a round whose only entries are dropped (no points, so no budget), carry topped up and lapsing, tiers growing with reputation and the round cap on tier 1.",
+ "format": "hat-tip golden v1; see sim/golden/README.md",
+ "config": {
+  "dao": "dao.test",
+  "token": "tusd.test",
+  "members_role": "members",
+  "council_role": "council",
+  "thanks_role": "thanks",
+  "genesis_ms": 1800000000000,
+  "round_ms": 1200000,
+  "thanks_per_round": 100,
+  "cap_per_receiver": 50,
+  "max_receivers": 10,
+  "reciprocal_bp": 10000,
+  "quadratic": false,
+  "breadth_k": 0,
+  "breadth_bp": 10000,
+  "idle_bp": 10000,
+  "decay_bp": 1000,
+  "round_budget": "100000000",
+  "min_payout": "5000000",
+  "carry_rounds": 2,
+  "reserve": "0",
+  "auto_rep_min": 50,
+  "auto_per_thanks": "200000",
+  "auto_max": "25000000",
+  "cosign_base": "10000000",
+  "cosign_per_thanks": "250000",
+  "cosign_max": "40000000",
+  "auto_share_bp": 6000,
+  "guest_seats": 6,
+  "guest_weight_bp": 5000,
+  "guest_cap_bp": 2000,
+  "max_members": 24,
+  "max_catchup": 36,
+  "log_keep": 108,
+  "note_max_bytes": 80
+ },
+ "initial_members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "0xabababababababababababababababababababab", "5b830c6922e6ef67c4f6ab1086e92277698460f19582956b7f556416e29df107"],
+ "rounds": [
+  {
+   "round": 1,
+   "outcomes": [],
+   "seats": [],
+   "notes": [
+    ["ana.test", "fixed two kettles and a lamp"]
+   ],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 50],
+      ["cleo.test", 30],
+      ["dina.test", 20]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 40],
+      ["cleo.test", 50],
+      ["emil.test", 10]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 45],
+      ["cleo.test", 45],
+      ["emil.test", 10]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 25],
+      ["dina.test", 25],
+      ["emil.test", 7]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["emil.test", 3]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test", "0xabababababababababababababababababababab", "5b830c6922e6ef67c4f6ab1086e92277698460f19582956b7f556416e29df107"],
+   "dao_balance": "1000000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["ana.test", "cleo.test", 30, "30000", "30000", "30000", "30000"],
+     ["ana.test", "dina.test", 20, "20000", "20000", "20000", "20000"],
+     ["ben.test", "ana.test", 45, "45000", "45000", "45000", "45000"],
+     ["ben.test", "cleo.test", 45, "45000", "45000", "45000", "45000"],
+     ["ben.test", "emil.test", 10, "10000", "10000", "10000", "10000"],
+     ["cleo.test", "ana.test", 25, "25000", "25000", "25000", "25000"],
+     ["cleo.test", "dina.test", 25, "25000", "25000", "25000", "25000"],
+     ["cleo.test", "emil.test", 7, "7000", "7000", "7000", "7000"],
+     ["dina.test", "emil.test", 3, "3000", "3000", "3000", "3000"]
+    ],
+    "dropped": [],
+    "members_weight": "260000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "70000"],
+     ["ben.test", "50000"],
+     ["cleo.test", "75000"],
+     ["dina.test", "45000"],
+     ["emil.test", "20000"]
+    ],
+    "budget": "100000000",
+    "dust": "3",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "26923076", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "10000000"},
+     {"receiver": "ben.test", "amount": "19230769", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "10000000"},
+     {"receiver": "cleo.test", "amount": "28846153", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "10000000"},
+     {"receiver": "dina.test", "amount": "17307692", "tier": 3, "r0": "0", "auto_limit": "0", "cosign_limit": "10000000"},
+     {"receiver": "emil.test", "amount": "7692307", "tier": 2, "r0": "0", "auto_limit": "0", "cosign_limit": "10000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "70000"],
+     ["ben.test", "50000"],
+     ["cleo.test", "75000"],
+     ["dina.test", "45000"],
+     ["emil.test", "20000"]
+    ],
+    "carry": [],
+    "audit": {"budget": "100000000", "planned": "99999997", "carry": "0", "lapsed": "0", "dust": "3", "balanced": true}
+   }
+  },
+  {
+   "round": 2,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 40],
+      ["cleo.test", 40],
+      ["emil.test", 2]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["dina.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 30],
+      ["ben.test", 30],
+      ["dina.test", 30]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 33],
+      ["cleo.test", 33],
+      ["ben.test", 33]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test"],
+   "dao_balance": "900000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 40, "40000", "40000", "40000", "40000"],
+     ["ana.test", "cleo.test", 40, "40000", "40000", "40000", "40000"],
+     ["ana.test", "emil.test", 2, "2000", "2000", "2000", "2000"],
+     ["ben.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "dina.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "ana.test", 30, "30000", "30000", "30000", "30000"],
+     ["cleo.test", "ben.test", 30, "30000", "30000", "30000", "30000"],
+     ["cleo.test", "dina.test", 30, "30000", "30000", "30000", "30000"],
+     ["dina.test", "ana.test", 33, "33000", "33000", "33000", "33000"],
+     ["dina.test", "ben.test", 33, "33000", "33000", "33000", "33000"],
+     ["dina.test", "cleo.test", 33, "33000", "33000", "33000", "33000"]
+    ],
+    "dropped": [],
+    "members_weight": "371000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "113000"],
+     ["ben.test", "103000"],
+     ["cleo.test", "73000"],
+     ["dina.test", "80000"],
+     ["emil.test", "2000"]
+    ],
+    "budget": "100000000",
+    "dust": "2",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "30458221", "tier": 3, "r0": "70000", "auto_limit": "14000000", "cosign_limit": "27500000"},
+     {"receiver": "ben.test", "amount": "27762803", "tier": 3, "r0": "50000", "auto_limit": "10000000", "cosign_limit": "22500000"},
+     {"receiver": "cleo.test", "amount": "19676549", "tier": 2, "r0": "75000", "auto_limit": "15000000", "cosign_limit": "28750000"},
+     {"receiver": "dina.test", "amount": "21563342", "tier": 3, "r0": "45000", "auto_limit": "0", "cosign_limit": "21250000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "176000"],
+     ["ben.test", "148000"],
+     ["cleo.test", "140500"],
+     ["dina.test", "120500"],
+     ["emil.test", "20000"]
+    ],
+    "carry": [
+     ["emil.test", "539083", 2]
+    ],
+    "audit": {"budget": "200000000", "planned": "199460912", "carry": "539083", "lapsed": "0", "dust": "5", "balanced": true}
+   }
+  },
+  {
+   "round": 3,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [],
+   "members": null,
+   "dao_balance": null,
+   "expected": {
+    "empty": true,
+    "strikes": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "158400"],
+     ["ben.test", "133200"],
+     ["cleo.test", "126450"],
+     ["dina.test", "108450"],
+     ["emil.test", "18000"]
+    ],
+    "carry": [
+     ["emil.test", "539083", 2]
+    ],
+    "audit": {"budget": "200000000", "planned": "199460912", "carry": "539083", "lapsed": "0", "dust": "5", "balanced": true}
+   }
+  },
+  {
+   "round": 4,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [],
+   "members": null,
+   "dao_balance": null,
+   "expected": {
+    "empty": true,
+    "strikes": [],
+    "lapsed": [
+     ["emil.test", "539083", 2]
+    ],
+    "reputation": [
+     ["ana.test", "142560"],
+     ["ben.test", "119880"],
+     ["cleo.test", "113805"],
+     ["dina.test", "97605"],
+     ["emil.test", "16200"]
+    ],
+    "carry": [],
+    "audit": {"budget": "200000000", "planned": "199460912", "carry": "0", "lapsed": "539083", "dust": "5", "balanced": true}
+   }
+  },
+  {
+   "round": 5,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["cleo.test", 20],
+      ["dina.test", 30]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["dina.test", 50]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 10],
+      ["emil.test", 1]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test"],
+   "dao_balance": "70000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["ana.test", "cleo.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "cleo.test", 20, "20000", "20000", "20000", "20000"],
+     ["ben.test", "dina.test", 30, "30000", "30000", "30000", "30000"],
+     ["cleo.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "dina.test", 50, "50000", "50000", "50000", "50000"],
+     ["dina.test", "ana.test", 10, "10000", "10000", "10000", "10000"],
+     ["dina.test", "emil.test", 1, "1000", "1000", "1000", "1000"]
+    ],
+    "dropped": [],
+    "members_weight": "311000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "110000"],
+     ["ben.test", "50000"],
+     ["cleo.test", "70000"],
+     ["dina.test", "80000"],
+     ["emil.test", "1000"]
+    ],
+    "budget": "70000000",
+    "dust": "2",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "24758842", "tier": 2, "r0": "142560", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "ben.test", "amount": "11254019", "tier": 1, "r0": "119880", "auto_limit": "23800000", "cosign_limit": "39750000"},
+     {"receiver": "cleo.test", "amount": "15755627", "tier": 1, "r0": "113805", "auto_limit": "22600000", "cosign_limit": "38250000"},
+     {"receiver": "dina.test", "amount": "18006430", "tier": 2, "r0": "97605", "auto_limit": "19400000", "cosign_limit": "34250000"}
+    ],
+    "moved_to_tier2": ["ana.test", "dina.test"],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "238304"],
+     ["ben.test", "157892"],
+     ["cleo.test", "172424"],
+     ["dina.test", "167844"],
+     ["emil.test", "15580"]
+    ],
+    "carry": [
+     ["emil.test", "225080", 5]
+    ],
+    "audit": {"budget": "270000000", "planned": "269235830", "carry": "225080", "lapsed": "539083", "dust": "7", "balanced": true}
+   }
+  },
+  {
+   "round": 6,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 50],
+      ["dina.test", 50]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["emil.test", 1]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 40],
+      ["ben.test", 40]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test", "emil.test"],
+   "dao_balance": "0",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["ana.test", "dina.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "emil.test", 1, "1000", "1000", "1000", "1000"],
+     ["cleo.test", "ana.test", 40, "40000", "40000", "40000", "40000"],
+     ["cleo.test", "ben.test", 40, "40000", "40000", "40000", "40000"]
+    ],
+    "dropped": [],
+    "members_weight": "231000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "90000"],
+     ["ben.test", "90000"],
+     ["dina.test", "50000"],
+     ["emil.test", "1000"]
+    ],
+    "budget": "0",
+    "dust": "0",
+    "payouts": [],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "304473"],
+     ["ben.test", "232102"],
+     ["cleo.test", "155181"],
+     ["dina.test", "201059"],
+     ["emil.test", "15022"]
+    ],
+    "carry": [
+     ["emil.test", "225080", 5]
+    ],
+    "audit": {"budget": "270000000", "planned": "269235830", "carry": "225080", "lapsed": "539083", "dust": "7", "balanced": true}
+   }
+  },
+  {
+   "round": 7,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "emil.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+   "dao_balance": "500000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [],
+    "dropped": [
+     ["emil.test", "ana.test", 50, "not a member or seated guest"],
+     ["emil.test", "ben.test", 50, "not a member or seated guest"]
+    ],
+    "members_weight": "0",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [],
+    "budget": "0",
+    "dust": "0",
+    "payouts": [],
+    "moved_to_tier2": [],
+    "lapsed": [
+     ["emil.test", "225080", 5]
+    ],
+    "reputation": [
+     ["ana.test", "274025"],
+     ["ben.test", "208891"],
+     ["cleo.test", "139662"],
+     ["dina.test", "180953"],
+     ["emil.test", "13519"]
+    ],
+    "carry": [],
+    "audit": {"budget": "270000000", "planned": "269235830", "carry": "0", "lapsed": "764163", "dust": "7", "balanced": true}
+   }
+  },
+  {
+   "round": 8,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 30],
+      ["cleo.test", 30],
+      ["dina.test", 40]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 25],
+      ["dina.test", 25]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+   "dao_balance": "400000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 30, "30000", "30000", "30000", "30000"],
+     ["ana.test", "cleo.test", 30, "30000", "30000", "30000", "30000"],
+     ["ana.test", "dina.test", 40, "40000", "40000", "40000", "40000"],
+     ["ben.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "cleo.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "ben.test", 25, "25000", "25000", "25000", "25000"],
+     ["cleo.test", "dina.test", 25, "25000", "25000", "25000", "25000"],
+     ["dina.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["dina.test", "ben.test", 50, "50000", "50000", "50000", "50000"]
+    ],
+    "dropped": [],
+    "members_weight": "400000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "150000"],
+     ["ben.test", "105000"],
+     ["cleo.test", "80000"],
+     ["dina.test", "65000"]
+    ],
+    "budget": "100000000",
+    "dust": "0",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "37500000", "tier": 2, "r0": "274025", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "ben.test", "amount": "26250000", "tier": 2, "r0": "208891", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "cleo.test", "amount": "20000000", "tier": 1, "r0": "139662", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "dina.test", "amount": "16250000", "tier": 1, "r0": "180953", "auto_limit": "25000000", "cosign_limit": "40000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "396622"],
+     ["ben.test", "293001"],
+     ["cleo.test", "205695"],
+     ["dina.test", "227857"],
+     ["emil.test", "12167"]
+    ],
+    "carry": [],
+    "audit": {"budget": "370000000", "planned": "369235830", "carry": "0", "lapsed": "764163", "dust": "7", "balanced": true}
+   }
+  },
+  {
+   "round": 9,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["cleo.test", 50]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 50],
+      ["ben.test", 50]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 1]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+   "dao_balance": "300000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["ana.test", "cleo.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["ben.test", "cleo.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "ana.test", 50, "50000", "50000", "50000", "50000"],
+     ["cleo.test", "ben.test", 50, "50000", "50000", "50000", "50000"],
+     ["dina.test", "ana.test", 1, "1000", "1000", "1000", "1000"]
+    ],
+    "dropped": [],
+    "members_weight": "301000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "101000"],
+     ["ben.test", "100000"],
+     ["cleo.test", "100000"]
+    ],
+    "budget": "100000000",
+    "dust": "1",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "33554817", "tier": 2, "r0": "396622", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "ben.test", "amount": "33222591", "tier": 2, "r0": "293001", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "cleo.test", "amount": "33222591", "tier": 2, "r0": "205695", "auto_limit": "25000000", "cosign_limit": "40000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "457959"],
+     ["ben.test", "363700"],
+     ["cleo.test", "285125"],
+     ["dina.test", "205071"],
+     ["emil.test", "10950"]
+    ],
+    "carry": [],
+    "audit": {"budget": "470000000", "planned": "469235829", "carry": "0", "lapsed": "764163", "dust": "8", "balanced": true}
+   }
+  },
+  {
+   "round": 10,
+   "outcomes": [],
+   "seats": [],
+   "notes": [],
+   "allocations": [
+    {
+     "giver": "ana.test",
+     "gifts": [
+      ["ben.test", 40],
+      ["cleo.test", 40],
+      ["dina.test", 20]
+     ]
+    },
+    {
+     "giver": "ben.test",
+     "gifts": [
+      ["ana.test", 40],
+      ["cleo.test", 40],
+      ["dina.test", 20]
+     ]
+    },
+    {
+     "giver": "cleo.test",
+     "gifts": [
+      ["ana.test", 40],
+      ["ben.test", 40],
+      ["dina.test", 20]
+     ]
+    },
+    {
+     "giver": "dina.test",
+     "gifts": [
+      ["ana.test", 34],
+      ["ben.test", 33],
+      ["cleo.test", 33]
+     ]
+    }
+   ],
+   "members": ["ana.test", "ben.test", "cleo.test", "dina.test"],
+   "dao_balance": "200000000",
+   "expected": {
+    "empty": false,
+    "strikes": [],
+    "entries": [
+     ["ana.test", "ben.test", 40, "40000", "40000", "40000", "40000"],
+     ["ana.test", "cleo.test", 40, "40000", "40000", "40000", "40000"],
+     ["ana.test", "dina.test", 20, "20000", "20000", "20000", "20000"],
+     ["ben.test", "ana.test", 40, "40000", "40000", "40000", "40000"],
+     ["ben.test", "cleo.test", 40, "40000", "40000", "40000", "40000"],
+     ["ben.test", "dina.test", 20, "20000", "20000", "20000", "20000"],
+     ["cleo.test", "ana.test", 40, "40000", "40000", "40000", "40000"],
+     ["cleo.test", "ben.test", 40, "40000", "40000", "40000", "40000"],
+     ["cleo.test", "dina.test", 20, "20000", "20000", "20000", "20000"],
+     ["dina.test", "ana.test", 34, "34000", "34000", "34000", "34000"],
+     ["dina.test", "ben.test", 33, "33000", "33000", "33000", "33000"],
+     ["dina.test", "cleo.test", 33, "33000", "33000", "33000", "33000"]
+    ],
+    "dropped": [],
+    "members_weight": "400000",
+    "guests_weight": "0",
+    "guest_scaled": false,
+    "points": [
+     ["ana.test", "114000"],
+     ["ben.test", "113000"],
+     ["cleo.test", "113000"],
+     ["dina.test", "60000"]
+    ],
+    "budget": "100000000",
+    "dust": "0",
+    "payouts": [
+     {"receiver": "ana.test", "amount": "28500000", "tier": 2, "r0": "457959", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "ben.test", "amount": "28250000", "tier": 2, "r0": "363700", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "cleo.test", "amount": "28250000", "tier": 2, "r0": "285125", "auto_limit": "25000000", "cosign_limit": "40000000"},
+     {"receiver": "dina.test", "amount": "15000000", "tier": 1, "r0": "205071", "auto_limit": "25000000", "cosign_limit": "40000000"}
+    ],
+    "moved_to_tier2": [],
+    "lapsed": [],
+    "reputation": [
+     ["ana.test", "526163"],
+     ["ben.test", "440330"],
+     ["cleo.test", "369612"],
+     ["dina.test", "244563"],
+     ["emil.test", "9855"]
+    ],
+    "carry": [],
+    "audit": {"budget": "570000000", "planned": "569235829", "carry": "0", "lapsed": "764163", "dust": "8", "balanced": true}
+   }
+  }
+ ]
+}
