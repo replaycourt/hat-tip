@@ -210,11 +210,19 @@ export class Client {
   audit() {
     return this.view('audit')
   }
+  tiers(account) {
+    return this.view('tiers', { account_id: account })
+  }
   policy() {
     return this.rpc.view(this.dao, 'get_policy')
   }
-  proposal(id) {
-    return this.rpc.view(this.dao, 'get_proposal', { id: Number(id) })
+  /**
+   * One DAO proposal, or null if the DAO deleted it (Sputnik deletes a removed proposal). Read
+   * with get_proposals, as the contract's check_payout does: get_proposal fails for a deleted id.
+   */
+  async proposal(id) {
+    const list = await this.rpc.view(this.dao, 'get_proposals', { from_index: Number(id), limit: 1 })
+    return list?.find((p) => Number(p.id) === Number(id)) ?? null
   }
   daoBalance() {
     return this.rpc.view(this.token, 'ft_balance_of', { account_id: this.dao })
@@ -280,6 +288,7 @@ export class Client {
   closeRound() {
     return this.relayed('close', 'close_round', {}, CLOSE_GAS)
   }
+  /** Files as many planned payouts as the gas allows (40-130 Tgas each, contract/README.md). */
   pay(max = 6) {
     return this.relayed('pay', 'pay', { max }, PAY_GAS)
   }

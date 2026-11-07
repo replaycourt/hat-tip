@@ -201,6 +201,7 @@ export function rulesHtml(cfg, report, { roundMs }) {
   if (c.quadratic) damp.push('support counts by breadth: many small givers beat one big one')
   if (Number(c.breadth_k) > 0 && on(c.breadth_bp)) damp.push(`fewer than ${c.breadth_k} givers count ${L.fmtPct(c.breadth_bp)}`)
   if (on(c.idle_bp)) damp.push(`a member who gave nothing that round receives ${L.fmtPct(c.idle_bp)}`)
+  const receiveCap = on(c.guest_receive_cap_bp ?? 10000) ? `, and all guests together receive at most ${L.fmtPct(c.guest_receive_cap_bp)} of a round’s thanks` : ''
   const units = (u) => esc(tusd(u))
   const tiers = report?.tiers ?? []
   const t = (n) => tiers.find((x) => x.tier === n) ?? {}
@@ -208,7 +209,7 @@ export function rulesHtml(cfg, report, { roundMs }) {
     <ol class="how-list">
       <li><b>A round lasts ${esc(L.fmtDuration(roundMs))}.</b> Every member, and up to ${esc(c.guest_seats)} guests, hands out ${esc(c.thanks_per_round)} thanks: at most ${esc(c.cap_per_receiver)} to one person, up to ${esc(c.max_receivers)} people, never to oneself. Unspent thanks lapse.</li>
       <li><b>One line of what you did.</b> Each note is at most ${esc(c.note_max_bytes)} bytes and stays with the round, so givers have something to go by.</li>
-      <li><b>Counting.</b> ${damp.length ? esc(damp.join('; ')) + '.' : 'Thanks count as given.'} Guest thanks count ${esc(L.fmtPct(c.guest_weight_bp))}, and all guests together steer at most ${esc(L.fmtPct(c.guest_cap_bp))} of a round. Every counted point belongs to one giver.</li>
+      <li><b>Counting.</b> ${damp.length ? esc(damp.join('; ')) + '.' : 'Thanks count as given.'} Guest thanks count ${esc(L.fmtPct(c.guest_weight_bp))}, and all guests together steer at most ${esc(L.fmtPct(c.guest_cap_bp))} of a round${esc(receiveCap)}. Every counted point belongs to one giver.</li>
       <li><b>Paying.</b> The round’s budget, ${units(c.round_budget)} (less if the DAO holds less), is split by counted thanks. A share under ${units(c.min_payout)} is carried for up to ${esc(c.carry_rounds)} rounds.</li>
       <li><b>Reputation.</b> Counted thanks add up and fade ${esc(L.fmtPct(c.decay_bp))} a round. A payout the council rejects takes that round’s points back: a strike.</li>
     </ol>

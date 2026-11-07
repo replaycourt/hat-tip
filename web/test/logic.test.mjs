@@ -98,6 +98,25 @@ test('guest thanks weigh guest_weight_bp, and all guests together at most guest_
   assert.deepEqual(two.dropped, [[GUEST, 'b'.repeat(64), 5, 'guest to guest']])
 })
 
+test("guests together receive at most guest_receive_cap_bp (the contract's math.rs example)", () => {
+  const g2 = 'b'.repeat(64)
+  const g3 = 'c'.repeat(64)
+  const cfg = { ...CFG, reciprocal_bp: 10000, idle_bp: 10000 }
+  // Member A sends 90 thanks to three guests and 10 to member B; a guest thanks A.
+  const alloc = new Map([[A, [[GUEST, 30], [g2, 30], [g3, 30], [B, 10]]], [GUEST, [[A, 10]]]])
+  const seats = new Set([GUEST, g2, g3])
+  const by = (cnt) => [[A, GUEST], [A, g2], [A, g3], [A, B], [GUEST, A]].map(([g, r]) => cnt.rows.find((x) => x.giver === g && x.receiver === r).counted)
+  const open = L.countRound(cfg, new Set([A, B]), seats, alloc)
+  assert.deepEqual(by(open), [30_000n, 30_000n, 30_000n, 10_000n, 5_000n])
+  assert.equal(open.receiveScaled, false, 'off by default (10,000)')
+  const capped = L.countRound({ ...cfg, guest_receive_cap_bp: 2000 }, new Set([A, B]), seats, alloc)
+  assert.deepEqual(by(capped), [1_250n, 1_250n, 1_250n, 10_000n, 5_000n])
+  assert.ok(capped.receiveScaled)
+  const why = L.explainReceiver({ ...cfg, guest_receive_cap_bp: 2000 }, capped, g2).reasons.map((r) => L.reasonText(r))
+  assert.deepEqual(why, ['Guests together receive at most 20 % of a round’s thanks: scaled down to that.'])
+  assert.deepEqual(by(L.countRound({ ...cfg, guest_receive_cap_bp: 9000 }, new Set([A, B]), seats, alloc)), by(open), 'not binding: unchanged')
+})
+
 test('limits: none automatic for guests or below auto_rep_min; both capped', () => {
   assert.deepEqual(L.limitsFor(CFG, A, 0n), { auto: 0n, cosign: 8_000_000n })
   assert.deepEqual(L.limitsFor(CFG, A, 199_999n), { auto: 0n, cosign: 17_950_000n })
@@ -278,6 +297,8 @@ test('DAO proposals: transfers and ft_transfer calls read alike; stages read fro
   assert.equal(L.payoutStage({ status: 'expired', tier: 3 }).state, 'lapsed')
   assert.equal(L.payoutStage({ status: 'planned', tier: 1 }).state, 'waiting')
   assert.equal(L.proposalText({ round: 42, points: 31_500n, givers: 5, receiver: 'ana.repaircafe.testnet', tier: 1 }), 'Hat Tip r42: 31.5 thanks from 5 -> ana.repaircafe.testnet (auto)')
+  assert.match(L.proposalText({ round: 42, points: 31_500n, givers: 5, receiver: 'x.testnet', tier: 2 }), / \(one council vote\)$/)
+  assert.match(L.proposalText({ round: 42, points: 31_500n, givers: 5, receiver: 'x.testnet', tier: 3 }), / \(council majority\)$/)
 })
 
 test('records: a reputation line from points, decay and strikes; ledger rows from round views', () => {

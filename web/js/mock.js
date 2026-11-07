@@ -1,14 +1,17 @@
 // MOCK MODE, for development and for a look without a deployment: `?mock=1` in the URL. Never
 // active otherwise, and never touches the network.
 //
-// A made-up Repair Café plays round after round in this tab: house members with published
-// strategies (honest helpers, a colluding pair, a free rider, newcomers) post notes and hand out
-// their thanks during each round; the round closes on the clock through the same close as the
+// A made-up Repair Café plays round after round in this tab, with the testnet launch parameters
+// and the published house strategies of sim/params.json (I-2; test/mock.test.mjs checks both):
+// honest helpers, a colluding pair, a free rider and a newcomer post notes and hand out their
+// thanks during each round; the round closes on the clock through the same close as the
 // contract (logic.js Hat, checked against the golden vectors); every payout becomes a proposal in a
 // stand-in Sputnik DAO, where tier 1 is approved by the contract's own vote at once, tier 2 waits
 // for one house council vote and tier 3 for two. The council votes by the published rule: it
 // rejects a tier-2 payout whose points came mostly from one reciprocal partner and a tier-3 payout
-// with fewer than three givers.
+// with fewer than three givers. The council votes seconds after filing, not minutes, so that a
+// whole round fits in a few minutes. The history is played until a round closes with payouts in
+// all three tiers and the live round will too (with the newcomer's first payout).
 //
 // MockClient has the methods of the real Client (js/chain.js) and returns the contract's, the
 // DAO's and the token's JSON shapes, so the page cannot tell the difference except by `mock`.
@@ -33,7 +36,7 @@ export const MOCK_IDS = {
   daoCodeHash: 'AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH',
 }
 
-/** Testnet-demo-like parameters (the simulation fixes the real ones in sim/params.json). */
+/** The testnet launch values of sim/params.json ("testnet"), with a round length for the mock. */
 export function mockConfig({ roundMs = 180_000, genesisMs }) {
   return {
     dao: MOCK_IDS.dao,
@@ -44,25 +47,25 @@ export function mockConfig({ roundMs = 180_000, genesisMs }) {
     genesis_ms: genesisMs,
     round_ms: roundMs,
     thanks_per_round: 100,
-    cap_per_receiver: 40,
+    cap_per_receiver: 25,
     max_receivers: 10,
-    reciprocal_bp: 5000,
+    reciprocal_bp: 2500,
     quadratic: false,
-    breadth_k: 0,
-    breadth_bp: 10000,
-    idle_bp: 5000,
-    decay_bp: 500,
-    round_budget: s(U(100)),
-    min_payout: s(U(2)),
+    breadth_k: 3,
+    breadth_bp: 2500,
+    idle_bp: 10000,
+    decay_bp: 750,
+    round_budget: '120000000',
+    min_payout: '5000000',
     carry_rounds: 12,
     reserve: '0',
     auto_rep_min: 200,
-    auto_per_thanks: s(U(0.02)),
-    auto_max: s(U(16)),
-    cosign_base: s(U(8)),
-    cosign_per_thanks: s(U(0.05)),
-    cosign_max: s(U(40)),
-    auto_share_bp: 6000,
+    auto_per_thanks: '60000',
+    auto_max: '30000000',
+    cosign_base: '14400000',
+    cosign_per_thanks: '60000',
+    cosign_max: '30000000',
+    auto_share_bp: 8000,
     guest_seats: 6,
     guest_weight_bp: 5000,
     guest_cap_bp: 2000,
@@ -70,41 +73,44 @@ export function mockConfig({ roundMs = 180_000, genesisMs }) {
     max_catchup: 36,
     log_keep: 108,
     note_max_bytes: 80,
+    guest_receive_cap_bp: 10000,
   }
 }
 
 // ---- the community -----------------------------------------------------------------------------
 
-const NOTES = {
-  ana: ['fixed two kettles and a lamp', 'rewired a 1970s radio', 'new heating coil for a toaster', 'taught soldering to two kids', 'fixed a hair dryer and a fan'],
-  ben: ['patched three bike tubes', 'trued a wheel, fixed the brakes', 'set up the bike stand', 'adjusted gears on a cargo bike', 'replaced a chain and two pedals'],
-  cleo: ['mended four jeans and a coat', 'sewed buttons on three jackets', 'fixed a backpack zipper', 'darned socks for an hour', 'took in a wedding dress'],
-  dina: ['ran the welcome desk', 'logged every repair in the book', 'made coffee for the queue', 'sorted the screw drawer', 'found spare parts for the bench'],
-  emil: ['fixed a laptop hinge', 'replaced a phone screen', 'recovered photos from a dead drive', 'reinstalled an old laptop'],
-  fay: ['fixed the café’s espresso machine', 'descaled two coffee makers', 'repaired a stand mixer'],
-  finn: ['helped Gus with a lamp', 'carried tables with Gus', 'held the ladder for Gus'],
-  gus: ['helped Finn with a radio', 'tidied the bench with Finn', 'swept up with Finn'],
-  ines: ['fixed a sewing machine', 'glued a chair and two stools', 'sharpened knives and scissors', 'fixed a wobbly table'],
-  hugo: ['was around to help', 'helped out where needed', 'general support'],
-}
+/** The published behaviour of sim/params.json, house.behaviour. */
+export const BEHAVIOUR = { p_work: 0.9, items_sigma: 0.4, noise_sigma: 0.5, focus: 0.15, welcome_each: 5, welcome_max: 2, free_rider_claim: 0.5 }
 
-/** House members: name, strategy, how much they do, from which round they are in the DAO. */
+/** The things each member fixes (the notes name them, as in the simulation's note templates). */
+const ITEMS = {
+  ana: [['fixed', 'kettle', 'kettles'], ['fixed', 'toaster', 'toasters']],
+  ben: [['adjusted', 'bike brake', 'bike brakes']],
+  cleo: [['mended', 'jacket', 'jackets']],
+  dina: [['repaired', 'lamp', 'lamps'], ['glued', 'chair', 'chairs']],
+  emil: [['soldered', 'radio', 'radios']],
+  finn: [['repaired', 'lamp', 'lamps']],
+  gus: [['glued', 'chair', 'chairs']],
+  ivy: [['sharpened', 'knife', 'knives'], ['fixed', 'kettle', 'kettles']],
+}
+const VAGUE = ['helped at the front desk', 'made coffee for the volunteers', 'sorted a box of screws', 'tidied the workbench']
+
+/** The house members of sim/params.json: name, strategy, items_mean; Ivy is the optional newcomer. */
 function people(h) {
   return [
-    { name: 'ana', kind: 'honest', skill: 1.45, from: 1 },
-    { name: 'ben', kind: 'honest', skill: 1.2, from: 1 },
-    { name: 'cleo', kind: 'honest', skill: 1.0, from: 1 },
-    { name: 'dina', kind: 'honest', skill: 0.85, from: 1 },
-    { name: 'ines', kind: 'honest', skill: 0.95, from: 1 },
-    { name: 'hugo', kind: 'free_rider', skill: 0, claim: 0.4, from: 1 },
-    { name: 'finn', kind: 'pair', partner: 'gus', skill: 0.35, from: h - 7 },
-    { name: 'gus', kind: 'pair', partner: 'finn', skill: 0.35, from: h - 7 },
-    { name: 'emil', kind: 'newcomer', skill: 1.1, first: 1.6, from: h },
-    { name: 'fay', kind: 'newcomer', skill: 1.0, first: 2.4, from: h + 1 },
+    { name: 'ana', kind: 'honest', items: 6.0, from: 1 },
+    { name: 'ben', kind: 'honest', items: 5.0, from: 1 },
+    { name: 'cleo', kind: 'honest', items: 4.0, from: 1 },
+    { name: 'dina', kind: 'honest', items: 3.0, from: 1 },
+    { name: 'emil', kind: 'honest', items: 2.5, from: 1 },
+    { name: 'finn', kind: 'pair', items: 2.0, partner: 'gus', from: 1 },
+    { name: 'gus', kind: 'pair', items: 2.0, partner: 'finn', from: 1 },
+    { name: 'hugo', kind: 'free_rider', items: 0, from: 1 },
+    { name: 'ivy', kind: 'newcomer', items: 4.0, from: h + 1 },
   ].map((p) => ({ ...p, account: acc(p.name) }))
 }
 const COUNCIL = ['council-a', 'council-b', 'council-c'].map(acc)
-const VISITOR_NOTES = ['brought cake for the volunteers', 'swept the floor after closing', 'helped carry the toolbox']
+const VISITOR_NOTES = ['brought cake for the volunteers', 'swept the floor after closing', 'helped carry the toolbox', 'brought a broken radio']
 
 // ---- deterministic randomness ------------------------------------------------------------------
 
@@ -127,6 +133,23 @@ export function rng(seed) {
     x >>>= 0
     return x / 4294967296
   }
+}
+
+const hasAllTiers = (res) => !res.empty && [1, 2, 3].every((t) => res.payouts.some((x) => x.tier === t))
+
+/** A copy of the close engine, to try a round without touching the world. */
+function cloneHat(h) {
+  const c = new Hat(h.cfg)
+  c.rep = new Map(h.rep)
+  c.hist = new Map([...h.hist].map(([a, m]) => [a, new Map(m)]))
+  c.carry = new Map([...h.carry].map(([a, v]) => [a, [...v]]))
+  c.payouts = h.payouts.map((x) => ({ ...x }))
+  c.byKey = new Map(c.payouts.map((x) => [`${x.round}|${x.receiver}`, x]))
+  c.open = new Map(h.open)
+  c.strikes = [...h.strikes]
+  c.closed = h.closed
+  c.totals = { ...h.totals }
+  return c
 }
 
 const gauss = (r) => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r())
@@ -162,10 +185,12 @@ export function splitThanks(total, weighted, cap) {
 // ---- the world ---------------------------------------------------------------------------------
 
 export class MockWorld {
-  constructor({ now = () => Date.now(), roundMs = 180_000, at = 0.6, seed = 11, history = 41, pace = 1 } = {}) {
+  constructor({ now = () => Date.now(), roundMs = 180_000, at = 0.6, seed = 11, history = null, pace = 1, probe = false } = {}) {
+    if (history == null) history = MockWorld.pickHistory(seed)
     this.now = now
     this.seed = seed
     this.H = history
+    this.probe = probe
     this.roundMs = roundMs
     const t0 = now()
     this.t0 = t0
@@ -186,9 +211,31 @@ export class MockWorld {
     const k = Math.max(0.05, pace)
     this.delays = { close: 1500 * k, file: 1200 * k, t1: 1200 * k, t2: 11_000 * k, t3a: 7000 * k, t3b: 19_000 * k, welcome: [2500 * k, 7000 * k] }
     this.setupProposals()
-    for (let r = 1; r <= history; r++) this.playPast(r)
+    if (probe) return
+    for (let r = 1; r <= history; r++) this.playPast(r, r === history ? 'boot' : 'past')
     this.openRound(history + 1)
     this.tick()
+  }
+
+  /**
+   * How many rounds to play before the live one: the first round from `from` on whose close has
+   * payouts in all three tiers and after which the live round, with the newcomer's first payout,
+   * will close with all three too (if no visitor changes it much).
+   */
+  static pickHistory(seed, from = 36, to = 160) {
+    const w = new MockWorld({ seed, history: to, now: () => 0, probe: true })
+    const ivy = w.people.find((p) => p.kind === 'newcomer')
+    ivy.from = Infinity
+    for (let r = 1; r <= to; r++) {
+      const res = w.playPast(r, 'past')
+      if (r < from || !hasAllTiers(res)) continue
+      ivy.from = r + 1
+      const trial = cloneHat(w.hat).close(r + 1, w.membersAt(r + 1), [], new Map(w.people.map((p) => [p.account, w.houseGifts(p, r + 1)])), w.dao.balance)
+      w.logs.delete(r + 1)
+      if (hasAllTiers(trial)) return r
+      ivy.from = Infinity
+    }
+    return from
   }
 
   // -- helpers --
@@ -225,50 +272,71 @@ export class MockWorld {
     }
   }
 
-  // -- behaviour --
-  contribution(p, r) {
-    if (p.from > r) return 0
+  // -- behaviour (sim/params.json, house) --
+  /** Whether a member works this round (nine rounds in ten), and how many items they fix. */
+  items(p, r) {
+    if (p.from > r || p.kind === 'free_rider') return 0
     const g = this.rand('work', p.name, r)
-    if (p.kind === 'free_rider') return 0
-    if (g() > 0.93 && r !== p.from) return 0 // a member skips a round now and then
-    const base = p.skill * Math.exp(0.3 * gauss(g))
-    return r === p.from && p.first ? base * p.first : base
+    if (g() >= BEHAVIOUR.p_work) return 0
+    return Math.max(1, Math.round(p.items * Math.exp(BEHAVIOUR.items_sigma * gauss(g))))
   }
 
-  /** How a giver sees a receiver's round: their work, or a free rider's claim, with some noise. */
+  /** A free rider claims one item now and then; the others read it as one item. */
+  claims(p, r) {
+    return p.kind === 'free_rider' && p.from <= r && this.rand('claim', p.name, r)() < BEHAVIOUR.free_rider_claim
+  }
+
+  works(p, r) {
+    return p.kind === 'free_rider' ? p.from <= r : this.items(p, r) > 0
+  }
+
+  /** What a giver reads in a receiver's note this round, with the giver's own noise. */
   perceived(giver, p, r) {
-    const g = this.rand('see', giver.name, p.name, r)
-    const work = p.kind === 'free_rider' ? (giver.kind === 'honest' && g() < 0.5 ? p.claim : 0) : this.contribution(p, r)
-    return work * Math.exp(0.35 * gauss(g))
+    const read = p.kind === 'free_rider' ? (this.claims(p, r) ? 1 : 0) : this.items(p, r)
+    return read * Math.exp(BEHAVIOUR.noise_sigma * gauss(this.rand('see', giver.name, p.name, r)))
   }
 
   /** A guest qualifies for the house welcome: a note and thanks given in this round. */
   welcomed(r) {
     const log = this.log(r)
-    return log.seats.filter((g) => log.notes.has(g) && log.allocs.has(g)).slice(0, 2)
+    return log.seats.filter((g) => log.notes.has(g) && log.allocs.has(g)).slice(0, BEHAVIOUR.welcome_max)
   }
 
+  /** One house member's 100 thanks for round r, by its published strategy. */
   houseGifts(giver, r) {
-    if (giver.kind === 'free_rider' || giver.from > r) return []
+    if (giver.kind === 'free_rider' || !this.works(giver, r)) return []
     const cap = Number(this.cfg.cap_per_receiver)
     let budget = Number(this.cfg.thanks_per_round)
     const out = []
-    const guests = this.welcomed(r)
-    for (const g of guests) {
-      out.push([g, 5])
-      budget -= 5
-    }
     if (giver.kind === 'pair') {
       out.push([acc(giver.partner), cap])
       budget -= cap
     }
-    const others = this.people.filter((p) => p.from <= r && p.account !== giver.account && !(giver.kind === 'pair' && p.name === giver.partner))
-    let weighted = others.map((p) => [p.account, this.perceived(giver, p, r)])
+    for (const g of this.welcomed(r)) {
+      out.push([g, BEHAVIOUR.welcome_each])
+      budget -= BEHAVIOUR.welcome_each
+    }
+    const taken = new Set(out.map(([a]) => a))
+    let weighted = this.people.filter((p) => p.from <= r && p.account !== giver.account && !taken.has(p.account)).map((p) => [p.account, this.perceived(giver, p, r)])
     const top = Math.max(0, ...weighted.map(([, w]) => w))
-    weighted = weighted.filter(([, w]) => w >= 0.15 * top).sort((a, b) => b[1] - a[1]).slice(0, Number(this.cfg.max_receivers) - out.length)
-    if (giver.kind === 'pair') budget = Math.min(budget, 25) // the pair keeps most of its thanks for each other
+    weighted = weighted
+      .filter(([, w]) => w > 0 && w >= BEHAVIOUR.focus * top)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, Number(this.cfg.max_receivers) - out.length)
     out.push(...splitThanks(budget, weighted, cap))
     return out
+  }
+
+  note(r, account, text) {
+    this.log(r).notes.set(account, text)
+  }
+
+  noteOf(p, r) {
+    if (p.kind === 'free_rider') return VAGUE[Math.floor(this.rand('note', p.name, r)() * VAGUE.length)]
+    const n = this.items(p, r)
+    const list = ITEMS[p.name] ?? ITEMS.ana
+    const [verb, one, many] = list[Math.floor(this.rand('note', p.name, r)() * list.length)]
+    return `${verb} ${n === 1 ? `1 ${one}` : `${n} ${many}`}`
   }
 
   setupProposals() {
@@ -298,10 +366,6 @@ export class MockWorld {
   }
 
   // -- rounds --
-  note(r, account, text) {
-    this.log(r).notes.set(account, text)
-  }
-
   allocate(r, giver, gifts) {
     const log = this.log(r)
     if (gifts.length) log.allocs.set(giver, gifts)
@@ -309,33 +373,23 @@ export class MockWorld {
   }
 
   /** A past round, played at once: notes, thanks, the close, the payouts and their votes. */
-  playPast(r) {
+  playPast(r, mode) {
     const log = this.log(r)
-    for (const p of this.people) {
-      if (p.from > r) continue
-      if (this.contribution(p, r) > 0 || p.kind === 'free_rider') this.note(r, p.account, this.pickNote(p, r))
-    }
-    // Now and then a visitor takes a guest seat, posts a note and thanks three members.
-    if (r === this.H - 3 || r === this.H || r === this.H - 12) {
-      const g = this.rand('visitor', r)
-      const guest = fakeHex(g)
+    for (const p of this.people) if (this.works(p, r)) this.note(r, p.account, this.noteOf(p, r))
+    // Now and then a visitor takes a guest seat, posts a note and thanks a few members.
+    const v = this.rand('visitor', r)
+    if (v() < 0.35) {
+      const guest = fakeHex(v)
       log.seats.push(guest)
-      this.note(r, guest, VISITOR_NOTES[r % VISITOR_NOTES.length])
-      const picks = this.membersAt(r).filter((a) => this.byAccount.get(a).kind !== 'free_rider')
-      this.allocate(r, guest, splitThanks(100, picks.slice(0, 4).map((a) => [a, 1 + g()]), Number(this.cfg.cap_per_receiver)))
+      if (v() < 0.8) this.note(r, guest, VISITOR_NOTES[Math.floor(v() * VISITOR_NOTES.length)])
+      const picks = this.membersAt(r).filter((a) => this.byAccount.get(a).kind !== 'free_rider' && v() < 0.6).slice(0, 5)
+      if (picks.length >= 2) this.allocate(r, guest, splitThanks(100, picks.map((a) => [a, 1 + v()]), Number(this.cfg.cap_per_receiver)))
     }
     for (const p of this.people) this.allocate(r, p.account, this.houseGifts(p, r))
     const end = this.roundEnd(r)
-    this.closeRound(r, end + this.delays.close)
-    const live = r === this.H
-    const filedAt = end + this.delays.close + this.delays.file
-    this.file(r, filedAt, live ? 'boot' : 'past')
-  }
-
-  pickNote(p, r) {
-    const list = NOTES[p.name]
-    if (r === p.from && p.first) return list[0]
-    return list[Math.floor(this.rand('note', p.name, r)() * list.length)]
+    const res = this.closeRound(r, end + this.delays.close)
+    this.file(r, end + this.delays.close + this.delays.file, mode)
+    return res
   }
 
   /** The live round: house notes and thanks spread over the round; events already past run now. */
@@ -344,7 +398,7 @@ export class MockWorld {
     for (const p of this.people) {
       if (p.from > r) continue
       const g = this.rand('when', p.name, r)
-      if (this.contribution(p, r) > 0 || p.kind === 'free_rider') this.at(start + g() * 0.35 * this.roundMs, () => this.note(r, p.account, this.pickNote(p, r)))
+      if (this.works(p, r)) this.at(start + g() * 0.35 * this.roundMs, () => this.note(r, p.account, this.noteOf(p, r)))
       if (p.kind !== 'free_rider') this.at(start + (0.12 + g() * 0.78) * this.roundMs, () => this.allocate(r, p.account, this.houseGifts(p, r)))
     }
     this.at(this.roundEnd(r) + this.delays.close, () => {
@@ -387,7 +441,7 @@ export class MockWorld {
       const m = this.meta.get(id)
       const kind =
         x.tier === 2
-          ? { FunctionCall: { receiver_id: MOCK_IDS.token, actions: [{ method_name: 'ft_transfer', args: b64(JSON.stringify({ receiver_id: x.receiver, amount: s(x.amount) })), deposit: '1', gas: '10000000000000' }] } }
+          ? { FunctionCall: { receiver_id: MOCK_IDS.token, actions: [{ method_name: 'ft_transfer', args: b64(JSON.stringify({ amount: s(x.amount), receiver_id: x.receiver })), deposit: '1', gas: '15000000000000' }] } }
           : { Transfer: { token_id: MOCK_IDS.token, receiver_id: x.receiver, amount: s(x.amount), msg: null } }
       const p = this.newProposal({ proposer: MOCK_IDS.contract, description: proposalText({ round: r, points: x.points, givers: m.givers, receiver: x.receiver, tier: x.tier }), kind, at: t })
       m.proposal = p.id
@@ -513,6 +567,7 @@ export class MockWorld {
     const by = (st) => this.hat.payouts.filter((x) => x.status === st).length
     const sum = (st) => s(this.hat.payouts.filter((x) => x.status === st).reduce((a, x) => a + x.amount, 0n))
     const t2 = this.hat.totals
+    const pointsTotal = [...this.logs.values()].reduce((a, l) => a + l.points.reduce((b, [, p]) => b + p, 0n), 0n)
     return {
       name: 'Hat Tip',
       round,
@@ -539,8 +594,13 @@ export class MockWorld {
         carry: s(this.hat.carryTotal()),
         lapsed: s(t2.lapsed),
         dust: s(t2.dust),
+        points: s(pointsTotal),
+        attributed: s(pointsTotal),
         paid: sum('paid'),
         rejected: sum('rejected'),
+        expired: sum('expired'),
+        removed: sum('removed'),
+        failed: sum('failed'),
         strikes: this.hat.strikes.length,
         by_status: ['planned', 'filing', 'filed', 'approved', 'paid', 'rejected', 'expired', 'removed', 'failed'].map(by),
       },
@@ -701,12 +761,12 @@ export class MockClient {
   policy() {
     return this.read(() => this.world.policyView())
   }
+  /** One DAO proposal, or null if the DAO deleted it (as get_proposals answers). */
   proposal(id) {
-    return this.read(() => {
-      const p = this.world.dao.proposals.get(Number(id))
-      if (!p) throw new Error('ERR_NO_PROPOSAL')
-      return p
-    })
+    return this.read(() => this.world.dao.proposals.get(Number(id)) ?? null)
+  }
+  tiers(account) {
+    return this.read(() => this.world.memberView(account).limits)
   }
   daoBalance() {
     return this.read(() => s(this.world.dao.balance))

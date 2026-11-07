@@ -229,7 +229,7 @@ async function loadProposals(payouts) {
     want.map((p) =>
       client
         .proposal(p.dao_proposal)
-        .then((x) => S.proposals.set(Number(p.dao_proposal), x))
+        .then((x) => x && S.proposals.set(Number(p.dao_proposal), x))
         .catch(() => null),
     ),
   )
@@ -390,7 +390,7 @@ function pickReason(reasons) {
   if (strong.length) return strong[0]
   const mine = reasons.find((x) => x.kind === 'guest' && S.me && x.who?.includes(S.me))
   if (mine) return mine
-  for (const k of ['idle', 'breadth', 'guest']) {
+  for (const k of ['receiveCap', 'idle', 'breadth', 'guest']) {
     const r = reasons.find((x) => x.kind === k)
     if (r) return r
   }
@@ -664,7 +664,7 @@ async function openMember(account) {
     return U.openDrawer('member', 'Record', '<p class="muted">Could not read this record. Try again.</p>')
   }
   const props = m.payouts.filter((p) => p.dao_proposal != null && !S.proposals.has(Number(p.dao_proposal))).slice(-6)
-  await Promise.all(props.map((p) => client.proposal(p.dao_proposal).then((x) => S.proposals.set(Number(p.dao_proposal), x)).catch(() => null)))
+  await Promise.all(props.map((p) => client.proposal(p.dao_proposal).then((x) => x && S.proposals.set(Number(p.dao_proposal), x)).catch(() => null)))
   // a strike takes the round's points back, decayed to when the council's answer was read (about a round later)
   const strikes = m.payouts.filter((p) => p.status === 'rejected' || p.status === 'removed').map((p) => ({ at: p.round + 1, amount: L.decay(p.points, S.cfg) }))
   const to = S.lastClosed ?? 0
@@ -677,6 +677,7 @@ async function openProposal(id) {
   U.openDrawer('proposal', `DAO proposal #${id}`, '<p class="muted">Reading the DAO…</p>')
   try {
     const p = await client.proposal(id)
+    if (!p) throw new Error('removed')
     S.proposals.set(id, p)
     const payout = S.lastPayouts.find((x) => Number(x.dao_proposal) === id) ?? null
     U.openDrawer('proposal', `DAO proposal #${id}`, U.proposalHtml(p, { name, dao: S.cfg.dao, explorer: EXPLORER, mock: MOCK, payout, house: client.house }))

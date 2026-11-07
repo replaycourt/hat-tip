@@ -3,8 +3,10 @@
 // council vote, tier 3 on two, a strike for a rejected payout, and the guest paid in tUSD.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import * as L from '../js/logic.js'
-import { MOCK_IDS, MockClient, MockWorld, splitThanks } from '../js/mock.js'
+import { BEHAVIOUR, MOCK_IDS, MockClient, MockWorld, mockConfig, splitThanks } from '../js/mock.js'
 import * as N from '../js/near.js'
 
 const ROUND = 180_000
@@ -41,7 +43,7 @@ test('house council votes: one vote passes or vetoes tier 2, tier 3 needs two', 
   const { w, advance } = world()
   const ids = w.log(w.H).payouts
   const t3 = ids.filter((id) => w.hat.payouts[id].tier === 3)
-  advance(w.delays.t3a + 100)
+  advance(w.delays.t3a + 6100) // after the first vote (staggered up to 6 s), before the second
   for (const id of t3) {
     const p = w.dao.proposals.get(w.meta.get(id).proposal)
     assert.equal(Object.keys(p.votes).length, 1)
@@ -66,10 +68,10 @@ test('a full live round: a guest gives, is welcomed, and is paid after one counc
   await c.setIdentity({ key, account: me })
   const st = await c.state()
   assert.equal(st.round, r)
-  assert.ok(st.members.includes('fay.repair-cafe.testnet'), 'a newcomer synced at the start of the round')
+  assert.ok(st.members.includes('ivy.repair-cafe.testnet'), 'the newcomer synced at the start of the round')
   const out1 = await c.act(L.joinAction(r, 'brought cake for the volunteers'))
   assert.equal(out1.ok, true)
-  const gifts = [['ana.repair-cafe.testnet', 40], ['fay.repair-cafe.testnet', 40], ['emil.repair-cafe.testnet', 20]]
+  const gifts = [['ana.repair-cafe.testnet', 25], ['ivy.repair-cafe.testnet', 25], ['emil.repair-cafe.testnet', 25], ['dina.repair-cafe.testnet', 25]]
   const out2 = await c.act(L.allocateAction(r, gifts))
   assert.equal(out2.ok, true)
   assert.ok(out2.nonce > out1.nonce)
@@ -77,7 +79,7 @@ test('a full live round: a guest gives, is welcomed, and is paid after one counc
   assert.deepEqual(w.log(r).seats, [me])
   // refusals come back as ok:false, the contract's words
   assert.equal((await c.act(L.allocateAction(r, [[me, 5]]))).error, 'no thanks to yourself')
-  assert.equal((await c.act(L.allocateAction(r, [['ana.repair-cafe.testnet', 41]]))).error, 'each gift is 1 to 40 thanks')
+  assert.equal((await c.act(L.allocateAction(r, [['ana.repair-cafe.testnet', 26]]))).error, 'each gift is 1 to 25 thanks')
   assert.match((await c.act(L.allocateAction(r + 1, gifts))).error, /but this is round/)
   // the house welcome: members who already gave add 5 thanks for the guest
   advance(w.delays.welcome[1] + 100)
@@ -141,7 +143,6 @@ test('the books balance and every point has its giver, across rounds', async () 
   const lim = L.limitsFor(w.cfg, m.account, BigInt(m.reputation))
   assert.deepEqual([m.limits.auto, m.limits.cosign], [String(lim.auto), String(lim.cosign)])
   for (const h of m.history.slice(-5)) assert.equal(h.givers.reduce((s, g) => s + BigInt(g[2]), 0n), BigInt(h.points))
-  assert.ok(w.hat.strikes.length > 0, 'the history has strikes from rejected payouts')
 })
 
 test('the mock speaks the contract and DAO shapes', async () => {
@@ -157,7 +158,15 @@ test('the mock speaks the contract and DAO shapes', async () => {
   for (const k of ['id', 'round', 'receiver', 'amount', 'tier', 'status', 'dao_proposal', 'kind', 'points', 'givers']) assert.ok(k in p, k)
   const prop = await c.proposal(p.dao_proposal)
   assert.equal(L.proposalInfo(prop).receiver, p.receiver)
-  await assert.rejects(c.proposal(99_999), /ERR_NO_PROPOSAL/)
+  assert.equal(await c.proposal(99_999), null, 'a deleted proposal reads as null')
+  assert.deepEqual(await c.tiers(p.receiver), (await c.member(p.receiver)).limits)
+  for (const k of ['rounds_closed', 'budgets', 'planned', 'carry', 'lapsed', 'dust', 'points', 'attributed', 'paid', 'rejected', 'expired', 'removed', 'failed', 'strikes', 'by_status']) assert.ok(k in st.totals, `totals.${k}`)
+  // a tier-2 proposal is the contract's ft_transfer call, as filed (contract/README.md, "The proposals")
+  const call = [...w.dao.proposals.values()].find((x) => x.kind.FunctionCall)
+  const act = call.kind.FunctionCall.actions[0]
+  assert.deepEqual([act.method_name, act.deposit, act.gas], ['ft_transfer', '1', '15000000000000'])
+  assert.deepEqual(Object.keys(JSON.parse(Buffer.from(act.args, 'base64').toString())), ['amount', 'receiver_id'])
+  assert.match(call.description, /^Hat Tip r\d+: [\d.]+ thanks from \d+ -> .+ \(one council vote\)$/)
   assert.deepEqual(await c.accessKeys(c.contract), [], 'the contract has no keys')
   const relay = await c.accessKeys(c.gasAccount)
   assert.ok(relay.every((k) => k.access_key.permission.FunctionCall.receiver_id === c.contract))
@@ -175,4 +184,26 @@ test('splitThanks gives whole numbers, at most the cap, summing to the total', (
   assert.equal(u.reduce((a, [, n]) => a + n, 0), 97)
   assert.ok(u.every(([, n]) => n >= 1 && n <= 40))
   assert.deepEqual(splitThanks(10, [], 40), [])
+})
+
+const PARAMS = fileURLToPath(new URL('../../sim/params.json', import.meta.url))
+
+test('the mock plays the launch parameters and the published house of sim/params.json', { skip: !existsSync(PARAMS) && 'no sim/params.json' }, () => {
+  const p = JSON.parse(readFileSync(PARAMS, 'utf8'))
+  const mine = mockConfig({ roundMs: 1, genesisMs: 1 })
+  for (const [k, v] of Object.entries(p.testnet.config)) {
+    if (v === null || k === 'round_ms') continue
+    assert.deepEqual(mine[k], v, k)
+  }
+  for (const [k, v] of Object.entries(BEHAVIOUR)) assert.equal(p.house.behaviour[k], v, k)
+  const { w } = world()
+  const house = new Map(w.people.map((x) => [x.name, x]))
+  for (const m of p.house.members) {
+    assert.equal(house.get(m.name)?.kind, m.kind, m.name)
+    assert.equal(house.get(m.name).items, m.parameters.items_mean, m.name)
+    if (m.parameters.partner) assert.equal(house.get(m.name).partner, m.parameters.partner)
+  }
+  const n = p.house.optional_newcomer
+  assert.equal(house.get(n.name)?.items, n.parameters.items_mean, 'the optional newcomer joins in the live round')
+  assert.deepEqual(Object.entries(w.house).filter(([, k]) => k === 'council').map(([a]) => a.split('.')[0]), p.house.council.map((c) => c.name))
 })

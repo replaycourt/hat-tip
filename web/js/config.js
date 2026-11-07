@@ -50,11 +50,11 @@ export const RPC_HOSTS = ['https://test.rpc.fastnear.com', 'https://near-testnet
 export const EXPLORER = 'https://testnet.nearblocks.io'
 export const REPO = 'https://github.com/replaycourt/hat-tip'
 
-/** Gas attached to relayed calls; package (a) fixes the final numbers in contract/README.md. */
+/** Gas attached to relayed calls (contract/README.md, "Gas"). */
 export const ACT_GAS = 30_000_000_000_000n
-export const CLOSE_GAS = 300_000_000_000_000n
+export const CLOSE_GAS = 255_000_000_000_000n
 export const PAY_GAS = 300_000_000_000_000n
-export const CHECK_GAS = 100_000_000_000_000n
+export const CHECK_GAS = 135_000_000_000_000n
 
 /** The deployment named by `?contract=` if it is one of DEPLOYMENTS, else DEFAULT. */
 export function pickDeployment(search = globalThis.location?.search ?? '') {

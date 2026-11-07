@@ -69,6 +69,8 @@ export function numCfg(cfg) {
     autoShareBp: n('auto_share_bp'),
     guestWeightBp: n('guest_weight_bp'),
     guestCapBp: n('guest_cap_bp'),
+    // optional in the contract's Config, default 10,000 (off)
+    guestReceiveCapBp: big(cfg.guest_receive_cap_bp ?? 10_000),
   }
 }
 
@@ -183,10 +185,29 @@ export function countRound(cfg, members, seats, allocations) {
       }
     }
   }
-  // 7. points
+  // 7. the guests' receive cap: guests together receive at most guest_receive_cap_bp of the
+  // round's points, by the same rule as the cap on what they give (contract/README.md)
+  const toGuest = (row) => !members.has(row.receiver) && seats.has(row.receiver)
+  const rcap = c.guestReceiveCapBp
+  let receiveScaled = false
+  if (rcap < BP) {
+    let pg = 0n
+    let pm = 0n
+    for (const row of rows) {
+      if (toGuest(row)) pg += row.counted
+      else pm += row.counted
+    }
+    if (pg * (BP - rcap) > pm * rcap) {
+      receiveScaled = true
+      const num = pm * rcap
+      const den = pg * (BP - rcap)
+      for (const row of rows) if (toGuest(row)) row.counted = (row.counted * num) / den
+    }
+  }
+  // 8. points
   const points = new Map()
   for (const row of rows) points.set(row.receiver, (points.get(row.receiver) ?? 0n) + row.counted)
-  return { rows, dropped, membersWeight, guestsWeight, guestScaled, W, Q, support, narrow, idle, givers, points, members, seats }
+  return { rows, dropped, membersWeight, guestsWeight, guestScaled, receiveScaled, W, Q, support, narrow, idle, givers, points, members, seats }
 }
 
 // ---- tiers and shares (steps 7-9) --------------------------------------------------------------
@@ -423,6 +444,7 @@ export function explainReceiver(cfg, cnt, account) {
   if (c.quadratic && rows.length) reasons.push({ kind: 'quadratic', givers: rows.length })
   if (cnt.narrow.has(account)) reasons.push({ kind: 'breadth', k: Number(c.breadthK), support: cnt.support.get(account) ?? 0, bp: Number(c.breadthBp) })
   if (cnt.idle.has(account)) reasons.push({ kind: 'idle', bp: Number(c.idleBp) })
+  if (cnt.receiveScaled && !cnt.members.has(account) && cnt.seats.has(account)) reasons.push({ kind: 'receiveCap', bp: Number(c.guestReceiveCapBp) })
   return { given, counted, givers: rows.map((r) => ({ giver: r.giver, given: r.thanks, counted: r.counted })), reasons }
 }
 
@@ -442,6 +464,8 @@ export function reasonText(r, name = (a) => a, { open = false } = {}) {
       return 'Support is counted by breadth: many small givers count more than one big one.'
     case 'breadth':
       return `Fewer than ${r.k} givers: counted at ${fmtPct(r.bp)}.`
+    case 'receiveCap':
+      return `Guests together receive at most ${fmtPct(r.bp)} of a round’s thanks: scaled down to that.`
     case 'idle':
       return open ? `Has not given thanks yet: thanks received count ${fmtPct(r.bp)} until they do.` : `Gave no thanks this round: thanks received count ${fmtPct(r.bp)}.`
     default:
@@ -678,7 +702,7 @@ export const TIER_SHORT = { 1: 'auto', 2: '1 council vote', 3: 'council majority
 
 /** The proposal text the contract files (DESIGN.md "Proposal text"). */
 export function proposalText({ round, points, givers, receiver, tier }) {
-  const label = tier === 1 ? 'auto' : tier === 2 ? 'one council vote' : 'council vote'
+  const label = tier === 1 ? 'auto' : tier === 2 ? 'one council vote' : 'council majority'
   return `Hat Tip r${round}: ${fmtThanks(points)} thanks from ${givers} -> ${receiver} (${label})`
 }
 

@@ -254,7 +254,7 @@ test('Client.act signs hattip:v1:<contract>:<nonce>:<action> with the guest key 
 
 test('Client reads the contract, then its DAO and token from config()', async () => {
   const views = []
-  const answers = { config: { dao: 'cafe.sputnikv2.testnet', token: 'tusd.testnet' } }
+  const answers = { config: { dao: 'cafe.sputnikv2.testnet', token: 'tusd.testnet' }, get_proposals: [{ id: 12, status: 'Approved' }] }
   const rpc = { view: async (account, method, args) => (views.push([account, method, args]), answers[method] ?? null), accessKeyList: async (a) => (views.push([a, 'keys']), []), viewAccount: async (a) => ({ code_hash: 'X' + a }) }
   const c = new Client({ rpc, deployment: DEP, pool: { empty: true } })
   await c.config()
@@ -264,7 +264,7 @@ test('Client reads the contract, then its DAO and token from config()', async ()
   await c.payouts(10, 5)
   await c.audit()
   await c.policy()
-  await c.proposal('12')
+  assert.equal((await c.proposal('12')).status, 'Approved')
   await c.daoBalance()
   await c.balanceOf('abc')
   await c.accessKeys('hattip.testnet')
@@ -276,12 +276,16 @@ test('Client reads the contract, then its DAO and token from config()', async ()
     ['hattip.testnet', 'payouts', { from: 10, limit: 5 }],
     ['hattip.testnet', 'audit', {}],
     ['cafe.sputnikv2.testnet', 'get_policy', undefined],
-    ['cafe.sputnikv2.testnet', 'get_proposal', { id: 12 }],
+    ['cafe.sputnikv2.testnet', 'get_proposals', { from_index: 12, limit: 1 }],
     ['tusd.testnet', 'ft_balance_of', { account_id: 'cafe.sputnikv2.testnet' }],
     ['tusd.testnet', 'ft_balance_of', { account_id: 'abc' }],
     ['hattip.testnet', 'keys'],
   ])
   assert.equal(c.canAct, false, 'no gas keys: the page offers no actions')
+  // a removed proposal is deleted by Sputnik: get_proposals answers [] (or the next id)
+  const gone = new Client({ rpc: { view: async () => [{ id: 13 }] }, deployment: DEP, pool: { empty: true } })
+  gone.dao = 'cafe.sputnikv2.testnet'
+  assert.equal(await gone.proposal(12), null)
   assert.deepEqual(c.house, DEP.house)
 })
 
