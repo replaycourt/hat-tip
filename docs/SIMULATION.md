@@ -68,7 +68,7 @@ Written and committed before the sweep ran. The sweep applies it mechanically; t
 
 **Ties.** Rule sets within 0.25 percentage points of the best objective count as equal. Among them: fewest of R, Q, B, I switched on; then the lowest free riders' excess (free-rider scenario); then the larger `cap_per_receiver`; then the values closest to off.
 
-Pair memory (P in DESIGN.md) is not in I-1. The simulation does not implement it; it reports what the chosen rules leave to the one-way strategy, which is what P would target.
+Pair memory (P in DESIGN.md) is not in the contract's interface. The simulation does not implement it; it reports what the chosen rules leave to the one-way strategy, which is what P would target.
 
 ### Stage C: budget and minimum payout (testnet demo)
 
@@ -76,7 +76,7 @@ Pair memory (P in DESIGN.md) is not in I-1. The simulation does not implement it
 
 **Candidates.** `round_budget` in {100, 120, 150} tUSD; `min_payout` in {1, 2, 3, 5} tUSD.
 
-**Criteria.** On average at most 7.0 planned payouts per round (PLAN.md's NEAR budget assumes about 6 at 0.006 NEAR each in storage and gas; 7 costs about 6 NEAR more over the demo); at least 75 % of the visitors thanked by at least three house members get a payout; carry that lapses is at most 2 % of the budgets.
+**Criteria.** On average at most 7.0 planned payouts per round (the demo's NEAR budget assumes about 6 at 0.006 NEAR each in storage and gas; 7 costs about 6 NEAR more over the demo); at least 75 % of the visitors thanked by at least three house members get a payout; carry that lapses is at most 2 % of the budgets.
 
 **Pick.** Among the candidates that pass, the one fewest grid steps from the first guess (120, 2); ties go to the lower `min_payout`, then the larger budget.
 
@@ -241,7 +241,7 @@ Medians over 8 seeds, 52 weekly rounds, community launch values; "none" is cap 5
 Medians over 6 seeds (visitors: all seeds pooled); 2 of 12 pass.
 <!-- END generated:stage_c -->
 
-The house alone produces about seven payees a round, and visitors and the newcomer add one more, so every minimum payout up to 3 tUSD gives more than 7 payouts a round. Only a minimum of 5 tUSD stays below 7.0 (with budgets of 100 and 120 tUSD); the pick is 120 / 5, two grid steps from the first guess. Small shares (the free rider, a visitor with one welcome) are then carried until they reach 5 tUSD. At 6.9 payouts a round, 1,080 demo rounds leave about 7,450 proposals in the DAO, about 26 NEAR of storage (PLAN.md budgets 23).
+The house alone produces about seven payees a round, and visitors and the newcomer add one more, so every minimum payout up to 3 tUSD gives more than 7 payouts a round. Only a minimum of 5 tUSD stays below 7.0 (with budgets of 100 and 120 tUSD); the pick is 120 / 5, two grid steps from the first guess. Small shares (the free rider, a visitor with one welcome) are then carried until they reach 5 tUSD. At 6.9 payouts a round, 1,080 demo rounds leave about 7,450 proposals in the DAO, about 26 NEAR of storage (the demo budget planned 23).
 
 ### Stage B: tier limits and decay
 
@@ -383,7 +383,7 @@ Why each *sim* value:
 ## What the rules do not stop
 
 - **Rings.** A ring of four keeps +5.4 points of excess payout share in a 24-member community (about 1.4 points per member) and a ring of three +2.0. Breadth needs three givers, and a ring of four supplies three. Larger rings keep more; a ring as large as the community has nothing left to be compared with.
-- **One-way thanks.** Colluders who thank in one direction per round, alternating, are invisible to reciprocity and to the house council's rule, which looks for a reciprocal partner. Under the launch rules this is the colluders' best response in most seeds. Pair memory (P in DESIGN.md) would target it; it is not in I-1 and not simulated.
+- **One-way thanks.** Colluders who thank in one direction per round, alternating, are invisible to reciprocity and to the house council's rule, which looks for a reciprocal partner. Under the launch rules this is the colluders' best response in most seeds. Pair memory (P in DESIGN.md) would target it; it is not in the contract and not simulated.
 - **Free riders.** Four free riders who never give collect 3.2 % of the community's payouts, from honest members who thank their padded notes. Idle would reduce that, but it costs honest members who skip a round, raises the colluders' take, and is evaded by any token allocation.
 - **Honest mutual help** is discounted like collusion: the honest pair loses 7-13 % of its payout (11 % in the honest community).
 - **Guests.** One person can hold every guest seat, keep real visitors out, and collect the welcome thanks (about 7 % of the testnet budget). A member who works with such a farm still moves about a sixth of the budget to himself and the farm: the receive cap halves the seats' take, but what the seats give him is bounded only by the giving cap. A tighter receive cap would cut honest visitors more than the farm.

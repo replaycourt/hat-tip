@@ -47,7 +47,7 @@ const account = what === 'token' ? n.token : n.contract
 const deploy = !flag('verify-only') && !flag('lock-only')
 const lock = flag('lock') || flag('lock-only')
 if (lock && section === 'staging') {
-  console.error('--lock on the staging deployment: refused (staging keeps its keys, PLAN.md package c)')
+  console.error('--lock on the staging deployment: refused (staging keeps its keys)')
   process.exit(64)
 }
 const dir = what === 'token' ? 'token' : 'contract'

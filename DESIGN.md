@@ -1,11 +1,10 @@
 # Hat Tip: design
 
-
 A community that keeps its money in a Sputnik DAO pays its contributors from that DAO in rounds. In each round every member gets 100 thanks to hand to the people who helped them. When the round closes, the round's budget is split by the thanks each person received, after rules that blunt collusion. Every payout is a proposal in the community's own DAO, and how much of it leaves without a human depends on the receiver's track record: small payouts to members with a record execute at once, mid-size ones need one council member's vote, large ones (and most first payouts) need a council majority. Every reputation point traces to a round and to the members who gave it. The rules live in one NEAR contract with no access keys; custody and approvals stay in the DAO.
 
 Track: Social Money (`social`). The track asks for shared budgets, programmable rewards, collective ownership and reputation-based access on top of Sputnik DAO and Trezu, without rebuilding the multisig. The example prompt asks for reputation tied to named accounts and traceable to finished work, three approval tiers (auto / one council member / full DAO vote), custody and approvals in an existing DAO, and a public board.
 
-This file is the spec in words. The contract (`contract/`, API in `contract/README.md`) implements it, the simulation (`sim/`, `docs/SIMULATION.md`) models it with the same integer arithmetic and picks the parameters marked *sim*, and a golden test checks that both close the same rounds to the last base unit. The work split is in PLAN.md.
+This file is the spec in words. The contract (`contract/`, API in `contract/README.md`) implements it, the simulation (`sim/`, `docs/SIMULATION.md`) models it with the same integer arithmetic and picks the parameters marked *sim*, and a golden test checks that both close the same rounds to the last base unit.
 
 ## Words
 
@@ -193,7 +192,7 @@ Parameters are init arguments, stored once and shown by `config()`; there is no 
 ## Log and views
 
 - NEP-297 events, standard `hattip`: `synced`, `paused`, `joined`, `note`, `allocated`, `round_closed`, `points`, `payout_planned`, `carry`, `carry_lapsed`, `filed`, `approved`, `paid`, `rejected`, `expired`, `removed`, `failed`, `struck`. Replaying them rebuilds every reputation and every payout.
-- Views: `config()`, `state()`, `round(n)` (last `log_keep` rounds in full), `member(account)`, `payouts(from, limit)`, `tiers(account)`, `audit()`, `signing_text(nonce, action)`. Exact signatures in PLAN.md, package (a).
+- Views: `config()`, `state()`, `round(n)` (last `log_keep` rounds in full), `member(account)`, `payouts(from, limit)`, `tiers(account)`, `audit()`, `signing_text(nonce, action)`. Exact signatures in `contract/README.md`.
 - `audit()`: budgets add up (`sum budgets = sum planned + sum carry + sum lapsed carry + dust`), every round's points equal the sum of their attributions, every payout has exactly one status, and every filed payout has a DAO proposal id.
 
 ## Launch parameters

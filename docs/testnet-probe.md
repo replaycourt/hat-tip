@@ -1,10 +1,10 @@
 # Hat Tip: testnet tier probe (D0, 2026-11-07)
 
-The question before the contract is built (PLAN.md, package c, "D0 probe"): do the three payout tiers of DESIGN.md ("The three tiers, in the DAO") work with a real Sputnik DAO v2 from `sputnikv2.testnet`, with exactly the planned policy? The uncertain point was tier 2: a `FunctionCall ft_transfer` proposal that only the contract's role may add and that one council vote approves.
+The question before the contract is built (the D0 probe): do the three payout tiers of DESIGN.md ("The three tiers, in the DAO") work with a real Sputnik DAO v2 from `sputnikv2.testnet`, with exactly the planned policy? The uncertain point was tier 2: a `FunctionCall ft_transfer` proposal that only the contract's role may add and that one council vote approves.
 
 **Result: yes, all three tiers work with the policy of DESIGN.md unchanged.** 76 records (52 transactions, 24 state checks), every one as expected. Fallback B (`cosign` on the contract) is not needed and was not tried.
 
-| Claim (PLAN.md probe item) | Result | Evidence (step ids below) |
+| Claim | Result | Evidence (step ids below) |
 |---|---|---|
 | (1) Tier 1: the role files a tUSD `Transfer` and its own vote (`transfer: 1 of 1`) executes it at once | works | T1-file, T1-vote, T1-status |
 | (2) Tier 2: a `call` proposal `ft_transfer` filed by the role passes on exactly one council vote | works | T2-file, T2-vote, T2-status |
@@ -92,7 +92,7 @@ Burnt gas per receipt, the same in every repetition to within 0.05 Tgas:
 | refused action (`ERR_PERMISSION_DENIED`) | DAO 2.0 | 2.3-2.7 |
 | DAO creation through the factory | factory 41.17 + DAO `new` 44.73 + `on_create` 2.36 | 89.1 |
 
-**Attached gas.** The executing vote must carry at least about 25 Tgas: the DAO reserves 10 Tgas for `ft_transfer` (or the `FunctionCall` action's own gas) and 10 Tgas for `on_proposal_callback`. With 20 Tgas the vote failed with `Exceeded the prepaid gas` after burning only 2.83 Tgas, and the proposal stayed untouched (G-untouched-20); with 25 and 30 Tgas it executed, a council vote on a tier-2 call too. **PLAN.md's budget of 20 Tgas for the contract's `act_proposal` is too low; use 30.** `add_proposal` needs about 5 Tgas (PLAN's 15 is ample). The `FunctionCall` action's `gas` of 10 Tgas covers `ft_transfer` (1.85 burnt).
+**Attached gas.** The executing vote must carry at least about 25 Tgas: the DAO reserves 10 Tgas for `ft_transfer` (or the `FunctionCall` action's own gas) and 10 Tgas for `on_proposal_callback`. With 20 Tgas the vote failed with `Exceeded the prepaid gas` after burning only 2.83 Tgas, and the proposal stayed untouched (G-untouched-20); with 25 and 30 Tgas it executed, a council vote on a tier-2 call too. **The first budget of 20 Tgas for the contract's `act_proposal` is too low; use 30.** `add_proposal` needs about 5 Tgas (PLAN's 15 is ample). The `FunctionCall` action's `gas` of 10 Tgas covers `ft_transfer` (1.85 burnt).
 
 **Prepaid gas and small balances.** Testnet burns gas at 10^8 yocto per gas (0.0001 NEAR per Tgas), but a transaction's gas is bought up front at 10^9 yocto per gas and the difference refunded. A signer therefore needs 0.1 NEAR free for 100 Tgas attached: the first probe run stopped when `recv` (0.1 NEAR) could not prepay a 100 Tgas vote. House and council accounts and relay-key allowances must cover attached gas at that price; votes with 30 Tgas need 0.03 NEAR free.
 

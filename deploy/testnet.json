@@ -1,6 +1,6 @@
 {
  "network": "testnet",
- "about": "Public facts of the Hat Tip deployments on NEAR testnet (PLAN.md interface I-4): accounts, code hashes, the DAO policy, the config, the relay and house public keys, and the setup transactions. Section `staging`: the staging deployment (keys kept, 5-minute rounds; docs/testnet-stage.md). Section `final`: the keyless launch, added at launch. No secrets: private keys stay in the git-ignored .secrets/ and the legacy keychain.",
+ "about": "Public facts of the Hat Tip deployments on NEAR testnet: accounts, code hashes, the DAO policy, the config, the relay and house public keys, and the setup transactions. Section `staging`: the staging deployment (keys kept, 5-minute rounds; docs/testnet-stage.md). Section `final`: the keyless launch, added at launch. No secrets: private keys stay in the git-ignored .secrets/ and the legacy keychain.",
  "final": null,
  "staging": {
   "accounts": {
