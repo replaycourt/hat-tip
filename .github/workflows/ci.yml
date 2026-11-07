@@ -1,0 +1,197 @@
+# Tests for the page, the scripts, the simulation, the contract and the token, and rebuilds of both
+# wasm files that are compared with the code deployed on testnet. Read-only: it reads the deployed
+# code from a public RPC, sends no transaction and holds no key.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Page tests (node --test) and script syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No install: the page, the scripts and their tests use only the browser and Node's standard library.
+      - run: node --test 'web/test/*.test.mjs'
+      # The scripts have no test suite of their own (the staging run on testnet exercised them,
+      # docs/testnet-stage.md); here they must at least parse.
+      - name: The scripts parse
+        run: |
+          for f in scripts/*.mjs; do node --check "$f"; done
+          bash -n scripts/judge-checks.sh
+          python3 -m py_compile scripts/compare-wasm.py
+
+  sim:
+    name: Simulation reproduces the golden vectors, the replay and the launch parameters
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      # Standard library only; deterministic. Fails on any difference from sim/golden/*.json,
+      # sim/replay.json or sim/params.json.
+      - run: python3 sim/hat_tip_sim.py --check
+
+  cargo-test:
+    name: ${{ matrix.crate }} tests (cargo test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        crate: [contract, token]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the toolchain pinned in ${{ matrix.crate }}/rust-toolchain.toml
+        working-directory: ${{ matrix.crate }}
+        run: |
+          TOOLCHAIN=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$TOOLCHAIN" --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
+          rustc --version
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }} -> target
+          shared-key: ${{ matrix.crate }}-test
+      - name: cargo test
+        working-directory: ${{ matrix.crate }}
+        run: cargo test --locked
+
+  # Rebuilds each crate from this source and compares the result with contract/WASM_SHA256 or
+  # token/WASM_SHA256 (build.sh --check) and with the code deployed on testnet, fetched from the chain
+  # in the same job (RPC view_code, scripts/compare-wasm.py). The account is the one in
+  # deploy/testnet.json: the `final` section once the launch has filled it, else `staging`. The
+  # deployed wasm was built on an Intel Mac (macOS 15, x86_64); build.sh pins the host triple cargo
+  # hashes, so every platform must rebuild it byte for byte, and a difference fails the run.
+  #
+  # Cost: until 2026-11-10 the repository is private, where a macOS minute counts as ten Linux
+  # minutes against the free quota. The two macOS legs therefore run only while the repository is
+  # public; a private repository rebuilds on Linux alone. (The matrix is built from the repository's
+  # visibility because a job-level `if:` cannot read the matrix, and a skipped-steps job would still
+  # start a macOS runner.)
+  #
+  # The cargo-near version is in CARGO_NEAR_RELEASE, not CARGO_NEAR_VERSION: cargo-near reads
+  # CARGO_NEAR_VERSION and writes it into the ABI embedded in the wasm (build.sh unsets it as well).
+  wasm:
+    name: Rebuild ${{ matrix.crate }} on ${{ matrix.os }} and compare it with the deployed code
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(github.event.repository.private && '["ubuntu-latest"]' || '["macos-15-intel", "ubuntu-latest", "macos-15"]') }}
+        crate: [contract, token]
+    env:
+      CARGO_NEAR_RELEASE: 0.22.0
+      CRATE: ${{ matrix.crate }}
+      # Every platform must match; "false" would only report a difference as a warning.
+      REQUIRED: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the toolchain pinned in ${{ matrix.crate }}/rust-toolchain.toml
+        working-directory: ${{ matrix.crate }}
+        run: |
+          if ! command -v rustup >/dev/null; then
+            curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+            export PATH="$HOME/.cargo/bin:$PATH"
+          fi
+          TOOLCHAIN=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+          rustup toolchain install "$TOOLCHAIN" --profile minimal --component rustfmt,clippy --target wasm32-unknown-unknown
+          rustc -vV
+      - name: Install cargo-near ${{ env.CARGO_NEAR_RELEASE }} (release binary, checksum pinned)
+        run: |
+          # sha256 of each archive of the cargo-near v0.22.0 release
+          case "$RUNNER_OS-$RUNNER_ARCH" in
+            macOS-X64)   NAME=cargo-near-x86_64-apple-darwin;      SUM=50899ccfc3492530ded7cebf191365b732ed29bfe62a1a13a661f126cff3ce65 ;;
+            Linux-X64)   NAME=cargo-near-x86_64-unknown-linux-gnu; SUM=9429064e30a427e96523f539cb255f3688d2345e5000d7d4e4873a8247247d1a ;;
+            macOS-ARM64) NAME=cargo-near-aarch64-apple-darwin;     SUM=55bd219c28c6996512a7c3836519f160b27b73a723f087634bf16f8a0bd48c8a ;;
+            *) echo "::error::no pinned cargo-near build for $RUNNER_OS-$RUNNER_ARCH"; exit 1 ;;
+          esac
+          curl --proto '=https' --tlsv1.2 -fsSL -o "$RUNNER_TEMP/$NAME.tar.gz" \
+            "https://github.com/near/cargo-near/releases/download/cargo-near-v$CARGO_NEAR_RELEASE/$NAME.tar.gz"
+          echo "$SUM  $RUNNER_TEMP/$NAME.tar.gz" | shasum -a 256 -c -
+          tar -xzf "$RUNNER_TEMP/$NAME.tar.gz" -C "$RUNNER_TEMP"
+          mkdir -p "$HOME/.cargo/bin"
+          install -m 0755 "$RUNNER_TEMP/$NAME/cargo-near" "$HOME/.cargo/bin/cargo-near"
+          cargo near --version
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }} -> target
+          shared-key: ${{ matrix.crate }}-wasm
+      - name: Rebuild, then compare with ${{ matrix.crate }}/WASM_SHA256 and with the code on chain
+        run: |
+          case "$CRATE" in contract) WASM_NAME=hat_tip.wasm ;; token) WASM_NAME=tusd.wasm ;; esac
+          echo "WASM_NAME=$WASM_NAME" >> "$GITHUB_ENV"
+          ACCOUNT=$(python3 -I -c 'import json, sys; d = json.load(open("deploy/testnet.json")); s = d.get("final") or d["staging"]; print(s[sys.argv[1]])' "$CRATE")
+          set +e
+          (cd "$CRATE" && ./build.sh --check) 2> build.log
+          build=$?
+          cat build.log
+          compare=2
+          if [ -f "$CRATE/target/near/$WASM_NAME" ]; then
+            python3 scripts/compare-wasm.py "$CRATE/target/near/$WASM_NAME" --account "$ACCOUNT" > compare.log 2>&1
+            compare=$?
+            cat compare.log
+          fi
+          set -e
+          built=$(sed -n 's/^sha256 \([0-9a-f]\{64\}\) .*/\1/p' build.log)
+          pin=$(sed -n 's/^host pin: //p' build.log)
+          case "$build/$compare" in
+            0/0) verdict=identical ;;
+            0/2) verdict=unread ;;
+            0/1|3/*) verdict=different ;;
+            *) verdict=failed ;;
+          esac
+          {
+            echo "### Rebuild of \`$CRATE\` on \`${{ matrix.os }}\`"
+            echo ""
+            echo "- toolchain: \`$(cd "$CRATE" && rustc --version)\`, \`$(cargo near --version)\`"
+            echo "- host pin: ${pin:-not reported}"
+            echo "- built here: \`${built:-none}\`"
+            echo "- $CRATE/WASM_SHA256: \`$(tr -d '[:space:]' < "$CRATE/WASM_SHA256")\`"
+            case $verdict in
+              identical) echo "- result: **byte-identical** to the code deployed on \`$ACCOUNT\`, read from the chain in this job." ;;
+              unread) echo "- result: **matches** $CRATE/WASM_SHA256; the chain could not be read in this job (see the log)." ;;
+              different) echo "- result: **DIFFERENT** from WASM_SHA256 or from the code deployed on \`$ACCOUNT\` (built on macOS x86_64); the comparison below shows where." ;;
+              failed) echo "- result: **build.sh failed** (exit $build), see the log." ;;
+            esac
+            if [ -f compare.log ]; then
+              echo ""
+              echo '```'
+              cat compare.log
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          case $verdict in
+            identical) ;;
+            unread) echo "::warning title=chain not read::compare-wasm.py could not fetch the code of $ACCOUNT; the hash matched $CRATE/WASM_SHA256" ;;
+            different)
+              if [ "$REQUIRED" = true ]; then
+                echo "::error title=$CRATE wasm differs on ${{ matrix.os }}::build.sh exit $build, compare-wasm.py exit $compare; see the job summary"
+                exit 1
+              fi
+              echo "::warning title=$CRATE wasm differs on ${{ matrix.os }}::built ${built:-none}; see the job summary" ;;
+            failed)
+              echo "::error title=build.sh failed::exit code $build, see the log above"
+              exit 1 ;;
+          esac
+      - name: Upload the wasm built here
+        if: always() && env.WASM_NAME != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.WASM_NAME }}-${{ matrix.os }}
+          path: ${{ matrix.crate }}/target/near/${{ env.WASM_NAME }}
+          if-no-files-found: ignore
