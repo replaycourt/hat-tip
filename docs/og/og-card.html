@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The link preview web/og.png, drawn in the page's own look. To redraw it, open this file in
+     headless Chrome at 1200 x 630 and take a screenshot of the viewport. -->
+<title>Hat Tip link preview</title>
+<style>
+@font-face {
+  font-family: 'Source Serif 4';
+  src: url('../../web/fonts/source-serif-4-latin.woff2') format('woff2');
+  font-weight: 400 700;
+}
+:root {
+  --paper: #f4efe6;
+  --paper-2: #ebe3d4;
+  --card: #fffdf9;
+  --ink: #1d2826;
+  --ink-2: #45524f;
+  --muted: #7b817b;
+  --line: #e3dac9;
+  --teal: #1f5c58;
+  --copper: #c4692c;
+  --copper-soft: #f5e1cf;
+  --t1: #3f7f57;
+  --t1-soft: #e2efe5;
+  --t2: #a87c12;
+  --t2-soft: #f6ecd0;
+  --t3: #94445a;
+  --t3-soft: #f4e1e6;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  display: grid;
+  grid-template-columns: 1fr 470px;
+  gap: 48px;
+  padding: 64px 70px 56px;
+  position: relative;
+}
+.left {
+  display: flex;
+  flex-direction: column;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.brand svg {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+}
+.word {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 104px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.claim {
+  margin: 34px 0 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 46px;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+}
+.claim em {
+  font-style: normal;
+  color: var(--copper);
+  background: linear-gradient(transparent 62%, var(--copper-soft) 62%);
+}
+.sub {
+  margin: 18px 0 0;
+  font-size: 22px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 20px;
+  color: var(--ink-2);
+}
+.try {
+  background: var(--teal);
+  color: #fff;
+  font-weight: 650;
+  padding: 10px 18px;
+  border-radius: 12px;
+}
+.right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.payout {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 7px solid var(--t1);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 2px rgba(60, 45, 20, 0.06), 0 10px 28px rgba(60, 45, 20, 0.08);
+}
+.payout.t2 {
+  border-left-color: var(--t2);
+  margin-left: 22px;
+}
+.payout.t3 {
+  border-left-color: var(--t3);
+  margin-left: 44px;
+}
+.av {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 24px;
+}
+.who b {
+  display: block;
+  font-size: 23px;
+}
+.pill {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 650;
+  padding: 4px 11px;
+  border-radius: 99px;
+  background: var(--t1-soft);
+  color: var(--t1);
+}
+.t2 .pill {
+  background: var(--t2-soft);
+  color: var(--t2);
+}
+.t3 .pill {
+  background: var(--t3-soft);
+  color: var(--t3);
+}
+.amt {
+  text-align: right;
+  font-size: 25px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.amt small {
+  display: block;
+  margin-top: 4px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--teal);
+}
+</style>
+</head>
+<body>
+<div class="left">
+  <div class="brand">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#1f5c58"/><g transform="rotate(-16 32 38)"><ellipse cx="32" cy="43.5" rx="22" ry="5.2" fill="#f6efe2"/><path d="M19.5 43c0-13 4.6-21.5 12.5-21.5S44.5 30 44.5 43z" fill="#f6efe2"/><path d="M20.4 35.2h23.2l.5 4.6H19.9z" fill="#d07a3a"/></g></svg>
+    <span class="word">Hat Tip</span>
+  </div>
+  <p class="claim">Peer thanks your DAO pays out, in <em>three tiers of trust</em>.</p>
+  <p class="sub">Each member hands out 100 thanks a round. The community’s Sputnik DAO pays by the thanks received.</p>
+  <div class="foot"><span class="try">Try it, no wallet</span><span>NEAR testnet · a Repair Café</span></div>
+</div>
+<div class="right">
+  <div class="payout t1"><span class="av" style="background:#c4692c">B</span><span class="who"><b>Ben</b><span class="pill">paid at once</span></span><span class="amt">23.15 tUSD<small>DAO #136</small></span></div>
+  <div class="payout t2"><span class="av" style="background:#3d6a8a">F</span><span class="who"><b>Finn</b><span class="pill">one council vote</span></span><span class="amt">18.96 tUSD<small>DAO #139</small></span></div>
+  <div class="payout t3"><span class="av" style="background:#85664a">A</span><span class="who"><b>Ana</b><span class="pill">council majority</span></span><span class="amt">44.47 tUSD<small>DAO #135</small></span></div>
+</div>
+</body>
+</html>
