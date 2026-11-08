@@ -1,6 +1,6 @@
 # Judging Hat Tip in five minutes
 
-Everything runs on NEAR testnet: the Hat Tip contract `thanks.hat-tip-stage.testnet`, the token `tusd.hat-tip-stage.testnet` and the Sputnik v2 DAO `hat-tip-stage.sputnikv2.testnet` <!-- FINAL: the final contract, token and DAO from deploy/testnet.json "final" -->. You need a browser for the page, and bash, `curl` and `python3` for the checks. No account, wallet or install. A round lasts 20 minutes <!-- FINAL: round_ms of the final deployment -->, so the path below shows the last close as a replay and your own thanks in the running round.
+Everything runs on NEAR testnet: the Hat Tip contract `thanks.hat-tip.testnet`, the token `tusd.hat-tip.testnet` and the Sputnik v2 DAO `hat-tip.sputnikv2.testnet` (launched 2026-11-08, [docs/testnet-launch.md](docs/testnet-launch.md)). You need a browser for the page, and bash, `curl` and `python3` for the checks. No account, wallet or install. A round lasts 20 minutes, so the path below shows the last close as a replay and your own thanks in the running round.
 
 ## 1. The five-minute path
 
@@ -23,28 +23,26 @@ scripts/judge-checks.sh
 
 It needs bash, curl and python3 (macOS or Linux), sends no transaction, reads everything at one final block, and prints PASS or FAIL for each check. Its exit code is the number of failed checks (65: the final deployment is not in `deploy/testnet.json` yet; it then says "not launched yet"). A read that gets no answer from FastNEAR or the dRPC fallback fails its check; it never passes.
 
-<!-- FINAL: replace the staging output below by the final run (expected: "All 14 checks passed.", checks 1 and 2 counted) -->
-
-Expected, today against the staging deployment (`scripts/judge-checks.sh --section staging`; staging keeps its keys on purpose, so checks 1 and 2 are INFO there and count on the final deployment):
+Expected (the final deployment, read 2026-11-08 at 11:24 UTC, after the first three rounds; `--section staging` checks the staging deployment, where checks 1 and 2 are INFO because staging keeps its keys):
 
 ```
-Hat Tip (staging): read-only checks of thanks.hat-tip-stage.testnet, tusd.hat-tip-stage.testnet and hat-tip-stage.sputnikv2.testnet at block 276650493
+Hat Tip (final): read-only checks of thanks.hat-tip.testnet, tusd.hat-tip.testnet and hat-tip.sputnikv2.testnet at block 276769163
 RPC: https://test.rpc.fastnear.com, fallback https://near-testnet.drpc.org
-INFO  1. thanks.hat-tip-stage.testnet access keys (staging keeps them): 1 access keys
-INFO  2. tusd.hat-tip-stage.testnet access keys (staging keeps them): 1 access keys
-PASS  3. code hash of thanks.hat-tip-stage.testnet = contract/WASM_SHA256
-PASS  4. code hash of tusd.hat-tip-stage.testnet = token/WASM_SHA256
+PASS  1. thanks.hat-tip.testnet has no access keys
+PASS  2. tusd.hat-tip.testnet has no access keys
+PASS  3. code hash of thanks.hat-tip.testnet = contract/WASM_SHA256
+PASS  4. code hash of tusd.hat-tip.testnet = token/WASM_SHA256
 PASS  5. DAO policy: the three tiers exactly (council of 3)
 PASS  6. DAO policy: no Everyone role
 PASS  7. DAO policy: call:AddProposal only in role thanks
 PASS  8. DAO factory auto-update off
-PASS  9. audit(): balanced, attributed, statuses, ids, carry (154 payouts)
-PASS  10. the last close is less than two rounds old (round 32)
-PASS  11. config(): dao = hat-tip-stage.sputnikv2.testnet, token = tusd.hat-tip-stage.testnet
-PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (39 payouts and DAO #115-#154, 39 by the contract)
-PASS  13. relay keys only call act, close_round, pay, check_payout, sync (10 relay keys)
+PASS  9. audit(): balanced, attributed, statuses, ids, carry (16 payouts)
+PASS  10. the last close is less than two rounds old (round 4)
+PASS  11. config(): dao = hat-tip.sputnikv2.testnet, token = tusd.hat-tip.testnet
+PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (16 payouts and DAO #0-#16, 16 by the contract)
+PASS  13. relay keys only call act, close_round, pay, check_payout, sync (11 relay keys)
 PASS  14. the DAO's code is one the factory sputnikv2.testnet publishes (version 3.31)
-All 12 checks passed.
+All 14 checks passed.
 ```
 
 | Check | What it shows |
@@ -66,33 +64,33 @@ The same checks by hand, as curl one-liners: [Check it without an account](READM
 
 ## 3. Where each claim lives
 
-Line numbers are at the deployed source (`contract/WASM_SHA256` `82adfa55…baf0`). <!-- FINAL: re-check the line numbers against the final build -->
+Line numbers are at the deployed source (`contract/WASM_SHA256` `91e5f94a…4ab8`, the final build).
 
 | Claim | Code | Tests | On chain (staging tx) |
 |---|---|---|---|
-| No owner, admin, upgrade or withdraw method | `new` is `#[init] #[private]`, `contract/src/lib.rs:74-76`; the export list, `contract/build.sh:118` and `token/build.sh:117` | `contract/tests/init.rs` | checks 1-4 |
-| Every parameter fixed at init and checked | `Config::validate`, `contract/src/config.rs:149`; `config()`, `contract/src/views.rs:164` | `every_parameter_is_checked`, `the_launch_parameters_of_sim_params_json_are_accepted` in `contract/tests/init.rs` | check 11 |
-| The hard rules of giving (100 thanks, cap 25, 10 receivers, no self, members and seated guests only, the clock's round) | `allocate`, `contract/src/lib.rs:105`; `member_gate`, `:200` | `every_hard_rule_refuses`, `membership_comes_from_the_last_sync` in `contract/tests/allocate.rs` | |
-| Guests: signature, nonce, seats, weight and both caps | `act`, `contract/src/lib.rs:147`; `signing_message`, `:66`; `math::count`, `contract/src/math.rs:74` | `contract/tests/guests.rs` (9 tests) | join `8khdJg8Xr9NcJ8yLoGXhyERNvDsLPM2qvBmZzZQb4oKN`, allocate `BDz2iCfGtrkJPss6jfoH7Ev6XGxEJR4xRR21HNznJwY7` |
-| Counting: reciprocity, breadth, guests' caps, every point attributed to a giver | `math::count`, `contract/src/math.rs:74`; the `points` event, `contract/src/close.rs:495` | `contract/tests/counting.rs`; `src/math.rs` unit tests | close `EVJtH5aZ56bc4gZzYmsZwUznLvQcAtGmKYZbYnAp2tHk` |
-| The contract closes rounds exactly like the simulation | `close_counted`, `contract/src/close.rs:289`; the model `Hat` in `sim/hat_tip_sim.py` | `contract/tests/golden.rs` (6 vectors, 61 rounds); `web/test/golden.test.mjs` | |
-| Tiers from the reputation before the round; the 80 % round cap | `math::limits`, `math::tier`, `math::round_cap`, `contract/src/math.rs:227`, `:239`, `:252`; applied in `contract/src/close.rs:352-376` | `tiers_come_from_reputation_before_the_round`, `the_round_cap_moves_the_largest_auto_payouts_to_one_council_vote`, `a_newcomer_with_steady_help_reaches_tier_1` in `contract/tests/reputation.rs` | |
-| Tier 1: filed and approved by the contract, paid in the same chain | `pay`, `contract/src/pay.rs:70`; `file`, `:292`; `on_filed`, `:141`; the proposal kinds, `contract/src/dao.rs:122` | `tier_1_is_approved_by_the_contract_and_paid_in_the_filing_chain` in `contract/tests/dao.rs` | `G4gSufPJgvmM2EKSecj8kj4njgg3n2hXqPChhGmPZ6Vm` |
+| No owner, admin, upgrade or withdraw method | `new` is `#[init] #[private]`, `contract/src/lib.rs:87-89`; the export list, `contract/build.sh:118` and `token/build.sh:117` | `contract/tests/init.rs` | checks 1-4 |
+| Every parameter fixed at init and checked | `Config::validate`, `contract/src/config.rs:166`; `config()`, `contract/src/views.rs:168` | `every_parameter_is_checked`, `the_launch_parameters_of_sim_params_json_are_accepted` in `contract/tests/init.rs` | check 11 |
+| The hard rules of giving (100 thanks, cap 25, 10 receivers, no self, members and seated guests only, the clock's round) | `allocate`, `contract/src/lib.rs:119`; `member_gate`, `:214` | `every_hard_rule_refuses`, `membership_comes_from_the_last_sync` in `contract/tests/allocate.rs` | |
+| Guests: signature, nonce, seats, weight and both caps | `act`, `contract/src/lib.rs:161`; `signing_message`, `:79`; `math::count`, `contract/src/math.rs:74` | `contract/tests/guests.rs` (9 tests) | join `8khdJg8Xr9NcJ8yLoGXhyERNvDsLPM2qvBmZzZQb4oKN`, allocate `BDz2iCfGtrkJPss6jfoH7Ev6XGxEJR4xRR21HNznJwY7` |
+| Counting: reciprocity, breadth, guests' caps, every point attributed to a giver | `math::count`, `contract/src/math.rs:74`; the `points` event, `contract/src/close.rs:528` | `contract/tests/counting.rs`; `src/math.rs` unit tests | close `EVJtH5aZ56bc4gZzYmsZwUznLvQcAtGmKYZbYnAp2tHk` |
+| The contract closes rounds exactly like the simulation | `close_counted`, `contract/src/close.rs:314`; the model `Hat` in `sim/hat_tip_sim.py` | `contract/tests/golden.rs` (6 vectors, 61 rounds); `web/test/golden.test.mjs` | |
+| Tiers from the reputation before the round; the 80 % round cap | `math::limits`, `math::tier`, `math::round_cap`, `contract/src/math.rs:227`, `:239`, `:252`; applied in `contract/src/close.rs:383-407` | `tiers_come_from_reputation_before_the_round`, `the_round_cap_moves_the_largest_auto_payouts_to_one_council_vote`, `a_newcomer_with_steady_help_reaches_tier_1` in `contract/tests/reputation.rs` | |
+| Tier 1: filed and approved by the contract, paid in the same chain | `pay`, `contract/src/pay.rs:64`; `file`, `:319`; `on_filed`, `:138`; the proposal kinds, `contract/src/dao.rs:122` | `tier_1_is_approved_by_the_contract_and_paid_in_the_filing_chain` in `contract/tests/dao.rs` | `G4gSufPJgvmM2EKSecj8kj4njgg3n2hXqPChhGmPZ6Vm` |
 | Tier 2: one council vote approves or vetoes | as above (`FunctionCall ft_transfer`) | `tier_2_is_a_function_call_that_one_council_vote_approves_or_rejects` | approve `BXaba7A14xDfBjzctzLe1SoiAtuhn6PuBffwRWbzK1VX`, reject `2D2LPmDd4HL13F6UeA4zydKbmfq3AcqGH3vbjNEgb4SE` |
 | Tier 3: the council majority | as above (`Transfer`, no vote by the contract) | `tier_3_needs_the_council_majority_and_a_removal_strikes` | votes `GkVrTavePMekFEqWesJUq1QQm9YJTgda4FGgFqCHcPsM`, `8eMiTd69e5svSE2ubw1bTNRgS1Y3PvbUF2FmkW97S5F3` |
-| Outcomes recorded from the DAO; a rejection or removal is a strike | `check_payout`, `contract/src/pay.rs:194`; `on_checked`, `:217`; the strike, `:361-368` | `a_rejected_payout_strikes_the_rounds_points_decayed` in `contract/tests/reputation.rs`; `contract/tests/dao.rs` | rejected and struck `BYs7RPocVYTiWd6LewYDq2rVPgXfB8DSagMU8haHCtf8`, removed and struck `ARApvmDHctxbtLSfYfhL28HCm86QQaVQSmFNMB5bVpGC` |
-| Expired proposals are finalized (bond back), failed transfers retried once | `on_checked`, `contract/src/pay.rs:217` | `an_expired_proposal_is_finalized_and_recorded_on_the_next_check`, `a_failed_transfer_is_retried_once_after_registering_the_receiver` | |
+| Outcomes recorded from the DAO; a rejection or removal is a strike | `check_payout`, `contract/src/pay.rs:191`; `on_checked`, `:219`; the strike, `:398-404` | `a_rejected_payout_strikes_the_rounds_points_decayed` in `contract/tests/reputation.rs`; `contract/tests/dao.rs` | rejected and struck `BYs7RPocVYTiWd6LewYDq2rVPgXfB8DSagMU8haHCtf8`, removed and struck `ARApvmDHctxbtLSfYfhL28HCm86QQaVQSmFNMB5bVpGC` |
+| Expired proposals are finalized (bond back), failed transfers retried once | `on_checked`, `contract/src/pay.rs:219` | `an_expired_proposal_is_finalized_and_recorded_on_the_next_check`, `a_failed_transfer_is_retried_once_after_registering_the_receiver` | |
 | The DAO can stop the contract: a role without the contract or a permission pauses it | `parse_policy`, `contract/src/dao.rs:72`; `on_policy`, `contract/src/close.rs:40` | `a_dao_role_without_the_contract_or_a_permission_pauses_it`, `a_failing_add_proposal_pauses_until_a_sync_sees_the_dao_fit_again` | |
-| Carry, lapse, budget capped by the DAO, dust stays in the DAO | `close_counted`, `contract/src/close.rs:289`; `lapse_carries`, `:265` | `contract/tests/carry.rs` | |
-| The books add up; the events alone rebuild every reputation | `audit`, `contract/src/views.rs:289`; `contract/src/events.rs` | `many_random_rounds_keep_the_books` in `contract/tests/invariant.rs` (600 random rounds) | check 9; staging: every reputation rebuilt from the events of 744 transactions |
-| Gas: the largest round closes in one receipt; every chain fits its gas | `contract/src/config.rs:53-73`; `contract/src/pay.rs:23-52` | `contract/tests/gas.rs` | burnt gas per call: [docs/testnet-stage.md](docs/testnet-stage.md#gas-measured) |
+| Carry, lapse, budget capped by the DAO, dust stays in the DAO | `close_counted`, `contract/src/close.rs:314`; `lapse_carries`, `:290` | `contract/tests/carry.rs` | |
+| The books add up; the events alone rebuild every reputation | `audit`, `contract/src/views.rs:298`; `contract/src/events.rs` | `many_random_rounds_keep_the_books` in `contract/tests/invariant.rs` (600 random rounds) | check 9; staging: every reputation rebuilt from the events of 744 transactions |
+| Gas: the largest round closes in one receipt; every chain fits its gas | `contract/src/config.rs:69-90`; `contract/src/pay.rs:27-56` | `contract/tests/gas.rs` | burnt gas per call: [docs/testnet-stage.md](docs/testnet-stage.md#gas-measured) |
 | The three tiers are the DAO's own policy | the policy in [DESIGN.md](DESIGN.md#the-three-tiers-in-the-dao); created and compared by `scripts/create-dao.mjs` | the tier probe on testnet, [docs/testnet-probe.md](docs/testnet-probe.md) | checks 5-8, 14 |
 | tUSD: fixed supply to the DAO, no mint | `new`, `token/src/lib.rs:47` | `token/tests/token.rs` | check 2, 4 |
-| The page counts like the contract and checks what it shows | `countRound`, `web/js/logic.js:101`; `policyReport`, `web/js/logic.js:594`; `proofHtml`, `web/js/ui.js:313` | `web/test/golden.test.mjs`, `web/test/logic.test.mjs` | |
+| The page counts like the contract and checks what it shows | `countRound`, `web/js/logic.js:101`; `policyReport`, `web/js/logic.js:614`; `proofHtml`, `web/js/ui.js:313` | `web/test/golden.test.mjs`, `web/test/logic.test.mjs` | |
 | House members: labelled, published strategies, same rules | `scripts/house.mjs`; `house` in `sim/params.json`; `.github/workflows/house.yml` | the staging run | every house transaction in `docs/testnet-stage.json` |
 | The parameters were picked by a pre-registered rule | [docs/SIMULATION.md](docs/SIMULATION.md), `sim/hat_tip_sim.py` | `python3 sim/hat_tip_sim.py --check` | |
 
-More evidence transactions (each path once) are in `deploy/testnet.json`, `staging.evidence_txs`; the whole staging run, transaction by transaction, in `docs/testnet-stage.json`. <!-- FINAL: add the final deployment's lock tx and a tier-1, tier-2 and tier-3 payout of the final DAO -->
+More evidence transactions (each path once) are in `deploy/testnet.json`, `staging.evidence_txs`; the whole staging run, transaction by transaction, in `docs/testnet-stage.json`. On the final deployment ([docs/testnet-launch.md](docs/testnet-launch.md)): the keys were deleted by `3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv` (contract) and `CLaqUhBJMMfWzeRoyCmmE42qGpSArK3inASpnn3LzDED` (tUSD); round 1's tier-3 payout to ana (DAO #1) was approved by `3EkQL42pWZKqxb8SsEDtf9LmLYBjrHJ1eqZdEF9HAoGi` and `CEsspTSr87WsUAfQoTgrs39f9rUPLx57LMBFUL5LtUDC` and booked paid by `Fgpi5zoMEXy88sbGbCrizDyun6gZSrYCvhnet3L4K86r`; its tier-2 payout to dina (DAO #4) by one vote `HWqF8TwFMpYpBou1yYogmphbxQmogxkvpjtA8bRrRAu5`, booked paid by `CYwpLHZeKczgfuRUidmQLVzfrTwqBmtK6mGv1YGjGc6c` after `E77Bg8Wt8kSxDWKKkte4K1Y5BYK4PHAyaLmb9LUYXCHh` had noted the first `Approved`. <!-- FINAL: a tier-1 payout of the final DAO (tier 1 needs 200 thanks of reputation; on staging the first came in rounds 5 and 11) -->
 
 ## 4. Run the tests
 
