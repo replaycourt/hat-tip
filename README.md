@@ -9,7 +9,7 @@ A community that keeps its money in a Sputnik DAO pays the people who helped, in
 3. **Every payout is a proposal in the community's own DAO**, and the receiver's record decides how much of it leaves without a human: small payouts to members with a record pass at once (tier 1), mid-size ones need one council member's vote (tier 2), large ones and most first payouts need a council majority (tier 3). The three tiers are written into the DAO's own policy, where anyone can read them.
 4. **The rules live in one NEAR contract with no access keys.** The DAO keeps the money, the member list and every approval; the contract only files proposals through a DAO role the council can remove with one vote.
 
-**Try it, no wallet:** https://replaycourt.github.io/hat-tip/web/ <!-- FINAL: confirm the Pages URL once the repository is public --> (testnet; tUSD is a test token with no value; tap *Give your 100 thanks*; a round lasts 20 minutes) · **Video:** <!-- FINAL: link the video (and the X post) --> · **Judging:** [JUDGE.md](JUDGE.md), a five-minute path, and `scripts/judge-checks.sh`, 14 read-only checks of the live deployment.
+**Try it, no wallet:** https://replaycourt.github.io/hat-tip/web/ (testnet; tUSD is a test token with no value; tap *Give your 100 thanks*; a round lasts 20 minutes) · **Video, 90 s:** https://x.com/replaycourt/status/2119435604131795220 · **Judging:** [JUDGE.md](JUDGE.md), a five-minute path, and `scripts/judge-checks.sh`, 14 read-only checks of the live deployment.
 
 | You can check | How |
 |---|---|
@@ -20,7 +20,13 @@ A community that keeps its money in a Sputnik DAO pays the people who helped, in
 | It ran on the real chain | staging run: 28 rounds, 154 payouts in all three tiers, 6 council rejections with their strikes ([docs/testnet-stage.md](docs/testnet-stage.md)) |
 | What the rules do not stop | [Honest limits](#honest-limits): rings, one-way thanks, a guest farm, a colluding council |
 
-<!-- FINAL: screenshots from docs/shots/ (round board, the three payout columns, a member's record, the proof drawer) -->
+| The round board | The payouts of the last round, by tier |
+|---|---|
+| ![The Repair Café's round: the countdown, the budget, what the DAO holds, a card per member with this round's note and thanks](docs/shots/final-desktop-round.png) | ![Three columns: paid automatically, one council vote, a council majority; each card with its DAO proposal](docs/shots/final-desktop-payouts.png) |
+| **A member's record** | **The proof drawer** |
+| ![A member's record: reputation over the rounds, each round's points with their givers, each payout with tier, DAO proposal and status](docs/shots/final-desktop-record.png) | ![Proof: the contract and the token with 0 access keys, the lock transaction, code hashes against WASM_SHA256, the DAO policy checks](docs/shots/final-desktop-proof.png) |
+
+On a phone: [the round](docs/shots/final-phone-round.png), [the payouts](docs/shots/final-phone-payouts.png). All screenshots are of the live page on the final deployment.
 
 ## The problem
 
@@ -30,15 +36,16 @@ Hat Tip answers with peer recognition: the people who were helped say who helped
 
 ## How to use it
 
-On the page (https://replaycourt.github.io/hat-tip/web/, or locally, see [Run it yourself](#run-it-yourself)): <!-- FINAL: walk these steps on the live page and match the wording -->
+On the page (https://replaycourt.github.io/hat-tip/web/, or locally, see [Run it yourself](#run-it-yourself)):
 
-1. **Open the page.** See the *Repair Café*, a demo community: *Round N* with the countdown *until the close*, the round's *Budget*, what *The DAO holds*, and a card for every member with this round's note and the thanks received so far. House members carry a visible *house bot* label with their published strategy, including "demo: colluding pair" and "demo: free rider".
-2. **Look under the board: *Payouts of round N*.** See last round's payouts in three columns: *Paid automatically*, *Needs one council vote*, *Needs a council majority*, each with its DAO proposal number and votes. Tap a number and see the proposal as the DAO stores it: kind, receiver, amount, votes.
-3. **Tap *Give your 100 thanks*.** No wallet prompt: your browser makes an ed25519 key and takes one of six guest seats for this round. Tap *+10* on the people whose work you value, and see every card's payout preview and tier move once members have given this round: guests together steer at most 20 % of a round, so before any member has given, a guest's thanks count 0 and the card says so. On the colluding pair a line says why counted thanks differ from given ones.
-4. **Add a note and tap *Send my thanks*.** See the transaction under *Proof*. A guest's thanks count half, and all guests together steer at most 20 % of a round. The house members thank guests who wrote a note and gave thanks (each house member gives up to 5 thanks to at most two such guests).
-5. **Wait for the close, then tap *Replay the close*.** See the round counted: thanks become points, the budget splits, proposals are filed in the DAO, tier 1 is paid at once by the contract's own vote. If members thanked you, your payout appears under *Needs one council vote* (a guest is never in tier 1); when a house council member votes in the DAO, the tUSD shows in your browser account.
-6. **Open a member.** See the reputation over the rounds, every round's points with the givers behind them (given → counted), every payout with its tier, DAO proposal and status, and the auto and co-sign limits the next close will apply.
-7. **Open *Rules*, then *Proof*.** *Rules*: the contract's `config()` and the three tiers as the DAO's `get_policy` states them. *Proof*: the contract and the token with 0 access keys, their code hashes against `WASM_SHA256` in this repository, the DAO policy checks, `audit()`, the relay keys and the methods they may call, and every transaction this tab sent.
+1. **Open the page.** See the *Repair Café*, a demo community: *Round N* with the countdown *until round N closes* (*a round lasts 20 minutes*), the round's *Budget*, what *The DAO holds*, *Thanks given* and *Guest seats*, and under *This round at the café* a card for every member with this round's note, the thanks received so far and what they would be paid if the round closed now. House members carry a visible label with their published strategy: *house bot · honest helper*, *house bot · demo: colluding pair*, *house bot · demo: free rider*.
+2. **Look under the board: *Payouts of round N*,** the last round that paid. Three columns, *Paid automatically*, *Needs one council vote*, *Needs a council majority*; each card shows the amount, where it stands (*Paid at once*, *Paid · approved by Council A and C*, *Rejected by the council · strike*) and its DAO proposal number. Tap the number and see the proposal read live from the DAO: status, kind, amount, receiver, votes (a tier-1 payout's only vote is the contract's own), and the proposal as the DAO returns it.
+3. **Tap *Give your 100 thanks*.** No wallet prompt: your browser makes an ed25519 key and takes one of six guest seats for this round. Tap *+10* (or drag the slider) on the people whose work you value, and see every card's payout preview and tier move once members have given this round: guests together steer at most 20 % of a round, so before any member has given, a guest's thanks count 0 and the card says *Guest thanks count once members have given*. On the colluding pair a line says why counted thanks differ from given ones (*Thanked each other 25 with Gus: counted 6.2 each way.*).
+4. **Add a note and tap *Send my thanks*.** The page says *Your thanks are in. They count when round N closes.*, and the transaction is listed under *Proof*, *Your transactions*. A guest's thanks count half, and all guests together steer at most 20 % of a round. The house members thank guests who wrote a note and gave thanks (each house member gives up to 5 thanks to at most two such guests).
+5. **Wait for the close.** With the page open, the close plays in five steps: *Round closed*, *Counted*, *Split*, *Filed in the DAO*, *Approved*; *Replay the close* plays it again. Tier 1 is paid at once by the contract's own vote. If members thanked you, your payout appears under *Needs one council vote* (a guest is never in tier 1); when a house council member votes in the DAO, your card says *Your browser account holds … tUSD*.
+6. **Open a member** (*rep … ›* on a card). The *Record*: reputation, auto and co-sign limits for the next close, the reputation over the rounds, every round's points with the givers behind them (given → counted), and every payout with its tier, DAO proposal and status.
+7. **Play the simulation** under *The same thanks, counted twice*: the house community of the simulation over 36 rounds, every thanks counted plainly and with the rules, side by side; labelled as a simulation of the contract's own arithmetic, not the live café.
+8. **Open *Rules*, then *Proof*.** *Rules* jumps to *How it works*: the contract's `config()` in words, every parameter, and the three tiers as the DAO's `get_policy` states them. *Proof*: the contract and the token with *0 access keys*, the transaction that locked the contract, their code hashes against `WASM_SHA256` in this repository, the DAO policy checks, `audit()`, the relay keys and the methods they may call, and every transaction this tab sent.
 
 ## The mechanic
 
@@ -197,13 +204,15 @@ It needs Ed25519 in WebCrypto (Chrome 137+, Safari 17+, Firefox 130+) and has a 
 **Tests.**
 
 ```sh
-node --test 'web/test/*.test.mjs'      # 73 tests: counting port vs the golden vectors, giving, signing, policy checks, RPC; about 6 s
-(cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build about 13 minutes
-(cd token && cargo test)              # 6 tests; cold build about 11 minutes
-python3 sim/hat_tip_sim.py --check    # the simulation reproduces the golden vectors, the replay and the launch parameters; about 2 s
-scripts/judge-checks.sh               # 14 read-only checks of the live deployment; --section staging for staging
+node --test 'web/test/*.test.mjs'      # 82 tests: counting port vs the golden vectors, preview, giving, signing, policy checks, RPC, mock round, replay data; about 6 s
+node --test 'scripts/test/*.test.mjs'  # 12 tests: the house council's rule and the keeper's window; under 1 s
+(cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build about 11 minutes, tests about 2 s
+(cd token && cargo test)              # 6 tests; cold build about 14 minutes
+python3 sim/hat_tip_sim.py --check    # the simulation reproduces the golden vectors, the replay and the launch parameters; about 1.5 s
+scripts/judge-checks.sh               # 14 read-only checks of the live deployment, about 9 s; --section staging for staging
 ```
-<!-- FINAL: re-measure the test counts and times before submission (JUDGE.md, "Run the tests", has the same table) -->
+
+Measured 2026-11-08 on a 4-core Intel Mac (macOS 15), cold builds from an empty target directory.
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the tests on every push and rebuilds both wasm files, comparing them with `WASM_SHA256` and with the code on chain; on Linux, and once the repository is public also on an Intel and an arm64 Mac. Node 20 or newer, no install; Rust from `contract/rust-toolchain.toml` (1.95.0).
 
