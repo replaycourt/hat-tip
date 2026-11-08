@@ -74,7 +74,7 @@ test('the colluding pair earns less with the rules, as the simulation itself say
   assert.ok(g.pair.plain > g.pair.work, 'plain counting pays the pair more than its work')
   const lines = summary(f)
   assert.deepEqual(lines.map((l) => l.kind), ['pair', 'honest', 'free_rider'])
-  assert.match(lines[0].text, /^The colluding pair: \d+\.\d % of all payouts with plain counting, \d+\.\d % with the rules, for \d+\.\d % of the work\.$/)
+  assert.match(lines[0].text, /^The colluding pair: \d+\.\d % of all payouts with plain counting, \d+\.\d % with the rules, for \d+\.\d % of the work\.$/)
 })
 
 test('the bigger communities: colluders keep less with the rules; the axis holds zero', () => {
@@ -94,7 +94,7 @@ test('the bigger communities: colluders keep less with the rules; the axis holds
 })
 
 test('words and numbers of the replay', () => {
-  assert.equal(rulesText(REPLAY.rules), 'at most 25 thanks to one person; mutual thanks count 25 %; fewer than 3 givers count 25 %; guests steer at most 20 % and receive at most 8 % of a round')
+  assert.equal(rulesText(REPLAY.rules), 'at most 25 thanks to one person; mutual thanks count 25\u00a0%; fewer than 3 givers count 25\u00a0%; guests steer at most 20\u00a0% and receive at most 8\u00a0% of a round')
   assert.equal(fmtPts(3.46), '+3.5')
   assert.equal(fmtPts(-0.7), '−0.7')
   assert.equal(fmtPts(0.01), '±0.0')

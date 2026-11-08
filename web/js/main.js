@@ -41,8 +41,11 @@ const S = {
   story: null,
   fresh: new Set(), // payout ids that just changed state
   helped: new Set(),
+  seated: new Set(), // rounds this browser's guest was seen seated in (for the guest's own result)
   phase: 'boot',
 }
+const SEAT_STORE = MOCK ? 'hattip:mock-seats:v1' : 'hattip:seats:v1'
+let baseTitle = document.title
 let client
 let queue
 const cards = new Map()
@@ -52,6 +55,7 @@ const cards = new Map()
 async function boot() {
   wire()
   U.setText('community', COMMUNITY)
+  U.setText('kicker-community', COMMUNITY)
   U.$('link-repo').href = REPO
   if (MOCK) {
     const { MockClient } = await import('./mock.js')
@@ -59,7 +63,9 @@ async function boot() {
     const at = clamp(Number(params.get('at') ?? 0.6) || 0, 0, 0.95)
     client = new MockClient({ roundMs: sec * 1000, at, seed: Number(params.get('seed')) || 11 })
     U.$('mock-badge').hidden = false
+    U.setText('kicker-where', 'made-up data in this tab')
     document.title = 'MOCK · ' + document.title
+    baseTitle = document.title
   } else if (!DEPLOYMENT.contract) {
     return notLive()
   } else {
@@ -73,6 +79,7 @@ async function boot() {
     if (S.identity) {
       S.me = S.identity.account
       client.setIdentity(S.identity).catch(() => null)
+      loadSeats()
     }
   }
   try {
@@ -85,6 +92,12 @@ async function boot() {
   await Promise.all([loadPolicy(), poll({ first: true })])
   renderRules()
   ledgerWhenSeen()
+  // the ledger also names the last payout of a tier this round left empty: read it soon, not first
+  setTimeout(() => {
+    if (S.ledger.length || !S.last || [1, 2, 3].every((t) => S.lastPayouts.some((p) => Number(p.tier) === t))) return
+    S.ledgerWanted = true
+    loadLedger()
+  }, 4000)
   setInterval(tick, 250)
   document.addEventListener('visibilitychange', () => !document.hidden && schedule(200))
 }
@@ -123,7 +136,8 @@ function wire() {
     recompute()
     render()
   })
-  U.$('btn-replay').addEventListener('click', () => S.last && playStory(storyOf(S.last, S.lastPayouts), true))
+  U.$('btn-replay').addEventListener('click', () => playStory(true))
+  U.$('btn-story-replay').addEventListener('click', () => playStory(true))
   U.$('btn-older').addEventListener('click', () => loadLedger(true))
   U.$('btn-replay-open').addEventListener('click', openReplay)
   U.$('drawer-close').addEventListener('click', U.closeDrawer)
@@ -143,7 +157,7 @@ function wire() {
     const acc = e.target.closest('[data-acc]').dataset.acc
     const { draft, refused } = L.setGift(S.cfg, S.draft, acc, Number(e.target.value))
     S.draft = draft
-    if (refused) hint(`At most: ${refused}.`)
+    if (refused) hint(`${capFirst(refused)}.`)
     if ((S.draft.get(acc) ?? 0) !== Number(e.target.value)) e.target.value = String(S.draft.get(acc) ?? 0)
     recompute()
     renderBoard()
@@ -183,8 +197,8 @@ async function poll({ first = false } = {}) {
       S.lastClosed = lastClosed
       await Promise.all([loadLast(lastClosed), loadPeople()])
       if (closedNow) {
-        const closed = await client.round(lastClosed).catch(() => null)
-        if (closed?.gifts?.length) playStory(storyOf(closed, closed.n === S.last?.n ? S.lastPayouts : []))
+        // the newest round with payouts just closed: its close plays in the strip under the hero
+        if (S.last?.n === lastClosed && S.last.gifts?.length) playStory()
         if (S.ledgerWanted) loadLedger()
         loadPolicy()
       }
@@ -193,6 +207,7 @@ async function poll({ first = false } = {}) {
     }
     // the visitor's own record and tUSD: every third poll, or right after something happened
     S.polls = (S.polls ?? 0) + 1
+    if (S.me && (S.open?.seats ?? []).includes(S.me)) rememberSeat(S.open.n)
     const myOpen = S.myRecord?.payouts?.some((p) => !L.isFinal(p.status))
     if (S.me && (first || closedNow || S.meDirty || myOpen || S.polls % 3 === 0)) {
       S.meDirty = false
@@ -304,12 +319,23 @@ const name = (a) => L.displayName(a, S.me)
 
 function render() {
   renderHero()
+  renderStory()
   renderBoard()
   renderPayouts()
   renderYou()
   renderTray()
   if (U.drawerIs('proof')) openProof()
 }
+
+const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1)
+const proposalOf = (p) => L.proposalInfo(S.proposals.get(Number(p.dao_proposal)))
+const statusOf = (p) => L.currentStatus(p, proposalOf(p))
+const tier3Votes = () => S.report?.tiers.find((t) => t.tier === 3)?.votes ?? 2
+/** The share of the open round gone, 0..1. */
+const roundFraction = () => (S.state && S.cfg ? clamp(1 - (Number(S.state.round_ends_ms) - Date.now()) / Number(S.cfg.round_ms), 0, 1) : 0)
+// the house members give between these shares of a round (scripts/house.mjs; the mock plays faster)
+const HOUSE_WINDOW = MOCK ? { from: 0.1, to: 0.9 } : { from: 0.5, to: 0.8 }
+const membersGave = () => (S.open?.gifts ?? []).some((g) => !L.isImplicit(g[0]))
 
 function renderHero() {
   const st = S.state
@@ -320,7 +346,7 @@ function renderHero() {
   U.setText('dao-balance', U.tusd(S.balance))
   const given = (S.open?.gifts ?? []).reduce((a, g) => a + Number(g[2]), 0)
   const givers = new Set((S.open?.gifts ?? []).map((g) => g[0])).size
-  U.setText('given-so-far', `${L.fmtInt(given)} from ${givers}`)
+  U.setText('given-so-far', givers ? `${L.fmtInt(given)} from ${givers} giver${givers === 1 ? '' : 's'}` : 'none yet')
   U.setText('seats', `${S.open?.seats?.length ?? 0} of ${S.cfg.guest_seats} taken`)
   const btn = U.$('btn-give')
   const mine = myGifts()
@@ -328,7 +354,25 @@ function renderHero() {
   U.setText('give-title', S.giving ? 'Giving…' : mine.length ? 'Change your thanks' : 'Give your 100 thanks')
   U.setText('give-sub', !S.canSign ? 'this browser cannot make a key (Ed25519)' : mine.length ? `you gave ${mine.reduce((a, g) => a + g[1], 0)} this round` : 'no wallet · your browser makes a key and takes a guest seat')
   btn.classList.toggle('done', mine.length > 0)
+  // when to join: only before the visitor has given this round
+  const when = U.$('give-when')
+  const timing = L.guestTiming(roundFraction(), { ...HOUSE_WINDOW, membersGave: membersGave() })
+  when.hidden = !S.canSign || mine.length > 0 || S.giving
+  U.setText(when, timing.text)
+  when.className = `give-when when-${timing.phase}`
+  renderTiles()
   tick()
+}
+
+/** The three tier tiles under the hero, with the last round that paid. */
+function renderTiles() {
+  U.setText('tile-3-rule', `large or first payouts: a normal DAO proposal, ${tier3Votes()} council votes`)
+  if (!S.last) return
+  const tally = L.tierTally(S.lastPayouts, statusOf)
+  for (const t of [1, 2, 3]) {
+    const x = tally[t]
+    U.setText(`tile-${t}`, x.n ? `Round ${S.last.n}: ${x.n} · ${U.tusd(x.amount)}` : `Round ${S.last.n}: none`)
+  }
 }
 
 function tick() {
@@ -338,13 +382,17 @@ function tick() {
   const end = Number(st.round_ends_ms)
   const left = end - now
   const roundMs = Number(S.cfg.round_ms)
-  U.setText('countdown', left > 0 ? L.fmtCountdown(left) : '0:00')
+  const cd = left > 0 ? L.fmtCountdown(left) : '0:00'
+  U.setText('countdown', cd)
   U.setText('until', left > 0 ? `until round ${st.round} closes` : 'closing: the DAO is being asked…')
   U.setText('round-state', left > 0 ? `a round lasts ${L.fmtDuration(roundMs)}` : 'closing')
   const pct = clamp(100 - (left / roundMs) * 100, 0, 100)
   U.$('progress-fill').style.width = `${pct}%`
   U.$('progress').setAttribute('aria-valuenow', String(Math.round(pct)))
   document.body.classList.toggle('closing', left <= 0)
+  // a tab in the background shows the countdown in its title
+  const title = document.hidden && left > 0 ? `${cd} to the close · Hat Tip` : baseTitle
+  if (document.title !== title) document.title = title
   if (left <= 0 && now - (S.lastCloseKick ?? 0) > 1500) {
     S.lastCloseKick = now
     schedule(400)
@@ -356,9 +404,12 @@ function renderBoard() {
   const pv = S.preview
   if (!st || !pv) return
   const host = U.$('cards')
+  for (const sk of host.querySelectorAll('.skeleton')) sk.remove()
   const members = [...L.namedMembers(st.members)].sort((a, b) => L.cmp(name(a), name(b)))
   for (const [a, el] of cards) if (!members.includes(a)) (el.remove(), cards.delete(a))
   const notes = new Map(S.open?.notes ?? [])
+  const lastNotes = new Map(S.last?.notes ?? [])
+  const lastPay = new Map(S.lastPayouts.map((p) => [p.receiver, p]))
   const rows = pv.count.rows
   const givenTo = new Map()
   const giversTo = new Map()
@@ -372,16 +423,18 @@ function renderBoard() {
   members.forEach((a, i) => {
     let el = cards.get(a)
     if (!el) {
-      el = U.makeCard(a, { name: name(a), house: client.house })
+      const partner = L.housePartner(client.house, a)
+      el = U.makeCard(a, { name: name(a), house: client.house, caption: L.roleCaption(client.house?.[a], { cfg: S.cfg, partnerName: partner ? name(partner) : null }) })
       cards.set(a, el)
     }
     if (host.children[i] !== el) host.insertBefore(el, host.children[i] ?? null)
     const x = pv.byAccount.get(a)
     const ex = L.explainReceiver(S.cfg, pv.count, a)
-    const reason = pickReason(ex.reasons)
+    const reason = L.pickReason(ex.reasons, { cap, me: S.me, partner: L.housePartner(client.house, a) })
     const m = S.people.get(a)
     const mine = mineMap.get(a) ?? 0
     const given = givenTo.get(a) ?? 0
+    const lp = lastPay.get(a)
     U.updateCard(el, {
       note: notes.get(a),
       given,
@@ -389,34 +442,32 @@ function renderBoard() {
       countedText: x && L.fmtThanks(x.points) !== String(given) ? L.fmtThanks(x.points) : '',
       barPct: (given / max) * 100,
       minePct: (Math.min(mine, given) / max) * 100,
-      amountText: x?.tier ? `≈ ${U.tusd(x.amount)}` : x?.carried ? `${U.tusd(x.carried)} kept for later` : given ? 'nothing yet' : '',
+      amountText: x?.tier ? `≈ ${U.tusd(x.amount)}` : x?.carried ? `${U.tusd(x.carried)} kept for later` : given ? 'not counted yet' : '',
       tier: x?.tier ?? 0,
       carried: x?.carried ?? 0n,
       why: reason ? L.reasonText(reason, name, { open: true }) : '',
       whyKind: reason?.kind ?? '',
+      whyMine: Boolean(reason && S.me && (reason.who?.includes(S.me) || reason.other === S.me)),
       giving: S.giving,
       mine,
       cap,
       repText: m ? `rep ${L.fmtThanks(L.big(m.reputation) - (L.big(m.reputation) % 1000n))}` : 'record',
+      last: S.last && (lp || lastNotes.get(a)) ? { round: S.last.n, amount: lp ? U.tusd(lp.amount) : '', tier: lp ? Number(lp.tier) : 0, note: lastNotes.get(a) ?? '' } : null,
     })
   })
+  // one line over the board: the house, or how a fresh round fills up
+  const fresh = !(S.open?.gifts?.length || S.open?.notes?.length)
+  const house = members.filter((a) => client.house?.[a]).length
+  U.setText(
+    'board-note-text',
+    fresh && roundFraction() < HOUSE_WINDOW.from
+      ? `Round ${st.round} just started: notes come in first, and the house members give between ${L.windowWord(HOUSE_WINDOW.from)} and ${L.windowWord(HOUSE_WINDOW.to)} through it. Until then each card shows its last payout. Be the first to give.`
+      : house === members.length
+        ? `All ${members.length} members are house bots with a published strategy, and so is the council. Visitors give as guests.`
+        : `${house} of ${members.length} members are house bots with a published strategy. Visitors give as guests.`,
+  )
+  U.$('board-note').classList.toggle('fresh', fresh)
   renderGuests(notes, givenTo)
-}
-
-/**
- * The reason worth a line on a card: a strong mutual pair first (small mutual thanks between
- * helpers are discounted too, but are not worth a line), then idle, breadth, guests.
- */
-function pickReason(reasons) {
-  const strong = reasons.filter((x) => x.kind === 'mutual' && Math.min(x.given, x.back) * 4 >= Number(S.cfg.cap_per_receiver) * 3).sort((a, b) => Math.min(b.given, b.back) - Math.min(a.given, a.back))
-  if (strong.length) return strong[0]
-  const mine = reasons.find((x) => x.kind === 'guest' && S.me && x.who?.includes(S.me))
-  if (mine) return mine
-  for (const k of ['receiveCap', 'idle', 'breadth', 'guest']) {
-    const r = reasons.find((x) => x.kind === k)
-    if (r) return r
-  }
-  return null
 }
 
 function renderGuests(notes, givenTo) {
@@ -446,23 +497,38 @@ function renderGuests(notes, givenTo) {
 
 const shown = new Map() // tier -> the HTML of its list now on the page
 
+/** The newest payout of tier t in the ledger from a round other than the one shown. */
+function lastOfTier(t) {
+  for (const row of S.ledger) {
+    if (row.round.n === S.last?.n) continue
+    const p = [...row.payouts].filter((x) => Number(x.tier) === t).sort((a, b) => Number(L.big(b.amount) - L.big(a.amount)))[0]
+    if (p) return p
+  }
+  return null
+}
+
 function renderPayouts() {
   if (!S.last) return
   U.setText('pay-round', String(S.last.n))
-  const tier3 = S.report?.tiers.find((t) => t.tier === 3)?.votes ?? 2
-  U.setText('tier-3-rule', `Larger, or a first payout: ${tier3} council votes decide.`)
+  const t3 = tier3Votes()
+  U.setText('tier-3-rule', `Larger, or a first payout: ${t3} council votes decide.`)
+  const story = S.story && S.story.n === S.last.n && S.story.step < 4
   for (const t of [1, 2, 3]) {
     const list = S.lastPayouts.filter((p) => Number(p.tier) === t).sort((a, b) => Number(L.big(b.amount) - L.big(a.amount)))
-    const story = S.story && S.story.n === S.last.n && S.story.step < 4
-    const html = list.length
-      ? list
-          .map((p) => {
-            const info = L.proposalInfo(S.proposals.get(Number(p.dao_proposal)))
-            const stage = story ? { state: 'waiting', text: 'Filing in the DAO…' } : L.payoutStage(p, info, { tier3Votes: tier3, name, contract: client.contract })
-            return U.payoutHtml(p, { name: name(p.receiver), stage, fresh: S.fresh.has(p.id), me: S.me, house: client.house })
-          })
-          .join('')
-      : `<li class="tier-empty">${t === 1 ? 'None this round.' : 'Nobody this round.'}</li>`
+    let html
+    if (list.length) {
+      html = list
+        .map((p) => {
+          const info = proposalOf(p)
+          const stage = story ? { state: 'waiting', text: 'Filing in the DAO…' } : L.payoutStage(p, info, { tier3Votes: t3, name, contract: client.contract, brief: true })
+          const marks = story ? [] : L.voteMarks(p, info, { tier3Votes: t3, contract: client.contract, name })
+          return U.payoutHtml(p, { name: name(p.receiver), stage, marks, fresh: S.fresh.has(p.id), me: S.me, house: client.house })
+        })
+        .join('')
+    } else {
+      const ex = lastOfTier(t)
+      html = `<li class="tier-empty">Nobody in round ${U.esc(S.last.n)}.${ex ? ` <span class="muted">Last: ${U.esc(name(ex.receiver))}, ${U.esc(U.tusd(ex.amount))} in round ${U.esc(ex.round)}.</span>` : ''}</li>`
+    }
     // only when something changed: a new list replays the cards' entrance
     if (shown.get(t) !== html) {
       U.$(`tier-${t}`).innerHTML = html
@@ -471,7 +537,14 @@ function renderPayouts() {
   }
   const paid = new Set(S.lastPayouts.map((p) => p.receiver))
   const carried = (S.last.points ?? []).filter(([a]) => !paid.has(a))
-  U.setText('carried', carried.length ? `Kept for a later round (below ${U.tusd(S.cfg.min_payout)}): ${carried.map(([a]) => name(a)).join(', ')}.` : '')
+  const others = carried.filter(([a]) => a !== S.me)
+  const meCarried = carried.some(([a]) => a === S.me)
+  U.$('carried').innerHTML = [
+    meCarried ? `<span class="carried-me">You: below ${U.esc(U.tusd(S.cfg.min_payout))}, so your share is kept for you and paid with a later round.</span>` : '',
+    others.length ? `Kept for a later round (below ${U.esc(U.tusd(S.cfg.min_payout))}): ${U.esc(others.map(([a]) => name(a)).join(', '))}.` : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
   U.$('btn-replay').hidden = !S.lastPayouts.length
 }
 
@@ -479,27 +552,62 @@ function renderYou() {
   const box = U.$('you')
   const seated = S.me && (S.open?.seats ?? []).includes(S.me)
   const rec = S.myRecord
-  const has = S.me && (seated || S.myBalance > 0n || (rec && (rec.payouts?.length || L.big(rec.reputation) > 0n)))
+  const out = S.me && S.cfg && S.lastClosed != null ? L.guestOutcome(rec, { seated: S.seated, lastClosed: S.lastClosed, minPayout: S.cfg.min_payout, carryRounds: S.cfg.carry_rounds }) : null
+  const has = S.me && (seated || out || S.myBalance > 0n || (rec && (rec.payouts?.length || L.big(rec.reputation) > 0n)))
   box.hidden = !has
   if (!has) return
   U.setText('you-name', 'You, a guest')
   U.setText('you-acct', ` · ${L.shortAccount(S.me)}`)
+  // the newest closed round the guest was in: who thanked back and what came of it
+  const res = U.$('you-result')
+  res.hidden = !out
+  if (out) {
+    const stage = out.payout ? L.payoutStage(out.payout, proposalOf(out.payout), { tier3Votes: tier3Votes(), name, contract: client.contract }) : null
+    const html = U.outcomeHtml(out, { name, stage, window: HOUSE_WINDOW })
+    if (res.dataset.html !== html) {
+      res.innerHTML = html
+      res.dataset.html = html
+    }
+  }
   const lines = []
   const mine = myGifts()
   if (seated) lines.push(`Seat ${S.open.seats.indexOf(S.me) + 1} of ${S.cfg.guest_seats} in round ${S.open.n}${mine.length ? ` · you gave ${mine.reduce((a, g) => a + g[1], 0)} thanks to ${mine.length}` : ''}.`)
   const x = S.preview?.byAccount.get(S.me)
   const note = (S.open?.notes ?? []).find(([a]) => a === S.me)
+  const phase = L.guestTiming(roundFraction(), { ...HOUSE_WINDOW, membersGave: membersGave() }).phase
   if (x?.tier) lines.push(`If the round closed now: ≈ ${U.tusd(x.amount)} to you; it ${x.tier === 2 ? 'needs one council vote' : x.tier === 3 ? 'needs a council majority' : 'is paid at once'}.`)
   else if (x?.carried) lines.push(`If the round closed now: ${U.tusd(x.carried)} to you, below the ${U.tusd(S.cfg.min_payout)} minimum, so it waits for a later round.`)
   else if (seated && !note) lines.push('House members thank guests who write a note and give thanks.')
   else if (seated && x?.given) lines.push(`Members gave you ${x.given} thanks so far.`)
-  else if (seated && mine.length) lines.push('House members thank guests who write a note and give thanks; give them a moment.')
+  else if (seated && mine.length && phase === 'late') lines.push('The house members have given this round, so nobody will thank you back before the close. Join early next round to be thanked back.')
+  else if (seated && mine.length) lines.push(`House members thank guests who write a note and give thanks, between ${L.windowWord(HOUSE_WINDOW.from)} and ${L.windowWord(HOUSE_WINDOW.to)} through the round; give them a moment.`)
   for (const p of [...(rec?.payouts ?? [])].reverse().slice(0, 3)) {
-    const st = L.payoutStage(p, L.proposalInfo(S.proposals.get(Number(p.dao_proposal))), { name, contract: client.contract })
+    if (out?.payout && p.id === out.payout.id) continue
+    const st = L.payoutStage(p, proposalOf(p), { name, contract: client.contract })
     lines.push(`Round ${p.round}: ${U.tusd(p.amount)} · ${st.text}.`)
   }
   if (S.myBalance > 0n) lines.push(`Your browser account holds ${U.tusd(S.myBalance)}.`)
   U.$('you-lines').innerHTML = lines.map((l) => `<li>${U.esc(l)}</li>`).join('')
+}
+
+/** The rounds this browser's guest sat in, kept across reloads (a convenience; the chain is the record). */
+function loadSeats() {
+  try {
+    const v = JSON.parse(globalThis.localStorage?.getItem(SEAT_STORE) ?? 'null')
+    if (v?.account === S.me) for (const n of v.rounds ?? []) S.seated.add(Number(n))
+  } catch {
+    /* no storage: the seats of this visit only */
+  }
+}
+
+function rememberSeat(n) {
+  if (S.seated.has(n)) return
+  S.seated.add(n)
+  try {
+    globalThis.localStorage?.setItem(SEAT_STORE, JSON.stringify({ account: S.me, rounds: [...S.seated].sort((a, b) => b - a).slice(0, 12) }))
+  } catch {
+    /* no storage */
+  }
 }
 
 function renderTray() {
@@ -551,7 +659,7 @@ async function onGive() {
 function onStep(acc, delta) {
   if (!S.giving) return
   const { draft, refused } = L.bumpGift(S.cfg, S.draft, acc, delta)
-  if (refused) hint(`At most: ${refused}.`)
+  if (refused) hint(`${capFirst(refused)}.`)
   S.draft = draft
   recompute()
   renderBoard()
@@ -580,7 +688,7 @@ function onDone(out, item) {
   if (item.kind === 'allocate') {
     S.giving = false
     S.draft = new Map()
-    U.toast(`Your thanks are in. They count when round ${item.round} closes.`, 'ok')
+    U.toast(`You tipped your hat to ${item.gifts.length} ${item.gifts.length === 1 ? 'person' : 'people'}. Your thanks count when round ${item.round} closes.`, 'ok')
   }
   schedule(150)
 }
@@ -593,39 +701,48 @@ function onError(err, item) {
 
 // ---- the close story ----------------------------------------------------------------------------
 
+/** What the strip under the hero says about a closed round and its payouts. */
 function storyOf(rv, payouts) {
   const sm = L.roundSummary(rv, payouts)
-  const props = payouts.map((p) => p.dao_proposal).filter((x) => x != null)
   const paid = new Set(payouts.map((p) => p.receiver))
   const guestsOnly = (rv.gifts ?? []).every((g) => L.isImplicit(g[0]))
-  return { ...sm, carried: (rv.points ?? []).filter(([a]) => !paid.has(a)).length, firstProposal: props.length ? Math.min(...props) : null, lastProposal: props.length ? Math.max(...props) : null, guestsOnly, guestCapBp: S.cfg.guest_cap_bp }
+  return { ...sm, carried: (rv.points ?? []).filter(([a]) => !paid.has(a)).length, filed: L.filedText(payouts), tally: L.tierTally(payouts, statusOf), guestsOnly, guestCapBp: S.cfg.guest_cap_bp }
 }
 
 let storyTimer = null
-function playStory(summary, scroll = false) {
-  if (!summary?.n) return
-  clearInterval(storyTimer)
-  clearTimeout(storyTimer)
-  S.story = { n: summary.n, step: reduced ? 5 : 0, summary }
+let shownStory = ''
+
+/** The strip under the hero: always the last round that paid, all five steps, kept up to date. */
+function renderStory() {
+  if (!S.last || !S.cfg) return
   const el = U.$('story')
+  const playing = Boolean(S.story && S.story.n === S.last.n && S.story.step < 5)
+  U.setText('story-round', String(S.last.n))
+  const html = U.storyHtml(storyOf(S.last, S.lastPayouts), playing ? S.story.step : 5)
+  if (html !== shownStory) {
+    U.$('story-steps').innerHTML = html
+    shownStory = html
+  }
+  el.classList.toggle('playing', playing)
+  el.hidden = false
+}
+
+/** Plays the last close step by step in the strip; `scroll` brings the strip into view first. */
+function playStory(scroll = false) {
+  if (!S.last) return
+  clearInterval(storyTimer)
+  S.story = { n: S.last.n, step: reduced ? 5 : 0 }
   const draw = () =>
     U.keepView(() => {
-      el.hidden = false
-      // the proposals are filed a moment after the close: read the summary again at every step
-      if (S.last?.n === S.story.n) S.story.summary = storyOf(S.last, S.lastPayouts)
-      el.innerHTML = U.storyHtml(S.story.summary, S.story.step)
+      renderStory()
       renderPayouts()
     })
   draw()
-  if (scroll) U.$('payouts').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' })
+  if (scroll) U.$('story').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' })
   storyTimer = setInterval(() => {
     S.story.step++
     draw()
-    if (S.story.step >= 5) {
-      clearInterval(storyTimer)
-      // the summary stays a while, then the payouts below tell the rest; Replay brings it back
-      storyTimer = setTimeout(() => U.keepView(() => (el.hidden = true)), 40_000)
-    }
+    if (S.story.step >= 5) clearInterval(storyTimer)
   }, 900)
 }
 
@@ -701,6 +818,7 @@ async function loadLedger(older = false) {
   S.ledger = older ? [...S.ledger, ...rows] : rows
   S.ledgerFrom = Math.min(...S.ledger.map((x) => x.round.n))
   renderLedger()
+  renderPayouts()
   U.$('btn-older').hidden = S.ledgerFrom <= 1
   client
     .audit()
@@ -754,7 +872,7 @@ async function openMember(account) {
   const to = S.lastClosed ?? 0
   const from = Math.max(1, to - Number(S.cfg.log_keep) + 1, (m.history[0]?.round ?? to) - 1)
   const series = L.repSeries(S.cfg, { history: m.history.map((h) => ({ round: h.round, points: h.points })), strikes, from, to, guest: m.kind === 'guest' })
-  U.openDrawer('member', 'Record', U.memberHtml(m, { name, house: client.house, series, explorer: EXPLORER, mock: MOCK, me: S.me, proposals: S.proposals, contract: client.contract }), `member:${account}`)
+  U.openDrawer('member', 'Record', U.memberHtml(m, { name, house: client.house, series, explorer: EXPLORER, mock: MOCK, me: S.me, proposals: S.proposals, contract: client.contract, partner: L.housePartner(client.house, account) }), `member:${account}`)
 }
 
 async function openProposal(id) {

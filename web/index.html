@@ -4,9 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://test.rpc.fastnear.com https://near-testnet.drpc.org; font-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
-<title>Hat Tip · Repair Café</title>
-<meta name="description" content="A community pays its helpers from its own Sputnik DAO by peer thanks. Every member hands out 100 thanks a round; small payouts to members with a record go out at once, larger ones wait for the council.">
+<title>Hat Tip: peer thanks your DAO pays out</title>
+<meta name="description" content="A community pays its helpers from its own Sputnik DAO by peer thanks. Every member hands out 100 thanks a round; small payouts to members with a record go out at once, larger ones wait for one council vote or a council majority. Live on NEAR testnet, no wallet needed.">
 <meta name="theme-color" content="#f4efe6">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hat Tip">
+<meta property="og:title" content="Hat Tip: peer thanks your DAO pays out">
+<meta property="og:description" content="Each member hands out 100 thanks a round; the community’s Sputnik DAO pays the budget by the thanks received, in three tiers of trust. Try it on NEAR testnet, no wallet.">
+<meta property="og:url" content="https://replaycourt.github.io/hat-tip/web/">
+<meta property="og:image" content="https://replaycourt.github.io/hat-tip/web/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Hat Tip: peer thanks your DAO pays out. Three payouts in the three tier colours: paid at once, one council vote, council majority.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hat Tip: peer thanks your DAO pays out">
+<meta name="twitter:description" content="Each member hands out 100 thanks a round; the community’s Sputnik DAO pays the budget by the thanks received, in three tiers of trust. Try it on NEAR testnet, no wallet.">
+<meta name="twitter:image" content="https://replaycourt.github.io/hat-tip/web/og.png">
+<link rel="preload" href="fonts/source-serif-4-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -29,15 +43,21 @@
 <main>
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-text">
-      <p class="kicker">Peer thanks, paid by the community’s own DAO</p>
-      <h1 id="hero-title">Every round, each member hands out <em>100&nbsp;thanks</em>. When it closes, the café’s DAO pays the round’s budget by the thanks received.</h1>
-      <p class="lede" id="lede">Small payouts to members with a record go out at once. Bigger ones, and most first ones, wait for the council. Every point of reputation traces to a round and the people who gave it.</p>
+      <p class="kicker"><span id="kicker-community">Repair Café</span> · <span id="kicker-where">live on NEAR testnet</span></p>
+      <h1 id="hero-title">Peer thanks, paid out by the café’s own DAO.</h1>
+      <p class="lede" id="lede"><span class="lede-why">Volunteer help is rarely posted as a bounty first, so here the people who were helped say who helped. </span>Each member hands out <em>100&nbsp;thanks</em> a round, and the café’s Sputnik DAO pays the round’s budget by the thanks received, in three tiers of trust:</p>
     </div>
+
+    <ol class="tiles" id="tiles" aria-label="The three tiers of trust">
+      <li><a class="tile t1" href="#payouts"><span class="tile-head"><span class="tile-num" aria-hidden="true">1</span><b>Paid at once</b></span><span class="tile-rule">small, to members with a record: the contract’s own vote</span><span class="tile-last" id="tile-1"></span></a></li>
+      <li><a class="tile t2" href="#payouts"><span class="tile-head"><span class="tile-num" aria-hidden="true">2</span><b>One council vote</b></span><span class="tile-rule">mid-size: any one council member passes or vetoes</span><span class="tile-last" id="tile-2"></span></a></li>
+      <li><a class="tile t3" href="#payouts"><span class="tile-head"><span class="tile-num" aria-hidden="true">3</span><b>Council majority</b></span><span class="tile-rule" id="tile-3-rule">large or first payouts: a normal DAO proposal</span><span class="tile-last" id="tile-3"></span></a></li>
+    </ol>
 
     <aside class="round-card" id="round-card" aria-labelledby="round-title">
       <div class="round-head">
         <h2 class="round-title" id="round-title">Round <b id="round-n">–</b></h2>
-        <span class="round-state" id="round-state">reading NEAR testnet…</span>
+        <span class="round-state" id="round-state"><span class="dots" aria-hidden="true"></span>reading NEAR testnet</span>
       </div>
       <div class="countdown-row">
         <b class="countdown" id="countdown" aria-live="off">–:––</b>
@@ -54,21 +74,37 @@
         <span class="give-title" id="give-title">Give your 100 thanks</span>
         <span class="give-sub" id="give-sub">no wallet · your browser makes a key and takes a guest seat</span>
       </button>
+      <p class="give-when" id="give-when" hidden></p>
       <div class="you" id="you" hidden>
         <div class="you-head"><span class="avatar av-you" aria-hidden="true">You</span><span><b id="you-name">Guest</b><span class="you-acct" id="you-acct"></span></span></div>
+        <div class="you-result" id="you-result" hidden></div>
         <ul class="you-lines" id="you-lines"></ul>
       </div>
     </aside>
   </section>
 
-  <section class="story" id="story" aria-live="polite" hidden></section>
+  <section class="story" id="story" aria-labelledby="story-title" hidden>
+    <div class="story-inner">
+      <div class="story-head">
+        <h2 class="story-title" id="story-title">How round <span id="story-round">–</span> became payouts</h2>
+        <button class="story-replay" id="btn-story-replay" type="button">Replay the close</button>
+      </div>
+      <div class="story-steps" id="story-steps" aria-live="polite"></div>
+    </div>
+  </section>
 
   <section class="board" aria-labelledby="board-title">
     <div class="section-head">
       <h2 id="board-title">This round at the café</h2>
       <p class="sub" id="board-sub">What each member did, the thanks they got so far, and what they would be paid if the round closed now.</p>
     </div>
-    <div class="cards" id="cards"></div>
+    <p class="board-note" id="board-note"><span class="bot-ico" aria-hidden="true"></span><span id="board-note-text">All eight members are house bots with a published strategy, and so is the council. Visitors give as guests.</span></p>
+    <div class="cards" id="cards">
+      <div class="card member skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="card member skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="card member skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="card member skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
     <div class="guests" id="guests" hidden>
       <h3 class="guests-title">Guests this round</h3>
       <div class="guest-list" id="guest-list"></div>
@@ -85,17 +121,17 @@
       <div class="tier tier-1">
         <h3><span class="tier-num">1</span>Paid automatically</h3>
         <p class="tier-rule">Within the receiver’s auto limit: the contract’s own vote passes it.</p>
-        <ol class="tier-list" id="tier-1"></ol>
+        <ol class="tier-list" id="tier-1"><li class="skeleton-line" aria-hidden="true"></li><li class="skeleton-line" aria-hidden="true"></li></ol>
       </div>
       <div class="tier tier-2">
         <h3><span class="tier-num">2</span>Needs one council vote</h3>
         <p class="tier-rule">Within the co-sign limit: any one council member can pass or veto it.</p>
-        <ol class="tier-list" id="tier-2"></ol>
+        <ol class="tier-list" id="tier-2"><li class="skeleton-line" aria-hidden="true"></li></ol>
       </div>
       <div class="tier tier-3">
         <h3><span class="tier-num">3</span>Needs a council majority</h3>
         <p class="tier-rule" id="tier-3-rule">Larger, or a first payout: a council majority decides.</p>
-        <ol class="tier-list" id="tier-3"></ol>
+        <ol class="tier-list" id="tier-3"><li class="skeleton-line" aria-hidden="true"></li></ol>
       </div>
     </div>
     <p class="carried" id="carried"></p>
@@ -104,11 +140,19 @@
   <section class="replay" id="replay" aria-labelledby="replay-title">
     <div class="section-head">
       <h2 id="replay-title">The same thanks, counted twice</h2>
-      <p class="sub">Why collusion pays less: the café’s house community in a simulation of the contract’s own arithmetic, counted plainly and with the rules, side by side.</p>
+      <p class="sub">Why collusion pays less: a simulation of the contract’s own arithmetic, every thanks counted plainly and with the rules, side by side.</p>
+    </div>
+    <div class="rp-result" id="rp-result">
+      <p class="rp-result-lead">Share of payouts above the share of work, in percentage points: plain counting → with the rules. 24 members, 52 weekly rounds, colluders playing their best response.</p>
+      <dl class="rp-figures">
+        <div data-scenario="Ring of four"><dt>Ring of four</dt><dd><span class="rp-from">+17.9</span><span class="rp-to-arrow" aria-label="becomes">→</span><b class="rp-to">+5.4</b></dd></div>
+        <div data-scenario="Ring of three"><dt>Ring of three</dt><dd><span class="rp-from">+13.8</span><span class="rp-to-arrow" aria-label="becomes">→</span><b class="rp-to">+2.0</b></dd></div>
+        <div data-scenario="Colluding pair"><dt>Colluding pair</dt><dd><span class="rp-from">+3.5</span><span class="rp-to-arrow" aria-label="becomes">→</span><b class="rp-to">−0.7</b></dd></div>
+      </dl>
     </div>
     <div class="replay-host" id="replay-host">
       <button class="btn-primary replay-open" id="btn-replay-open" type="button">Play the simulation</button>
-      <span class="muted replay-open-sub">a simulation, not the live café · about six seconds</span>
+      <span class="muted replay-open-sub">the chart for every scenario, then the café’s own house community, round by round · a simulation, not the live café</span>
     </div>
   </section>
 
@@ -117,8 +161,8 @@
       <h2 id="ledger-title">Ledger of rounds</h2>
       <p class="sub">Every round as the contract keeps it. Open one to see who thanked whom and what counted.</p>
     </div>
-    <div class="ledger-host" id="ledger-host"></div>
-    <div class="ledger-foot"><button class="btn-quiet" id="btn-older" type="button" hidden>Show older rounds</button><span class="muted" id="audit-line"></span></div>
+    <div class="ledger-host" id="ledger-host"><p class="muted loading-line"><span class="dots" aria-hidden="true"></span>Reading the ledger</p></div>
+    <div class="ledger-foot"><button class="btn-quiet older-btn" id="btn-older" type="button" hidden>Show older rounds</button><span class="muted" id="audit-line"></span></div>
   </section>
 
   <section class="rules" id="rules" aria-labelledby="rules-title">

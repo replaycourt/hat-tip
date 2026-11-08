@@ -475,7 +475,7 @@ export function reasonText(r, name = (a) => a, { open = false } = {}) {
         : `${name(r.other)} gave ${r.given} and got ${r.back} back: mutual thanks count ${fmtPct(r.bp)}, ${fmtThanks(r.counted)} counted.`
     case 'guest': {
       // early in a round: guests steer a share of what members give, so with no member's thanks yet they count 0
-      if (r.noMembers) return `Guest thanks count once members have given: guests together steer at most ${fmtPct(r.capBp)} of a round.`
+      if (r.noMembers) return `Guest thanks count as soon as members start giving: guests together steer at most ${fmtPct(r.capBp)} of a round.`
       const who = r.givers === 1 ? (r.who ? name(r.who[0]) : 'A guest') : `${r.givers} guests`
       const verb = who === 'You' ? 'gave as a guest' : r.givers === 1 ? (r.who ? 'gave as a guest' : 'gave thanks here') : 'gave thanks here'
       return `${who} ${verb}: guest thanks count ${fmtPct(r.bp)}${r.capped ? `, and all guests together at most ${fmtPct(r.capBp)} of the round` : ''}.`
@@ -711,10 +711,11 @@ export function currentStatus(payout, info = null) {
 }
 
 /** The column a payout sits in and the one line under it. */
-export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) => a, contract = null } = {}) {
+export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) => a, contract = null, brief = false } = {}) {
   const s = currentStatus(payout, info)
   const voters = (info?.votes ?? []).filter(([, v]) => v === 'Approve').map(([a]) => voterName(a, { contract, name }))
-  const by = voters.length ? ` by ${joinNames(voters)}` : ''
+  // `brief`: the voters are shown as marks next to the line, so the line does not name them
+  const by = voters.length && !brief ? ` by ${joinNames(voters)}` : ''
   const tier = Number(payout.tier)
   switch (s) {
     case 'planned':
@@ -728,7 +729,7 @@ export function payoutStage(payout, info = null, { tier3Votes = 2, name = (a) =>
     case 'approved':
       return { state: 'waiting', text: `Approved${by} · transfer on its way` }
     case 'paid':
-      return { state: 'paid', text: tier === 1 ? 'Paid at once' : `Paid · approved${by || ' by the council'}` }
+      return { state: 'paid', text: tier === 1 ? 'Paid at once' : brief ? 'Paid' : `Paid · approved${by || ' by the council'}` }
     case 'rejected':
       return { state: 'struck', text: 'Rejected by the council · strike' }
     case 'removed':
@@ -806,12 +807,172 @@ export function giversOf(gifts = [], receiver) {
 // ---- names and labels --------------------------------------------------------------------------
 
 /** House strategies (sim/params.json, I-2) and how the page labels them. */
+/** The short label of a demo role on a card, where the bot mark already says "house bot". */
+export const DEMO_LABELS = { pair: 'demo: colluding pair', free_rider: 'demo: free rider', newcomer: 'newcomer' }
+
 export const HOUSE_LABELS = {
   honest: 'house bot · honest helper',
   pair: 'house bot · demo: colluding pair',
   free_rider: 'house bot · demo: free rider',
   newcomer: 'house bot · newcomer',
   council: 'house bot · council',
+}
+
+/**
+ * The partner of a house member labelled as a colluding pair: the one other account of that kind
+ * in the published house list, or null (none, or more than two, so no single partner).
+ */
+export function housePartner(house, account) {
+  if (house?.[account] !== 'pair') return null
+  const others = Object.keys(house).filter((a) => a !== account && house[a] === 'pair')
+  return others.length === 1 ? others[0] : null
+}
+
+// ---- what the page tells about a round ---------------------------------------------------------
+
+/**
+ * The reason worth a line on a card: a strong mutual pair first (both sides at least three
+ * quarters of the cap; small mutual thanks between helpers are discounted too, but are not worth
+ * a line), the published partner before anyone else at the same strength, then the visitor's own
+ * guest thanks, then the guests' receive cap, idle, breadth and guests.
+ */
+export function pickReason(reasons, { cap = 25, me = null, partner = null } = {}) {
+  const strength = (x) => Math.min(x.given, x.back)
+  const strong = reasons
+    .filter((x) => x.kind === 'mutual' && strength(x) * 4 >= Number(cap) * 3)
+    .sort((a, b) => strength(b) - strength(a) || (b.other === partner) - (a.other === partner))
+  if (strong.length) return strong[0]
+  const mine = reasons.find((x) => x.kind === 'guest' && me && x.who?.includes(me))
+  if (mine) return mine
+  for (const k of ['receiveCap', 'idle', 'breadth', 'guest']) {
+    const r = reasons.find((x) => x.kind === k)
+    if (r) return r
+  }
+  return null
+}
+
+/** What a demo card is there to show, in one line (honest helpers and the council have none). */
+export function roleCaption(kind, { cfg, partnerName = null } = {}) {
+  const c = numCfg(cfg ?? {})
+  const each = fmtThanks((c.capPerReceiver * MILLI * c.reciprocalBp) / BP)
+  if (kind === 'pair') return `Shows collusion: gives ${partnerName ?? 'its partner'} ${c.capPerReceiver} a round and gets ${c.capPerReceiver} back. Mutual thanks count ${fmtPct(c.reciprocalBp)}: ${each} each way.`
+  if (kind === 'free_rider') return c.idleBp < BP ? `Shows free riding: fixes nothing, thanks nobody, so what he gets counts ${fmtPct(c.idleBp)}.` : 'Shows free riding: fixes nothing, thanks nobody. Only mutual thanks are discounted, so what he gets counts in full.'
+  return ''
+}
+
+/**
+ * How much of an account's counted points came from one giver, over the rounds kept on chain:
+ * {fromPartner, total, rounds} in milli-thanks (history rows as member() returns them).
+ */
+export function partnerShare(history = [], partner) {
+  let fromPartner = 0n
+  let total = 0n
+  let rounds = 0
+  for (const h of history) {
+    total += big(h.points)
+    const g = (h.givers ?? []).find(([a]) => a === partner)
+    if (g) {
+      fromPartner += big(g[2])
+      rounds++
+    }
+  }
+  return { fromPartner, total, rounds }
+}
+
+/**
+ * The DAO proposals of a round's payouts as the close story says them: all filed, some filed so
+ * far, or none yet. Never a range that hides proposals still to come.
+ */
+export function filedText(payouts = []) {
+  const n = payouts.length
+  if (!n) return 'No proposals this round.'
+  const ids = payouts.map((p) => p.dao_proposal).filter((x) => x != null).map(Number)
+  const word = `${n} proposal${n === 1 ? '' : 's'}`
+  if (!ids.length) return `${word}, being filed now.`
+  const lo = Math.min(...ids)
+  const hi = Math.max(...ids)
+  if (ids.length < n) return `${word}: ${ids.length} filed so far, from #${lo}.`
+  return n === 1 ? `${word}, #${lo}.` : `${word}, #${lo}–#${hi}.`
+}
+
+/** Per tier: how many payouts, how much, and how many are paid already. */
+export function tierTally(payouts = [], status = (p) => String(p.status).toLowerCase()) {
+  const out = { 1: { n: 0, amount: 0n, paid: 0, struck: 0 }, 2: { n: 0, amount: 0n, paid: 0, struck: 0 }, 3: { n: 0, amount: 0n, paid: 0, struck: 0 } }
+  for (const p of payouts) {
+    const t = out[Number(p.tier)]
+    if (!t) continue
+    t.n++
+    t.amount += big(p.amount)
+    const s = status(p)
+    if (s === 'paid') t.paid++
+    if (s === 'rejected' || s === 'removed') t.struck++
+  }
+  return out
+}
+
+/**
+ * The approvals a payout needs, as marks: the contract's own vote for tier 1, one council vote
+ * for tier 2, `tier3Votes` for tier 3. Each mark is {who, state}: 'yes', 'no' or 'open'.
+ */
+export function voteMarks(payout, info, { tier3Votes = 2, contract = null, name = (a) => a } = {}) {
+  const tier = Number(payout.tier)
+  const need = tier === 1 ? 1 : tier === 2 ? 1 : tier3Votes
+  const votes = (info?.votes ?? []).filter(([a]) => tier !== 1 || a === contract)
+  const marks = votes.map(([a, v]) => ({ who: voterName(a, { contract, name }), state: v === 'Approve' ? 'yes' : 'no' }))
+  const s = String(payout.status).toLowerCase()
+  const settled = s === 'paid' || isFinal(s) || ['Approved', 'Rejected', 'Removed', 'Expired', 'Failed'].includes(info?.status)
+  // a tier-1 payout that is paid was approved by the contract's own vote, read or not
+  if (tier === 1 && !marks.length && (s === 'paid' || s === 'approved')) marks.push({ who: 'the contract', state: 'yes' })
+  const yes = marks.filter((m) => m.state === 'yes').length
+  if (!settled) for (let i = yes; i < need; i++) marks.push({ who: tier === 1 ? 'the contract' : 'council', state: 'open' })
+  return marks
+}
+
+/**
+ * When a guest should join: house members thank guests who wrote a note and gave thanks, each
+ * at its own moment between `from` and `to` of the round (scripts/house.mjs). `f` is the share of
+ * the round gone, 0..1; `membersGave` whether any member has given this round.
+ */
+export function guestTiming(f, { from = 0.5, to = 0.8, membersGave = true } = {}) {
+  const a = windowWord(from)
+  const b = windowWord(to)
+  // inside the window but no house member has given yet: still early
+  if (f < from || (f < to && !membersGave)) return { phase: 'early', text: `A good time to join: house members give between ${a} and ${b} through the round, and each thanks up to two guests who wrote a note and gave thanks.` }
+  if (f < to) return { phase: 'mid', text: `Some house members have given already; the rest give before ${b} through. Join now to be thanked back by them.` }
+  return { phase: 'late', text: 'Late in the round: the house members have given, so nobody will thank you back this round. Your thanks still count at the close; join early next round to be thanked back.' }
+}
+
+/** A share of a round in words: "halfway", "four fifths", else a percentage. */
+export function windowWord(f) {
+  const words = { 0.1: 'a tenth', 0.25: 'a quarter', 0.5: 'halfway', 0.75: 'three quarters', 0.8: 'four fifths', 0.9: 'nine tenths' }
+  return words[f] ?? fmtPct(Math.round(f * 10000))
+}
+
+/**
+ * A guest's result for the newest closed round they took part in, from member(): who thanked
+ * them, what counted, and what came of it (a payout and its stage, a carry, or nothing).
+ * `seated` is the set of rounds this tab saw the guest seated in; `lastClosed` the newest closed
+ * round. Returns null when there is nothing to tell.
+ */
+export function guestOutcome(rec, { seated = new Set(), lastClosed, minPayout = 0n, carryRounds = 0 } = {}) {
+  const hist = [...(rec?.history ?? [])].filter((h) => h.round <= lastClosed).sort((a, b) => b.round - a.round)
+  const seatedClosed = [...seated].filter((r) => r <= lastClosed).sort((a, b) => b - a)
+  const round = Math.max(hist[0]?.round ?? 0, seatedClosed[0] ?? 0)
+  if (!round) return null
+  const h = hist.find((x) => x.round === round)
+  const givers = (h?.givers ?? []).map(([g]) => g)
+  const payout = (rec?.payouts ?? []).find((p) => p.round === round) ?? null
+  const carry = big(rec?.carry ?? 0)
+  const carried = !payout && h && carry > 0n && Number(rec?.carry_since ?? 0) <= round ? carry : 0n
+  return {
+    round,
+    givers,
+    points: h ? big(h.points) : 0n,
+    payout,
+    carried,
+    minPayout: big(minPayout),
+    lapseRound: carried ? Number(rec.carry_since) + Number(carryRounds) : null,
+  }
 }
 
 /** Implicit accounts as "a1b2c3…d4e5"; named accounts stay whole unless very long. */
@@ -874,7 +1035,7 @@ export function fmtThanks(milli) {
 
 export function fmtPct(bp) {
   const v = Number(bp) / 100
-  return `${Number.isInteger(v) ? v : v.toFixed(1).replace(/\.0$/, '')} %`
+  return `${Number.isInteger(v) ? v : v.toFixed(1).replace(/\.0$/, '')}\u00a0%`
 }
 
 export function fmtCountdown(ms) {

@@ -32,7 +32,8 @@ export function toast(text, kind = 'info', ms = 4200) {
 
 // ---- small pieces -------------------------------------------------------------------------------
 
-export const tusd = (u) => `${L.fmtTusd(u)} tUSD`
+export const tusd = (u) => `${L.fmtTusd(u)}\u00a0tUSD`
+const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1)
 
 export function avatarHtml(account, name, cls = '') {
   const letter = L.isImplicit(account) ? '◦' : (name || '?').charAt(0)
@@ -40,12 +41,16 @@ export function avatarHtml(account, name, cls = '') {
 }
 
 /** The visible label of a house member (a bot with a published strategy), or ''. */
-export function houseChip(account, house) {
+export function houseChip(account, house, { short = false } = {}) {
   const kind = house?.[account]
   if (!kind) return ''
-  const text = L.HOUSE_LABELS[kind] ?? 'house bot'
-  return `<span class="chip bot chip-${esc(kind)}" title="A labelled demo account run by a script with a published strategy"><span class="bot-ico" aria-hidden="true"></span>${esc(text)}</span>`
+  const full = L.HOUSE_LABELS[kind] ?? 'house bot'
+  const text = short ? (L.DEMO_LABELS[kind] ?? full) : full
+  return `<span class="chip bot chip-${esc(kind)}" title="${esc(full)}: a labelled demo account run by a script with a published strategy"><span class="bot-ico" aria-hidden="true"></span><span class="chip-text">${esc(text)}</span></span>`
 }
+
+/** Strategies shown as a full label on a card: the ones a card is there to demonstrate. */
+export const DEMO_KINDS = new Set(['pair', 'free_rider', 'newcomer'])
 
 /** A small marker for a house member where there is no room for the whole label. */
 export function botMark(account, house) {
@@ -62,17 +67,22 @@ export function link(explorer, mock, path, text) {
 // ---- member cards -------------------------------------------------------------------------------
 
 /** Builds a member card once; updateCard fills it. Returns the element with its parts in `.refs`. */
-export function makeCard(account, { name, house }) {
+export function makeCard(account, { name, house, caption = '' }) {
   const el = document.createElement('article')
-  el.className = 'card member'
+  const kind = house?.[account]
+  el.className = `card member${DEMO_KINDS.has(kind) ? ` demo demo-${esc(kind)}` : ''}`
   el.dataset.acc = account
+  // the demo roles carry their label in full; every other house member a small bot mark
+  const label = DEMO_KINDS.has(kind) ? houseChip(account, house, { short: true }) : botMark(account, house)
   el.innerHTML = `
     <header class="m-head">
       ${avatarHtml(account, name)}
-      <div class="m-who"><b class="m-name">${esc(name)}</b>${houseChip(account, house)}</div>
+      <div class="m-who"><b class="m-name">${esc(name)}</b>${label}</div>
       <button class="m-record" type="button" data-record="${esc(account)}" title="Open ${esc(name)}’s record: every point and payout"><span class="m-rep"></span> ›</button>
     </header>
+    ${caption ? `<p class="m-role">${esc(caption)}</p>` : ''}
     <p class="m-note"></p>
+    <p class="m-last" hidden></p>
     <div class="m-recv">
       <div class="m-recv-line"><span class="m-given"></span><span class="m-counted"></span></div>
       <div class="m-bar"><span class="m-bar-fill"></span><span class="m-bar-mine"></span></div>
@@ -85,14 +95,25 @@ export function makeCard(account, { name, house }) {
       <output class="m-mine">0</output>
       <button class="chip-btn plus" type="button" data-step="10" aria-label="Ten thanks more to ${esc(name)}">+10</button>
     </div>`
-  el.refs = Object.fromEntries(['m-note', 'm-given', 'm-counted', 'm-bar-fill', 'm-bar-mine', 'm-amount', 'm-tier', 'm-why', 'm-give', 'm-range', 'm-mine', 'm-rep', 'm-preview'].map((c) => [c, el.querySelector('.' + c)]))
+  el.refs = Object.fromEntries(['m-note', 'm-last', 'm-given', 'm-counted', 'm-bar-fill', 'm-bar-mine', 'm-amount', 'm-tier', 'm-why', 'm-give', 'm-range', 'm-mine', 'm-rep', 'm-preview'].map((c) => [c, el.querySelector('.' + c)]))
   return el
 }
 
 export function updateCard(el, d) {
   const r = el.refs
-  setText(r['m-note'], d.note ? `“${d.note}”` : 'No note yet this round.')
+  const quiet = !d.given && !d.giving && !d.note
+  setText(r['m-note'], d.note ? `“${d.note}”` : quiet ? 'Nothing yet this round.' : 'No note yet this round.')
   r['m-note'].classList.toggle('empty', !d.note)
+  // a card with nothing yet this round shows, dimmed, what its last round brought
+  const last = quiet && d.last ? d.last : null
+  r['m-last'].hidden = !last
+  if (last) {
+    const html = `<span class="ml-round">Round ${esc(last.round)}</span>${last.amount ? `<b>${esc(last.amount)}</b>${pill(last.tier)}` : '<span>carried, no payout</span>'}${last.note ? `<span class="ml-note">“${esc(last.note)}”</span>` : ''}`
+    if (r['m-last'].dataset.html !== html) {
+      r['m-last'].innerHTML = html
+      r['m-last'].dataset.html = html
+    }
+  }
   setText(r['m-given'], d.given ? `${d.given} thanks from ${d.givers}` : 'No thanks yet')
   setText(r['m-counted'], d.given && d.countedText ? ` · counts ${d.countedText}` : '')
   r['m-bar-fill'].style.width = `${d.barPct}%`
@@ -103,11 +124,12 @@ export function updateCard(el, d) {
   r['m-preview'].classList.toggle('none', !d.tier && !d.carried)
   setText(r['m-why'], d.why ?? '')
   r['m-why'].hidden = !d.why
-  r['m-why'].className = `m-why why-${d.whyKind || 'none'}`
+  r['m-why'].className = `m-why why-${d.whyKind || 'none'}${d.whyMine ? ' why-mine' : ''}`
   r['m-give'].hidden = !d.giving
   el.classList.toggle('giving', Boolean(d.giving))
   el.classList.toggle('mine', d.mine > 0)
   el.classList.toggle('quiet', !d.given && !d.giving)
+  el.classList.toggle('empty-round', quiet)
   if (document.activeElement !== r['m-range']) r['m-range'].value = String(d.mine)
   r['m-range'].max = String(d.cap)
   setText(r['m-mine'], String(d.mine))
@@ -116,38 +138,75 @@ export function updateCard(el, d) {
 
 // ---- payouts ------------------------------------------------------------------------------------
 
-export function payoutHtml(p, { name, stage, fresh = false, me, house }) {
+const MARK = { yes: '✓', no: '✗', open: '○' }
+
+/** The approvals of a payout as small marks: ✓ who said yes, ✗ who said no, ○ a vote still needed. */
+export function marksHtml(marks = []) {
+  if (!marks.length) return ''
+  return `<span class="p-votes">${marks.map((m) => `<span class="vm ${esc(m.state)}" title="${esc(m.state === 'open' ? `waiting for ${m.who === 'council' ? 'a council vote' : m.who}` : `${m.who}: ${m.state === 'yes' ? 'approve' : 'reject'}`)}"><span class="vm-mark" aria-hidden="true">${MARK[m.state]}</span>${esc(m.state === 'open' && m.who === 'council' ? 'a council vote' : m.who)}</span>`).join('')}</span>`
+}
+
+export function payoutHtml(p, { name, stage, marks = [], fresh = false, me, house }) {
   const mine = me && p.receiver === me
   return `<li class="payout ${esc(stage.state)}${fresh ? ' fresh' : ''}${mine ? ' mine' : ''}" data-payout="${esc(p.id)}">
     ${avatarHtml(p.receiver, name)}
     <div class="p-main">
       <div class="p-top"><button class="p-name" type="button" data-record="${esc(p.receiver)}">${esc(mine ? 'You' : name)}${botMark(p.receiver, house)}</button><b class="p-amt">${esc(tusd(p.amount))}</b></div>
-      <div class="p-stage"><span class="p-dot" aria-hidden="true"></span>${esc(stage.text)}</div>
+      <div class="p-stage"><span class="p-dot" aria-hidden="true"></span><span>${esc(stage.text)}</span>${marksHtml(marks)}</div>
     </div>
     ${p.dao_proposal != null ? `<button class="p-prop" type="button" data-proposal="${esc(p.dao_proposal)}" title="Open DAO proposal #${esc(p.dao_proposal)}">#${esc(p.dao_proposal)}</button>` : ''}
   </li>`
 }
 
-/** The close of a round in five steps, revealed one by one (`step` 0..5). */
+/** The close of a round in five steps, revealed one by one (`step` 0..5; 5 shows all). */
 export function storyHtml(s, step) {
   const none = s.points === 0n
+  const t = s.tally ?? { 1: { n: 0, paid: 0, struck: 0 }, 2: { n: 0, paid: 0, struck: 0 }, 3: { n: 0, paid: 0, struck: 0 } }
+  const paid = t[1].paid + t[2].paid + t[3].paid
+  const struck = t[1].struck + t[2].struck + t[3].struck
+  const open = s.payouts - paid - struck
+  const chip = (n, k, text) => `<span class="pill t${k}${t[n] && t[n].n === 0 ? ' zero' : ''}">${esc(text)} <b>${esc(t[n]?.n ?? 0)}</b></span>`
+  const approved = !s.payouts
+    ? esc('No payouts; reputation decayed as every round.')
+    : `<span class="story-chips">${chip(1, 1, 'paid at once')}${chip(2, 2, 'one council vote')}${chip(3, 3, 'council majority')}</span><span class="story-state">${esc(open ? `${paid} of ${s.payouts} paid, ${open} waiting for the council${struck ? `, ${struck} struck` : ''}.` : `All ${s.payouts} decided: ${paid} paid${struck ? `, ${struck} rejected with a strike` : ''}.`)}</span>`
   const steps = [
-    ['Round closed', `Round ${s.n}: ${s.givers} ${s.givers === 1 ? 'person' : 'people'} gave ${L.fmtInt(s.thanks)} thanks.`],
-    ['Counted', none ? (s.guestsOnly ? `Nothing counted: guests steer at most ${L.fmtPct(s.guestCapBp ?? 0)} of a round, and no member gave.` : 'Nothing counted after the rules.') : `${L.fmtThanks(s.points)} thanks counted after the rules.`],
-    ['Split', none || s.budget === 0n ? 'Nothing to split: the budget stays in the DAO.' : `${tusd(s.budget)} split by thanks: ${s.payouts} payout${s.payouts === 1 ? '' : 's'}${s.carried ? `, ${s.carried} carried` : ''}.`],
-    ['Filed in the DAO', !s.payouts ? 'No proposals this round.' : s.firstProposal != null ? `${s.payouts} proposal${s.payouts === 1 ? '' : 's'}, #${s.firstProposal}${s.payouts > 1 ? `–#${s.lastProposal}` : ''}.` : 'Proposals are being filed.'],
-    ['Approved', !s.payouts ? 'No payouts; reputation decayed as every round.' : `${s.byTier[1].n} paid at once · ${s.byTier[2].n} wait for one vote · ${s.byTier[3].n} for the council.`],
+    ['Round closed', esc(`Round ${s.n}: ${s.givers} ${s.givers === 1 ? 'person' : 'people'} gave ${L.fmtInt(s.thanks)} thanks.`)],
+    ['Counted', esc(none ? (s.guestsOnly ? `Nothing counted: guests steer at most ${L.fmtPct(s.guestCapBp ?? 0)} of a round, and no member gave.` : 'Nothing counted after the rules.') : `${L.fmtThanks(s.points)} thanks counted after the rules.`)],
+    ['Split', esc(none || s.budget === 0n ? 'Nothing to split: the budget stays in the DAO.' : `${tusd(s.budget)} split by thanks: ${s.payouts} payout${s.payouts === 1 ? '' : 's'}${s.carried ? `, ${s.carried} carried` : ''}.`)],
+    ['Filed in the DAO', esc(s.filed ?? (s.payouts ? `${s.payouts} proposals.` : 'No proposals this round.'))],
+    ['Approved', approved],
   ]
-  return `<div class="story-inner">${steps
-    .map(([h, t], i) => `<div class="story-step${i < step ? ' on' : ''}${i === step - 1 ? ' now' : ''}"><span class="story-num">${i + 1}</span><b>${esc(h)}</b><span>${esc(t)}</span></div>`)
-    .join('<span class="story-arrow" aria-hidden="true"></span>')}</div>`
+  return `<ol class="story-list">${steps
+    .map(([h, text], i) => `<li class="story-step${i < step ? ' on' : ''}${i === step - 1 ? ' now' : ''}"><span class="story-num" aria-hidden="true">${i + 1}</span><b>${esc(h)}</b><span class="story-text">${text}</span></li>`)
+    .join('')}</ol>`
+}
+
+/**
+ * The guest's own result for the newest closed round they were in (logic.js guestOutcome):
+ * who thanked them back, and the payout with its tier and stage, or the share kept for them.
+ */
+export function outcomeHtml(out, { name, stage, window = { from: 0.5, to: 0.8 } }) {
+  const who = out.givers.map((g) => name(g))
+  const thanked = who.length
+    ? `${L.joinNames(who)} thanked you back: ${L.fmtThanks(out.points)} counted.`
+    : 'Nobody thanked you back this time.'
+  let result = ''
+  if (out.payout) {
+    const p = out.payout
+    result = `<p class="yr-pay"><b>${esc(tusd(p.amount))}</b>${pill(p.tier)}<span>${esc(stage?.text ?? '')}</span>${p.dao_proposal != null ? `<button class="p-prop" type="button" data-proposal="${esc(p.dao_proposal)}">#${esc(p.dao_proposal)}</button>` : ''}</p>`
+  } else if (out.carried > 0n) {
+    result = `<p class="yr-pay"><b>${esc(tusd(out.carried))}</b><span class="pill carry">kept for you</span><span>${esc(`below ${tusd(out.minPayout)}, so it waits: paid with a later round once your shares reach it${out.lapseRound ? ` (until round ${out.lapseRound})` : ''}.`)}</span></p>`
+  } else if (!who.length) {
+    result = `<p class="yr-hint">${esc(`Join early next round: house members thank guests who wrote a note and gave thanks, and they give between ${L.windowWord(window.from)} and ${L.windowWord(window.to)} through the round.`)}</p>`
+  }
+  return `<p class="yr-title">Round ${esc(out.round)} closed</p><p class="yr-line">${esc(thanked)}</p>${result}`
 }
 
 // ---- ledger -------------------------------------------------------------------------------------
 
 export function ledgerHtml(rows, { name, open = new Set() }) {
   if (!rows.length) return '<p class="muted">No closed rounds yet.</p>'
-  return `<ol class="ledger-list">${rows
+  return `<div class="ledger-legend" aria-hidden="true"><span>Round</span><span>Givers and thanks</span><span>Paid</span><span class="lt-key"><span class="lt t1">auto</span><span class="lt t2">1 vote</span><span class="lt t3">majority</span></span></div><ol class="ledger-list">${rows
     .map((x) => {
       const s = x.summary
       const empty = s.givers === 0
@@ -155,7 +214,7 @@ export function ledgerHtml(rows, { name, open = new Set() }) {
       const detail = open.has(s.n) && !empty ? ledgerDetailHtml(x, { name }) : ''
       return `<li class="ledger-row${empty ? ' empty' : ''}${open.has(s.n) ? ' open' : ''}">
         <button class="lr-head" type="button" data-round="${esc(s.n)}"${empty ? ' disabled' : ''} aria-expanded="${open.has(s.n)}">
-          <span class="lr-n">Round ${esc(s.n)}</span>
+          <span class="lr-n"><span class="lr-chev" aria-hidden="true"></span>Round ${esc(s.n)}</span>
           <span class="lr-givers">${empty ? 'nobody gave · only reputation decayed' : `${s.givers} giver${s.givers === 1 ? '' : 's'} · ${L.fmtInt(s.thanks)} thanks → ${L.fmtThanks(s.points)} counted`}</span>
           <span class="lr-paid">${empty ? '' : esc(tusd(s.paid))}</span>
           <span class="lr-tiers">${empty ? '' : tiers}</span>
@@ -180,13 +239,13 @@ function ledgerDetailHtml(x, { name }) {
     <tbody>${recv
       .map((r) => {
         const p = pay.get(r)
-        return `<tr><td><button class="lnk" type="button" data-record="${esc(r)}">${esc(name(r))}</button></td>
+        return `<tr><td class="who"><button class="lnk" type="button" data-record="${esc(r)}">${esc(name(r))}</button></td>
           <td class="from">${byReceiver
             .get(r)
-            .map((e) => `<span class="gv">${esc(name(e.g))} ${e.given}${L.fmtThanks(e.counted) !== String(e.given) ? ` → ${esc(L.fmtThanks(e.counted))}` : ''}</span>`)
+            .map((e) => `<span class="gv" title="${esc(`${name(e.g)} gave ${e.given}, ${L.fmtThanks(e.counted) === String(e.given) ? 'counted in full' : `counted ${L.fmtThanks(e.counted)}`}`)}">${esc(name(e.g))} ${e.given}${L.fmtThanks(e.counted) !== String(e.given) ? ` → ${esc(L.fmtThanks(e.counted))}` : ''}</span>`)
             .join('')}</td>
-          <td class="num">${esc(L.fmtThanks(points.get(r) ?? 0n))}</td>
-          <td class="num">${p ? `${esc(L.fmtTusd(p.amount))} ${pill(p.tier)}` : '<span class="muted">carried</span>'}</td></tr>`
+          <td class="num counted" data-label="counted">${esc(L.fmtThanks(points.get(r) ?? 0n))}</td>
+          <td class="num pay">${p ? `${esc(L.fmtTusd(p.amount))} ${pill(p.tier)}` : '<span class="muted">carried</span>'}</td></tr>`
       })
       .join('')}</tbody></table>
     <p class="muted fine">Budget ${esc(tusd(x.round.budget))} · rounding dust left in the DAO ${esc(L.fmtTusd(x.round.dust, { places: 6 }))} tUSD</p></div>`
@@ -210,7 +269,7 @@ export function rulesHtml(cfg, report, { roundMs }) {
     <ol class="how-list">
       <li><b>A round lasts ${esc(L.fmtDuration(roundMs))}.</b> Every member, and up to ${esc(c.guest_seats)} guests, hands out ${esc(c.thanks_per_round)} thanks: at most ${esc(c.cap_per_receiver)} to one person, up to ${esc(c.max_receivers)} people, never to oneself. Unspent thanks lapse.</li>
       <li><b>One line of what you did.</b> Each note is at most ${esc(c.note_max_bytes)} bytes and stays with the round, so givers have something to go by.</li>
-      <li><b>Counting.</b> ${damp.length ? esc(damp.join('; ')) + '.' : 'Thanks count as given.'} Guest thanks count ${esc(L.fmtPct(c.guest_weight_bp))}, and all guests together steer at most ${esc(L.fmtPct(c.guest_cap_bp))} of a round${esc(receiveCap)}. Every counted point belongs to one giver.</li>
+      <li><b>Counting.</b> ${damp.length ? esc(capFirst(damp.join('; '))) + '.' : 'Thanks count as given.'} Guest thanks count ${esc(L.fmtPct(c.guest_weight_bp))}, and all guests together steer at most ${esc(L.fmtPct(c.guest_cap_bp))} of a round${esc(receiveCap)}. Every counted point belongs to one giver.</li>
       <li><b>Paying.</b> The round’s budget, ${units(c.round_budget)} (less if the DAO holds less beyond what earlier rounds still owe), is split by counted thanks. A share under ${units(c.min_payout)} is carried for up to ${esc(c.carry_rounds)} rounds.</li>
       <li><b>Reputation.</b> Counted thanks add up and fade ${esc(L.fmtPct(c.decay_bp))} a round. A payout the council rejects takes that round’s points back: a strike.</li>
     </ol>
@@ -218,9 +277,9 @@ export function rulesHtml(cfg, report, { roundMs }) {
     <div class="table-wrap"><table class="tier-table">
       <thead><tr><th>Tier</th><th>Payout up to</th><th>DAO proposal</th><th>Approved by</th></tr></thead>
       <tbody>
-        <tr class="t1"><td>${pill(1)}</td><td>${units(c.auto_per_thanks)} per thanks of reputation, at most ${units(c.auto_max)}; nothing below ${esc(c.auto_rep_min)} thanks of reputation, never for guests; at most ${esc(L.fmtPct(c.auto_share_bp))} of a round</td><td><code>${esc(t(1).kind ?? 'Transfer')}</code></td><td>${esc(t(1).approvedBy ?? '')}</td></tr>
-        <tr class="t2"><td>${pill(2)}</td><td>${units(c.cosign_base)} plus ${units(c.cosign_per_thanks)} per thanks of reputation, at most ${units(c.cosign_max)}</td><td><code>${esc(t(2).kind ?? 'FunctionCall')}</code></td><td>${esc(t(2).approvedBy ?? '')}</td></tr>
-        <tr class="t3"><td>${pill(3)}</td><td>anything larger</td><td><code>${esc(t(3).kind ?? 'Transfer')}</code></td><td>${esc(t(3).approvedBy ?? '')}</td></tr>
+        <tr class="t1"><td>${pill(1)}</td><td data-label="Up to">${units(c.auto_per_thanks)} per thanks of reputation, at most ${units(c.auto_max)}; nothing below ${esc(c.auto_rep_min)} thanks of reputation, never for guests; at most ${esc(L.fmtPct(c.auto_share_bp))} of a round</td><td data-label="DAO proposal"><code>${esc(t(1).kind ?? 'Transfer')}</code></td><td data-label="Approved by">${esc(t(1).approvedBy ?? '')}</td></tr>
+        <tr class="t2"><td>${pill(2)}</td><td data-label="Up to">${units(c.cosign_base)} plus ${units(c.cosign_per_thanks)} per thanks of reputation, at most ${units(c.cosign_max)}</td><td data-label="DAO proposal"><code>${esc(t(2).kind ?? 'FunctionCall')}</code></td><td data-label="Approved by">${esc(t(2).approvedBy ?? '')}</td></tr>
+        <tr class="t3"><td>${pill(3)}</td><td data-label="Up to">anything larger</td><td data-label="DAO proposal"><code>${esc(t(3).kind ?? 'Transfer')}</code></td><td data-label="Approved by">${esc(t(3).approvedBy ?? '')}</td></tr>
       </tbody></table></div>
     <p class="muted fine">Sputnik has no amount limits. The amounts behind the tiers are the contract’s code; the DAO enforces who may file which kind and how many votes each needs. The contract has no keys, and the council can remove its role with one majority vote. Open <i>Proof</i> to check both.</p>
     <details class="params"><summary>Every parameter</summary><dl class="param-list">${Object.entries(c)
@@ -241,10 +300,32 @@ export function sparkHtml(series, { w = 520, h = 120 } = {}) {
   return `<svg class="spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="Reputation over rounds ${series[0].round} to ${series[series.length - 1].round}">
     <path class="spark-area" d="${area}"/><polyline class="spark-line" points="${pts}"/>
     <circle class="spark-dot" cx="${xs(series.length - 1)}" cy="${ys(series[series.length - 1].rep)}" r="4"/></svg>
-    <div class="spark-axis"><span>round ${series[0].round}</span><span>${esc(L.fmtThanks(max))} max</span><span>round ${series[series.length - 1].round}</span></div>`
+    <span class="spark-max">${esc(L.fmtThanks(max))} at most</span>
+    <div class="spark-axis"><span>round ${series[0].round}</span><span>round ${series[series.length - 1].round}</span></div>`
 }
 
-export function memberHtml(m, { name, house, series, explorer, mock, me, proposals, contract }) {
+/**
+ * What a demo member's record shows, in one or two sentences from the record itself: for the
+ * colluding pair, how much of its points the partner's thanks made; for the free rider, that
+ * everything it got was given by others for its notes.
+ */
+export function roleNote(m, { kind, partner, name }) {
+  if (kind === 'pair' && partner) {
+    const sh = L.partnerShare(m.history, partner)
+    if (!sh.total) return ''
+    const pct = Number((sh.fromPartner * 1000n) / sh.total) / 10
+    const strikes = Number(m.strikes)
+    return `${name(partner)}’s thanks made ${pct.toFixed(1)}\u00a0% of ${name(m.account)}’s points over the rounds kept: their thanks to each other count at the mutual rate. The rest is thanks from others for ${name(m.account)}’s notes, so the council’s rule (more than half from one partner) lets most payouts through${strikes ? `; ${strikes} were rejected, each a strike` : ''}.`
+  }
+  if (kind === 'free_rider') {
+    const givers = new Set(m.history.flatMap((h) => h.givers.map(([g]) => g)))
+    return `Never gives thanks. Every point here is thanks others gave for his vague notes (${givers.size} different givers over the rounds kept), and none is discounted, since only mutual thanks are. The council’s rule lets him through as well: no giver is his partner, and a tier-3 payout needs only three givers.`
+  }
+  return ''
+}
+
+export function memberHtml(m, { name, house, series, explorer, mock, me, proposals, contract, partner = null }) {
+  const role = roleNote(m, { kind: house?.[m.account], partner, name })
   const hist = [...m.history].reverse()
   const payouts = [...m.payouts].reverse()
   const kind = m.kind === 'guest' ? 'guest (browser key)' : m.kind === 'member' ? 'member of the DAO' : 'not a member now'
@@ -257,13 +338,14 @@ export function memberHtml(m, { name, house, series, explorer, mock, me, proposa
       <div><dt>Carry</dt><dd>${esc(tusd(m.carry))}</dd></div>
     </dl>
     <p class="muted fine">Next close: a payout up to the auto limit is paid at once; up to the co-sign limit it needs one council vote; above it, a council majority.${Number(m.strikes) ? ` ${m.strikes} strike${Number(m.strikes) === 1 ? '' : 's'} so far.` : ''}</p>
-    ${series.length > 1 ? `<h3>Reputation</h3>${sparkHtml(series)}` : ''}
+    ${role ? `<p class="rec-role">${esc(role)}</p>` : ''}
+    ${series.length > 1 ? `<h3>Reputation</h3><div class="spark-wrap">${sparkHtml(series)}</div>` : ''}
     <h3>Rounds and who gave the points</h3>
     ${hist.length ? `<ol class="rec-rounds">${hist
       .map(
         (h) => `<li><div class="rr-head"><b>Round ${esc(h.round)}</b><span>+${esc(L.fmtThanks(h.points))}</span></div>
         <div class="rr-from">${h.givers
-          .map(([g, given, counted]) => `<span class="gv" title="${esc(g)}">${esc(name(g))} ${esc(given)}${L.fmtThanks(counted) !== String(given) ? ` → ${esc(L.fmtThanks(counted))}` : ''}</span>`)
+          .map(([g, given, counted]) => `<span class="gv" title="${esc(`${g} gave ${given}, ${L.fmtThanks(counted) === String(given) ? 'counted in full' : `counted ${L.fmtThanks(counted)}`}`)}">${esc(name(g))} ${esc(given)}${L.fmtThanks(counted) !== String(given) ? ` → ${esc(L.fmtThanks(counted))}` : ''}</span>`)
           .join('')}</div></li>`,
       )
       .join('')}</ol>` : '<p class="muted">No counted thanks in the rounds kept on chain.</p>'}
@@ -330,12 +412,46 @@ export function relayLines(keys, contract) {
   return out
 }
 
+/**
+ * The proof drawer's verdict over every check it makes: null while any is still being read,
+ * else {ok, n, failed}.
+ */
+export function proofVerdict(x) {
+  const lines = relayLines(x.relayKeys, x.contract).filter((r) => !r.full)
+  const checks = [
+    x.contractKeys == null ? null : x.contractKeys.length === 0 || Boolean(x.stage),
+    x.tokenKeys == null ? null : x.tokenKeys.length === 0 || Boolean(x.stage),
+    x.contractHash == null ? null : !x.expectedHash || x.contractHash === x.expectedHash,
+    x.tokenHash == null ? null : !x.expectedTokenHash || x.tokenHash === x.expectedTokenHash,
+    ...(x.report ? x.report.checks.map((c) => c.ok) : [null]),
+    ...(x.audit ? [x.audit.balanced, x.audit.points_attributed, x.audit.statuses_ok, x.audit.filed_have_ids] : [null]),
+    ...(x.relayKeys == null ? [null] : lines.map((r) => r.ok)),
+  ]
+  if (checks.some((c) => c == null)) return null
+  const failed = checks.filter((c) => !c).length
+  return { ok: failed === 0, n: checks.length, failed }
+}
+
 export function proofHtml(x) {
   const lk = (path, text) => link(x.explorer, x.mock, path, text)
   const check = (ok, label) => `<li class="${ok == null ? 'wait' : ok ? 'ok' : 'no'}"><span class="mark" aria-hidden="true"></span>${label}</li>`
+  const v = proofVerdict(x)
+  const verdict = v == null
+    ? '<p class="verdict wait"><span class="mark" aria-hidden="true"></span>Reading every check live from NEAR testnet…</p>'
+    : v.ok
+      ? `<p class="verdict ok"><span class="mark" aria-hidden="true"></span>All ${esc(v.n)} checks pass · read live from NEAR ${x.mock ? '(here: a stand-in)' : 'testnet'} just now</p>`
+      : `<p class="verdict no"><span class="mark" aria-hidden="true"></span>${esc(v.failed)} of ${esc(v.n)} checks fail · see below</p>`
+  const rl = relayLines(x.relayKeys, x.contract)
+  const forThis = rl.filter((r) => !r.other && !r.full)
+  const allOk = forThis.length > 0 && forThis.every((r) => r.ok)
+  const caps = forThis.map((r) => (r.allowance ? L.big(r.allowance) : null))
+  const maxCap = caps.every((c) => c != null) && caps.length ? caps.reduce((a, b) => (a > b ? a : b)) : null
+  const summary = x.relayKeys == null
+    ? ''
+    : check(allOk, `${esc(forThis.length)} relay key${forThis.length === 1 ? '' : 's'}: each may call only <code>${esc([...RELAY_METHODS].join(', '))}</code> on the contract${maxCap != null ? `, allowance at most ${esc(L.fmtThanks(maxCap / 10n ** 21n))} NEAR` : ''}`)
   const relay = x.relayKeys == null
     ? '<li class="wait"><span class="mark"></span>checking…</li>'
-    : relayLines(x.relayKeys, x.contract)
+    : rl
         .map((r) =>
           r.other
             ? check(true, `${esc(r.n)} more key${r.n === 1 ? '' : 's'} of this account ${r.n === 1 ? 'is' : 'are'} bound to <code>${esc(r.other)}</code>: ${r.n === 1 ? 'it' : 'they'} cannot call this contract`)
@@ -350,6 +466,7 @@ export function proofHtml(x) {
     : '<li class="muted">No transactions from this tab yet.</li>'
   return `
     ${x.mock ? '<p class="mock-note">Mock mode: a stand-in community in this tab. Nothing below is on chain.</p>' : ''}
+    ${verdict}
     <p>Everything on this page is read from NEAR ${x.mock ? '(here: a stand-in)' : 'testnet'}. The rules live in one contract without keys; the money and every approval stay in the community’s Sputnik DAO.</p>
     <h3>The contract</h3>
     <ul class="proof-list">
@@ -375,7 +492,8 @@ export function proofHtml(x) {
     }</ul>
     <h3>Relay keys</h3>
     <p class="muted fine">Guests sign with their own browser key; these public keys of ${lk(`address/${x.gasAccount}`, x.gasAccount ?? '–')} only carry the transaction.</p>
-    <ul class="checks">${relay}</ul>
+    <ul class="checks">${summary || relay}</ul>
+    ${summary ? `<details class="relay-all"><summary>Every key, one by one</summary><ul class="checks">${relay}</ul></details>` : ''}
     <h3>You</h3>
     <ul class="proof-list">
       <li><span>Your account</span><span>${x.me ? lk(`address/${x.me}`, L.shortAccount(x.me)) : '<span class="muted">no key yet: one is made when you give</span>'}</span></li>

@@ -59,7 +59,7 @@ test('early in a round a guest’s thanks count 0, and the card says why', () =>
   assert.equal(cnt.points.get('ana.x.testnet'), 0n, 'no member gave: guests steer 20 % of nothing')
   const r = L.explainReceiver(cfg, cnt, 'ana.x.testnet').reasons.find((x) => x.kind === 'guest')
   assert.equal(r.noMembers, true)
-  assert.equal(L.reasonText(r, (a) => L.displayName(a, guest)), 'Guest thanks count once members have given: guests together steer at most 20 % of a round.')
+  assert.equal(L.reasonText(r, (a) => L.displayName(a, guest)), 'Guest thanks count as soon as members start giving: guests together steer at most 20\u00a0% of a round.')
   const later = L.countRound(cfg, new Set(['ana.x.testnet', 'ben.x.testnet']), new Set([guest]), new Map([[guest, [['ana.x.testnet', 25]]], ['ben.x.testnet', [['ana.x.testnet', 25]]]]))
   assert.equal(L.explainReceiver(cfg, later, 'ana.x.testnet').reasons.find((x) => x.kind === 'guest').noMembers, false)
 })

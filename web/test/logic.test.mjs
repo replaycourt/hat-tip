@@ -76,8 +76,8 @@ test('a colluding pair: they thanked each other 40, counted 20 each (DESIGN.md e
   assert.deepEqual(ex.reasons.map((r) => r.kind), ['mutual'])
   assert.equal(L.reasonText(ex.reasons[0], L.displayName), 'Thanked each other 40 with Finn: counted 20 each way.')
   const idle = L.explainReceiver(CFG, cnt, B).reasons[0]
-  assert.equal(L.reasonText(idle, L.displayName), 'Gave no thanks this round: thanks received count 50 %.')
-  assert.equal(L.reasonText(idle, L.displayName, { open: true }), 'Has not given thanks yet: thanks received count 50 % until they do.')
+  assert.equal(L.reasonText(idle, L.displayName), 'Gave no thanks this round: thanks received count 50\u00a0%.')
+  assert.equal(L.reasonText(idle, L.displayName, { open: true }), 'Has not given thanks yet: thanks received count 50\u00a0% until they do.')
   // every point belongs to one giver
   for (const [acc, p] of cnt.points) assert.equal(p, cnt.rows.filter((r) => r.receiver === acc).reduce((a, r) => a + r.counted, 0n))
 })
@@ -92,7 +92,7 @@ test('guest thanks weigh guest_weight_bp, and all guests together at most guest_
   const g = cnt.rows.filter((r) => r.giver === GUEST)
   assert.deepEqual(g.map((r) => r.weight), [1250n, 1250n], 'guests steer 2,500 of 12,500 = 20 %')
   const reason = L.explainReceiver(CFG, cnt, C).reasons.find((r) => r.kind === 'guest')
-  assert.match(L.reasonText(reason, (a) => L.displayName(a, GUEST)), /^You gave as a guest: guest thanks count 50 %, and all guests together at most 20 % of the round\.$/)
+  assert.match(L.reasonText(reason, (a) => L.displayName(a, GUEST)), /^You gave as a guest: guest thanks count 50\u00a0%, and all guests together at most 20\u00a0% of the round\.$/)
   // guest to guest is dropped
   const two = L.countRound(CFG, new Set(MEMBERS), new Set([GUEST, 'b'.repeat(64)]), new Map([[GUEST, [['b'.repeat(64), 5]]]]))
   assert.deepEqual(two.dropped, [[GUEST, 'b'.repeat(64), 5, 'guest to guest']])
@@ -113,7 +113,7 @@ test("guests together receive at most guest_receive_cap_bp (the contract's math.
   assert.deepEqual(by(capped), [1_250n, 1_250n, 1_250n, 10_000n, 5_000n])
   assert.ok(capped.receiveScaled)
   const why = L.explainReceiver({ ...cfg, guest_receive_cap_bp: 2000 }, capped, g2).reasons.map((r) => L.reasonText(r))
-  assert.deepEqual(why, ['Guests together receive at most 20 % of a round’s thanks: scaled down to that.'])
+  assert.deepEqual(why, ['Guests together receive at most 20\u00a0% of a round’s thanks: scaled down to that.'])
   assert.deepEqual(by(L.countRound({ ...cfg, guest_receive_cap_bp: 9000 }, new Set([A, B]), seats, alloc)), by(open), 'not binding: unchanged')
 })
 
@@ -358,8 +358,8 @@ test('names and numbers on the page', () => {
   assert.equal(L.fmtThanks(31_533n), '31.5')
   assert.equal(L.fmtThanks(20_000n), '20')
   assert.equal(L.fmtThanks(1_234_000n), '1,234')
-  assert.equal(L.fmtPct(5000), '50 %')
-  assert.equal(L.fmtPct(3333), '33.3 %')
+  assert.equal(L.fmtPct(5000), '50\u00a0%')
+  assert.equal(L.fmtPct(3333), '33.3\u00a0%')
   assert.equal(L.fmtCountdown(61_000), '1:01')
   assert.equal(L.fmtCountdown(3_723_000), '1:02:03')
   assert.equal(L.fmtDuration(1_200_000), '20 minutes')

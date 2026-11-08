@@ -7,7 +7,7 @@ import { REPLAY } from './replay-data.js'
 
 export const SIDES = ['plain', 'rules']
 const sum = (xs) => xs.reduce((a, b) => a + b, 0)
-const fmtPct = (bp) => `${Number(bp) / 100} %`
+const fmtPct = (bp) => `${Number(bp) / 100}\u00a0%`
 
 /** Everything one frame shows after round k: per person and side, cents paid so far, the share of
  * all payouts, and how far that share is above or below the person's share of the work. */
@@ -51,7 +51,7 @@ export const fmtCents = (c) => `${Math.floor(c / 100).toLocaleString('en-US')}`
 /** The sentences under the panels, for frame f. */
 export function summary(f) {
   const g = f.groups
-  const p = (x) => `${x.toFixed(1)} %`
+  const p = (x) => `${x.toFixed(1)}\u00a0%`
   const lines = []
   if (g.pair) lines.push({ kind: 'pair', text: `The colluding pair: ${p(g.pair.plain)} of all payouts with plain counting, ${p(g.pair.rules)} with the rules, for ${p(g.pair.work)} of the work.` })
   if (g.honest) lines.push({ kind: 'honest', text: `The ${g.honest.n} honest helpers: ${p(g.honest.plain)} plain, ${p(g.honest.rules)} with the rules, for ${p(g.honest.work)} of the work.` })
@@ -127,10 +127,11 @@ function panel(side, title, sub, data) {
   return { box, rows }
 }
 
-function dumbbellSvg(rows) {
+/** The dumbbell chart, drawn at the width it is shown at (`width` px), so its text keeps its size. */
+function dumbbellSvg(rows, width = 640) {
   const d = dumbbell(rows)
-  const W = 640
-  const left = 150
+  const W = Math.max(320, Math.min(1000, Math.round(width)))
+  const left = W < 520 ? 118 : 170
   const right = 24
   const rowH = 38
   const H = 34 + rowH * d.rows.length + 26
@@ -188,7 +189,7 @@ function tableView(data) {
 export function mountReplay(host, { reduced = false, data = REPLAY, stepMs = 170 } = {}) {
   const max = scaleMax(data)
   const root = el('div', 'rp')
-  root.append(el('p', 'rp-note', `A simulation of the contract’s own arithmetic (sim/hat_tip_sim.py), not the live café: the house community over ${data.rounds} rounds, with visitors, and every thanks counted twice. Same people, same notes, same thanks; only the counting differs.`))
+  root.append(el('p', 'rp-note', `A simulation of the contract’s own arithmetic (sim/hat_tip_sim.py), not the live café. Same people, same notes, same thanks; only the counting differs.`))
   const controls = el('div', 'rp-controls')
   const play = el('button', 'btn-quiet rp-play', 'Play')
   play.type = 'button'
@@ -207,9 +208,9 @@ export function mountReplay(host, { reduced = false, data = REPLAY, stepMs = 170
   const sc = data.scenarios
   const bigger = el('div', 'rp-bigger')
   bigger.append(
-    el('h3', null, 'In bigger communities'),
-    el('p', 'rp-panel-sub', `The simulation’s scenarios: ${sc.members} members, ${sc.rounds} weekly rounds, medians over ${sc.seeds} seeds, colluders playing their best response. Share of payouts above the share of work, in percentage points, plain counting → with the rules.`),
-    dumbbellSvg(sc.rows),
+    el('h3', null, 'Every scenario, in a community of 24'),
+    el('p', 'rp-panel-sub', `Medians over ${sc.seeds} seeds. Share of payouts above the share of work, in percentage points: plain counting → with the rules.`),
+    dumbbellSvg(sc.rows, host.clientWidth - 40),
   )
   const keyRow = el('p', 'rp-key')
   keyRow.append(el('span', 'rp-key-plain', 'plain counting'), el('span', 'rp-key-rules', 'with the rules'))
@@ -217,9 +218,11 @@ export function mountReplay(host, { reduced = false, data = REPLAY, stepMs = 170
   const caveat = el(
     'p',
     'rp-caveat',
-    `What the rules do not do: they aim at collusion, not at free riding. A member who thanks nobody loses nothing to the discount on mutual thanks, so free riders keep a little more (${fmtPts(sc.rows.find((r) => r.label === 'Four free riders')?.plain ?? 0)} → ${fmtPts(sc.rows.find((r) => r.label === 'Four free riders')?.rules ?? 0)} points). Rings keep some of their edge, and an honest pair that really thanks each other a lot pays ${sc.honestPairCost} % of its payout for the rules.`,
+    `What the rules do not do: they aim at collusion, not at free riding. A member who thanks nobody loses nothing to the discount on mutual thanks, so free riders keep a little more (${fmtPts(sc.rows.find((r) => r.label === 'Four free riders')?.plain ?? 0)} → ${fmtPts(sc.rows.find((r) => r.label === 'Four free riders')?.rules ?? 0)} points). Rings keep some of their edge, and an honest pair that really thanks each other a lot pays ${sc.honestPairCost}\u00a0% of its payout for the rules.`,
   )
-  root.append(controls, panels, legend, sums, table.details, bigger, caveat)
+  const cafe = el('h3', 'rp-cafe-head', `The café’s house community over ${data.rounds} rounds, with visitors`)
+  // the result first (every scenario and what the rules do not do), then the café round by round
+  root.append(bigger, caveat, cafe, controls, panels, legend, sums, table.details)
   host.replaceChildren(root)
 
   const draw = (k) => {
