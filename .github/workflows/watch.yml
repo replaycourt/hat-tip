@@ -1,0 +1,51 @@
+# Watches the live Hat Tip demo once an hour, so that it stays usable through judging and any
+# breakage reaches the owner: a failed run is what GitHub emails about. scripts/watch.py runs the
+# read-only checks of scripts/judge-checks.sh (no access keys on the contract and the token, code
+# hashes = WASM_SHA256, the DAO's tiers, rounds closing, ...), and checks the gas account's balance
+# and relay key allowance with the days they last, the NEAR the contract and the DAO have free for
+# storage, the house members' and council's balances, and that the House workflow is running. Every
+# problem is one ::error:: line, and the job summary shows the table either way.
+#
+# Read-only: it sends no transaction, holds no key and reads no secret; the default token only lists
+# the House workflow's runs. The thresholds are below; a runway that ends before judging does is a
+# warning in the summary, not a failure.
+name: Watch
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  RPC: https://test.rpc.fastnear.com
+  RPC_FALLBACK: https://near-testnet.drpc.org
+  JUDGING_ENDS: '2026-11-25'       # a warning when gas or allowance would not last past this day
+  MIN_GAS_NEAR: '3'                # NEAR hat-tip-gas.testnet can still spend
+  MIN_ALLOWANCE_NEAR: '3'          # NEAR left on the relay keys for the contract, together
+  BURN_NEAR_PER_DAY: '0.8'         # assumed burn when the RPC cannot tell the last 20 hours' burn
+  MIN_CONTRACT_FREE_NEAR: '1.5'    # the contract refuses guests below 1 NEAR free
+  WARN_CONTRACT_FREE_NEAR: '3'
+  MIN_DAO_FREE_NEAR: '2'           # NEAR the DAO has for proposal storage
+  MAX_HOUSE_IDLE_MIN: '60'         # minutes without a House run in progress
+
+jobs:
+  watch:
+    name: Watch the café
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # No install: the script needs python3, bash, curl and node, all on the runner.
+      - name: Check the live demo
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/watch.py

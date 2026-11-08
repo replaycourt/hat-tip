@@ -34,7 +34,7 @@ jobs:
         run: |
           for f in scripts/*.mjs; do node --check "$f"; done
           bash -n scripts/judge-checks.sh
-          python3 -m py_compile scripts/compare-wasm.py
+          python3 -m py_compile scripts/compare-wasm.py scripts/watch.py
 
   sim:
     name: Simulation reproduces the golden vectors, the replay and the launch parameters
