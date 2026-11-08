@@ -2,50 +2,84 @@
 
 [![CI](https://github.com/replaycourt/hat-tip/actions/workflows/ci.yml/badge.svg)](https://github.com/replaycourt/hat-tip/actions/workflows/ci.yml)
 
-A community that keeps its money in a Sputnik DAO pays the people who helped, in rounds, without a council vote on every small payout and without rebuilding the multisig:
+![The live page: "Peer thanks, paid out by the café's own DAO", the three tiers as tiles with the last round's numbers, the round card with the countdown and the Give button, and the five steps of the last close](docs/shots/final-desktop-hero.png)
 
-1. **Every round, each member hands out 100 thanks** to the people whose work helped them, and posts one line about what they did ("fixed two kettles and a lamp").
-2. **At the close, the round's budget is split by the thanks received**, after published rules that blunt collusion: mutual thanks count less, support from fewer than three givers counts less, nobody gets more than 25 thanks from one giver.
-3. **Every payout is a proposal in the community's own DAO**, and the receiver's record decides how much of it leaves without a human: small payouts to members with a record pass at once (tier 1), mid-size ones need one council member's vote (tier 2), large ones and most first payouts need a council majority (tier 3). The three tiers are written into the DAO's own policy, where anyone can read them.
-4. **The rules live in one NEAR contract with no access keys.** The DAO keeps the money, the member list and every approval; the contract only files proposals through a DAO role the council can remove with one vote.
+**▶ Try it now, no wallet: https://replaycourt.github.io/hat-tip/web/** · [Video, 90 s](https://x.com/replaycourt/status/2119435604131795220) · [JUDGE.md](JUDGE.md): a five-minute path and 14 read-only checks
 
-**Try it, no wallet:** https://replaycourt.github.io/hat-tip/web/ (testnet; tUSD is a test token with no value; tap *Give your 100 thanks*; a round lasts 20 minutes) · **Video, 90 s:** https://x.com/replaycourt/status/2119435604131795220 · **Judging:** [JUDGE.md](JUDGE.md), a five-minute path, and `scripts/judge-checks.sh`, 14 read-only checks of the live deployment.
+**What.** Paying helpers from a DAO is slow by design: every payout is a proposal the council votes on. Hat Tip lets a community that keeps its money in a Sputnik DAO pay the people who helped, without a vote on every small payout and without a new multisig. Each member hands out 100 thanks a round; when the round closes, the DAO pays the round's budget by the thanks received. The receiver's record decides how many people must say yes: small payouts to members with a record pass at once by the contract's own vote, mid-size ones need one council member, large ones and most first payouts are a normal DAO proposal for the council majority.
+
+**Why thanks instead of bounties.** The track's starter idea is a bounty board, and the hackathon guide says: *"Swap the starter idea for your own if you have a better one. Keep the requirements and the checkpoint."* Hat Tip swaps it. In a volunteer community most work is unplanned help that nobody posts or prices in advance: the kettle fixed in passing, the newcomer shown around. Thanks after the work capture it, and the people who were helped are the ones who judge it. The four requirements and the checkpoint stay, each met below in [Fits the track](#fits-the-track).
+
+**Try it in a minute.** Open the page, tap *Give your 100 thanks* (your browser makes a key; there is no wallet prompt), tap *+10* on a few people and see every card's payout and tier move, then send. Join in the first half of a 20-minute round: the house members thank guests back between halfway and four fifths of the round. The dark strip under the title shows how the last round became payouts, in five steps; *Replay the close* plays it; every payout's number opens its proposal live from the DAO.
+
+**Proof.** Everything runs on NEAR testnet in one contract with no access keys: `scripts/judge-checks.sh` reads 14 facts from the chain in about 15 seconds.
 
 | You can check | How |
 |---|---|
 | Nobody can change a rule | `scripts/judge-checks.sh` checks 1-4 (0 access keys on the contract and the token, code hashes = `WASM_SHA256`) and 11 (`config()`) |
 | The tiers are the DAO's own policy | checks 5-8: the three thresholds exactly, no `Everyone` role, only the contract may file `call` proposals, the factory cannot upgrade the DAO |
-| Every payout is a real DAO proposal | check 12: a sample of the DAO's proposals against the contract's `payouts()`; the page links each payout to its proposal |
+| Every payout is a real DAO proposal | check 12: the DAO's proposals against the contract's `payouts()`; the page links each payout to its proposal |
 | The contract counts like the simulation | `contract/tests/golden.rs`: 6 vectors, 61 rounds, to the base unit; the page's `logic.js` passes the same vectors |
-| It ran on the real chain | staging run: 28 rounds, 154 payouts in all three tiers, 6 council rejections with their strikes ([docs/testnet-stage.md](docs/testnet-stage.md)) |
-| What the rules do not stop | [Honest limits](#honest-limits): rings, one-way thanks, a guest farm, a colluding council |
+| It ran on the real chain | the final deployment: 24 rounds and 140 payouts in all three tiers by 2026-11-08 18:35 UTC; before it, a staging run of 28 rounds and 154 payouts with 6 council rejections ([docs/testnet-stage.md](docs/testnet-stage.md)) |
+| What the rules do not stop | [Honest limits](#honest-limits): rings, one-way thanks, free riders, a guest farm, a colluding council |
 
 | The round board | The payouts of the last round, by tier |
 |---|---|
-| ![The Repair Café's round: the countdown, the budget, what the DAO holds, a card per member with this round's note and thanks](docs/shots/final-desktop-round.png) | ![Three columns: paid automatically, one council vote, a council majority; each card with its DAO proposal](docs/shots/final-desktop-payouts.png) |
+| ![The Repair Café's round: the countdown, the budget, what the DAO holds, a card per member with this round's note and thanks](docs/shots/final-desktop-round.png) | ![Three columns: paid automatically, one council vote, a council majority; each card with its DAO proposal and its votes](docs/shots/final-desktop-payouts.png) |
 | **A member's record** | **The proof drawer** |
-| ![A member's record: reputation over the rounds, each round's points with their givers, each payout with tier, DAO proposal and status](docs/shots/final-desktop-record.png) | ![Proof: the contract and the token with 0 access keys, the lock transaction, code hashes against WASM_SHA256, the DAO policy checks](docs/shots/final-desktop-proof.png) |
+| ![A member's record: reputation over the rounds, each round's points with their givers, each payout with tier, DAO proposal and status](docs/shots/final-desktop-record.png) | ![Proof: all checks pass; the contract and the token with 0 access keys, the lock transaction, code hashes against WASM_SHA256, the DAO policy checks](docs/shots/final-desktop-proof.png) |
 
 On a phone: [the round](docs/shots/final-phone-round.png), [the payouts](docs/shots/final-phone-payouts.png). All screenshots are of the live page on the final deployment.
 
-## The problem
+## Fits the track
 
-Communities on NEAR keep their treasuries in Sputnik DAOs (Trezu is a front end for the same DAOs). Paying contributors from them is slow by design: every payout is a proposal the council votes on. Small, frequent recognition either waits for a quorum, does not happen, or ends up with one trusted person holding a hot wallet. The track's prompt asks for earned trust instead: people with a track record can be paid small amounts without a full council vote, every reputation point traces back to finished work, and custody and approvals stay in the existing DAO.
+The `social` track: *"shared budgets, programmable rewards, collective ownership and reputation-based access on top of Sputnik DAO and Trezu."* Its starter idea, in brackets: *"Build [a bounty board with earned trust] for a community that already runs its treasury on Sputnik DAO or Trezu."* The hackathon's guide: *"Swap the starter idea for your own if you have a better one. Keep the requirements and the checkpoint."*
 
-Hat Tip answers with peer recognition: the people who were helped say who helped them, in a fixed budget of 100 thanks a round, and the DAO's own policy decides how much of the resulting payouts needs a human.
+**The swap.** A bounty must be posted, priced and claimed before the work starts. In a volunteer community (a repair café, a meetup, an open-source project) most work is unplanned help that nobody posts or prices in advance. Hat Tip pays for it after the fact: the people who were helped say who helped, in a fixed budget of 100 thanks a round, and the DAO pays by the thanks received. Earned trust works as the prompt asks: a track record raises how much a person can be paid without a full council vote.
+
+**The requirements and the checkpoint, kept:**
+
+| The prompt requires | In Hat Tip | Where to check |
+|---|---|---|
+| 1. Use the existing DAO or Trezu treasury for custody and approvals; no new multisig | **Met.** Custody, membership, the council and every approval are a Sputnik v2 DAO from the public factory `sputnikv2.testnet`, unmodified (`version()` 2.3.1). The contract never holds the money: every payout is a DAO proposal the DAO executes, a `Transfer` (tiers 1, 3) or a `FunctionCall ft_transfer` (tier 2). | `scripts/judge-checks.sh` checks 5-8, 12, 14; `contract/src/dao.rs`, `contract/src/pay.rs`; [docs/testnet-probe.md](docs/testnet-probe.md) |
+| 2. Reputation tied to named accounts; every point traceable to a finished bounty | **Met, with thanks in place of bounties:** every point traces to a round, its giver and the receiver's note of finished work ("fixed 2 kettles"). Members are named accounts in the DAO's `members` role (implicit and `0x` accounts are ignored). The `points` event and the `member()` view attribute every point; the page shows each giver as *given → counted* in the member's record and in the ledger. | `contract/tests/counting.rs` (`the_points_event_attributes_every_point`), `contract/tests/invariant.rs`; the `round(n)` and `member()` views |
+| 3. Tiers: small payouts auto-approve for trusted contributors, mid-size need one council member, large become a normal DAO proposal | **Met, exactly**, in the DAO's own policy: role `thanks` (the contract) `transfer` 1 of 1, council `call` weight 1, default policy 1/2. The contract picks the tier from the receiver's reputation before the round; the auto and co-sign limits grow with it (0.06 tUSD per thanks, up to 30 tUSD), and a council rejection is a strike that takes reputation away. | `math::limits`, `math::tier`, `math::round_cap` in `contract/src/math.rs`; `contract/tests/dao.rs`, `contract/tests/reputation.rs`; check 5 |
+| 4. A public board: open bounties, claims, payouts, each contributor's record | **Met as a round board.** In place of open bounties and claims: the running round, each member's note of what they did, the thanks so far and a live payout preview with its tier. Then the payouts by tier with DAO proposal links and votes, every member's record, and the ledger of every round. | the page, `web/` |
+| Checkpoint: which approval flows already exist and which must be added | Answered below, from the Sputnik source and a probe on testnet. | [Which approval flows exist and which we add](#which-approval-flows-exist-and-which-we-add) |
+
+**Where it differs, honestly.** Nothing is posted or claimed in advance, so a note is the receiver's own word, and the thanks of the people who were helped are what confirm it. Sputnik's own bounty flow (`AddBounty`, `bounty_claim`, `BountyDone`) could run next to Hat Tip in the same DAO for planned work; the demo DAO does not enable it. Trezu was not run: its hosted app is mainnet-only, and a Trezu treasury is a Sputnik DAO, so the contract binds to one the same way. Members are named accounts; near.social profiles are not used.
+
+### Which approval flows exist and which we add
+
+The prompt ends: *"tell me which approval flows already exist and which ones we need to add."* From the Sputnik v2 source (`near-daos/sputnik-dao-contract` at `5434a59`, `policy.rs`, `proposals.rs`) and a probe on testnet with hand-made transactions ([docs/testnet-probe.md](docs/testnet-probe.md)):
+
+**Exist in Sputnik v2, used as they are:**
+- Roles (`Group` of accounts, `Member`, `Everyone`) with permissions per proposal kind and action (`transfer:AddProposal`, `call:VoteApprove`, wildcards).
+- Vote policies per role and per proposal kind, as a ratio of the role (`[1, 2]`) or a weight (`"1"`), and a default vote policy. A proposal passes as soon as one role whose permissions cover the vote reaches its threshold.
+- Proposal kinds `Transfer` (NEAR or an NEP-141 token) and `FunctionCall`; a proposal bond, returned on approval, rejection and finalize-after-expiry and kept on removal; expiry after `proposal_period` and `Finalize`; `VoteRemove`; bounties; `FactoryInfoUpdate` (the factory's auto-update switch).
+
+**How the three tiers map onto them** (no new DAO code):
+
+| Tier | Flow |
+|---|---|
+| 1 | role `thanks` (the contract alone) may add and approve `transfer`, threshold 1 of 1: the contract files and approves in one transaction chain |
+| 2 | only role `thanks` may add `call` proposals, and the council's vote policy for `call` is weight 1: one council member passes or vetoes what the contract filed, and nothing else |
+| 3 | the contract files a `Transfer` and does not vote; the default policy needs a council majority |
+
+The probe showed each of these on testnet before the contract was written: the role vote executes a transfer at once, a `call` proposal passes on exactly one council vote and on nothing less, the council cannot file a `call`, a tier-3 transfer needs two votes, bonds come back as stated.
+
+**What Sputnik cannot do, and what Hat Tip adds:** Sputnik has no amount limits; the `thanks` role could approve a transfer of any size. The amounts behind the tiers are enforced by the contract's code alone, which is why the contract has no keys and its code hash is checked against this repository. Added outside the DAO: the rounds of thanks, the counting, reputation and strikes, the choice of tier per payout, `check_payout` recording each proposal's outcome, and the page. Turned off in the DAO: the factory's auto-update (`FactoryInfoUpdate`, check 8), so the factory owner cannot replace the DAO's code.
 
 ## How to use it
 
 On the page (https://replaycourt.github.io/hat-tip/web/, or locally, see [Run it yourself](#run-it-yourself)):
 
-1. **Open the page.** See the *Repair Café*, a demo community: *Round N* with the countdown *until round N closes* (*a round lasts 20 minutes*), the round's *Budget*, what *The DAO holds*, *Thanks given* and *Guest seats*, and under *This round at the café* a card for every member with this round's note, the thanks received so far and what they would be paid if the round closed now. House members carry a visible label with their published strategy: *house bot · honest helper*, *house bot · demo: colluding pair*, *house bot · demo: free rider*.
-2. **Look under the board: *Payouts of round N*,** the last round that paid. Three columns, *Paid automatically*, *Needs one council vote*, *Needs a council majority*; each card shows the amount, where it stands (*Paid at once*, *Paid · approved by Council A and C*, *Rejected by the council · strike*) and its DAO proposal number. Tap the number and see the proposal read live from the DAO: status, kind, amount, receiver, votes (a tier-1 payout's only vote is the contract's own), and the proposal as the DAO returns it.
-3. **Tap *Give your 100 thanks*.** No wallet prompt: your browser makes an ed25519 key and takes one of six guest seats for this round. Tap *+10* (or drag the slider) on the people whose work you value, and see every card's payout preview and tier move once members have given this round: guests together steer at most 20 % of a round, so before any member has given, a guest's thanks count 0 and the card says *Guest thanks count once members have given*. On the colluding pair a line says why counted thanks differ from given ones (*Thanked each other 25 with Gus: counted 6.2 each way.*).
-4. **Add a note and tap *Send my thanks*.** The page says *Your thanks are in. They count when round N closes.*, and the transaction is listed under *Proof*, *Your transactions*. A guest's thanks count half, and all guests together steer at most 20 % of a round. The house members thank guests who wrote a note and gave thanks (each house member gives up to 5 thanks to at most two such guests).
-5. **Wait for the close.** With the page open, the close plays in five steps: *Round closed*, *Counted*, *Split*, *Filed in the DAO*, *Approved*; *Replay the close* plays it again. Tier 1 is paid at once by the contract's own vote. If members thanked you, your payout appears under *Needs one council vote* (a guest is never in tier 1); when a house council member votes in the DAO, your card says *Your browser account holds … tUSD*.
-6. **Open a member** (*rep … ›* on a card). The *Record*: reputation, auto and co-sign limits for the next close, the reputation over the rounds, every round's points with the givers behind them (given → counted), and every payout with its tier, DAO proposal and status.
-7. **Play the simulation** under *The same thanks, counted twice*: the house community of the simulation over 36 rounds, every thanks counted plainly and with the rules, side by side; labelled as a simulation of the contract's own arithmetic, not the live café.
-8. **Open *Rules*, then *Proof*.** *Rules* jumps to *How it works*: the contract's `config()` in words, every parameter, and the three tiers as the DAO's `get_policy` states them. *Proof*: the contract and the token with *0 access keys*, the transaction that locked the contract, their code hashes against `WASM_SHA256` in this repository, the DAO policy checks, `audit()`, the relay keys and the methods they may call, and every transaction this tab sent.
+1. **The top:** the idea in one line, the three tiers as tiles with the last round's numbers, and the round card: *Round N*, the countdown, the *Budget*, what *The DAO holds*, and *Give your 100 thanks* with a line on whether now is a good time to join.
+2. **The dark strip, *How round N became payouts*:** *Round closed*, *Counted*, *Split*, *Filed in the DAO* (the proposal numbers filed so far), *Approved* (payouts per tier, how many are paid). It plays at every close; *Replay the close* plays it again.
+3. **The board:** a card per member with this round's note, the thanks so far and the payout if the round closed now. All members are house bots with a published strategy; the demo roles say what they show (*Shows collusion: gives Gus 25 a round and gets 25 back. Mutual thanks count 25 %: 6.2 each way.*). Under it, the last round's payouts in three columns, each with its approvals as marks (*✓ the contract*, *✓ Council A*, *○ a council vote*) and its proposal number, which opens the proposal live from the DAO.
+4. **Give:** *Give your 100 thanks* (no wallet prompt; the browser makes an ed25519 key and takes one of six guest seats), *+10* on the people whose work you value, a note, *Send my thanks*. Every card's preview and tier move as you go, and a line says why counted differs from given (*Thanked each other 25 with Gus: counted 6.2 each way.*). A guest's thanks count half; all guests together steer at most 20 % of a round. Each house member thanks up to two guests who wrote a note and gave thanks (5 each) when it gives, between halfway and four fifths of the round, so join early.
+5. **After the close:** the round card shows your own result: who thanked you back, and a payout with its tier and proposal (a guest is never in tier 1), or a share below 5 tUSD kept for you and paid with a later round.
+6. **Dig in:** *rep … ›* opens a member's record (reputation over the rounds, every round's points with their givers, given → counted, every payout with tier, proposal and status); *The same thanks, counted twice* opens with the simulation's result and plays it; *Rules* states `config()` and the DAO's `get_policy`; *Proof* opens with its verdict (*All N checks pass*) and lists keys, code hashes, policy checks, `audit()`, relay keys and your transactions.
 
 ## The mechanic
 
@@ -74,44 +108,6 @@ At most 80 % of a round's budget may go out in tier 1; the largest tier-1 payout
 
 The full rules are in [DESIGN.md](DESIGN.md), the API, the events and the gas in [contract/README.md](contract/README.md).
 
-## Fits the track
-
-The `social` prompt: *"Build a bounty board with earned trust for a community that already runs its treasury on Sputnik DAO or Trezu. Members post small bounties, contributors claim and finish them, and payouts flow from the treasury. People who finish bounties build a track record, and a good track record raises how much they can be paid without a full council vote."*
-
-| The prompt asks for | In Hat Tip | Where to check |
-|---|---|---|
-| Use the existing DAO or Trezu treasury for custody and approvals; no new multisig | Custody, membership, the council and every approval are a Sputnik v2 DAO from the public factory `sputnikv2.testnet`, unmodified (`version()` 2.3.1). The contract never holds the money. | `scripts/judge-checks.sh` checks 5-8 and 14; `contract/src/dao.rs`; [docs/testnet-probe.md](docs/testnet-probe.md) |
-| Payouts flow from the treasury | Every payout is a DAO proposal the DAO executes: a `Transfer` (tiers 1, 3) or a `FunctionCall ft_transfer` (tier 2). | `pay`, `file` in `contract/src/pay.rs`; check 12; staging txs in [docs/testnet-stage.md](docs/testnet-stage.md#payouts-by-tier) |
-| Tiers: small auto for trusted, mid-size one council member, large a normal DAO proposal | Exactly these three, in the DAO's own policy: role `thanks` `transfer` 1/1, council `call` threshold 1, default 1/2. The contract picks the tier from the receiver's reputation and files the matching kind. | `math::limits`, `math::tier`, `math::round_cap` in `contract/src/math.rs`; `contract/tests/dao.rs`; check 5 |
-| A good track record raises how much can be paid without a full vote | The auto and co-sign limits grow with reputation (0.06 tUSD per thanks) up to 30 tUSD; strikes take reputation away. | `contract/tests/reputation.rs` (`a_newcomer_with_steady_help_reaches_tier_1`); `tiers(account)` view |
-| Reputation tied to named accounts, every point traceable | Members are named accounts in the DAO's `members` role (implicit and `0x` accounts are ignored). Every point is attributed to one round and one giver, in the `points` event and the `member()` view. | `contract/tests/counting.rs` (`the_points_event_attributes_every_point`); `contract/tests/invariant.rs` |
-| A public board: open work, claims, payouts, each contributor's record | The page: this round's notes and thanks, payouts by tier with DAO links and votes, every member's record. | `web/` |
-| Members post bounties, contributors claim and finish them | **Not built, deliberately.** The unit of work is a round's help, stated in a note and recognised by the people who were helped, not a bounty posted in advance. Sputnik's own bounty flow (`AddBounty` proposals, `bounty_claim`, `BountyDone`) could sit next to it in the same DAO; the demo policy does not enable it. | - |
-| Every point traceable to a finished bounty | **Partly:** every point traces to a round, a giver and the receiver's note, not to a bounty. | `round(n)` view |
-| Trezu | **Not run:** Trezu's hosted app is mainnet-only; a Trezu treasury is a Sputnik DAO (`*.sputnik-dao.near`), so the same contract works with it by construction. | - |
-| Hint: named accounts, near.social | Named accounts as members and council. **Not used:** near.social profiles. | - |
-
-### Which approval flows exist and which we add
-
-The prompt ends: *"tell me which approval flows already exist and which ones we need to add."* From the Sputnik v2 source (`near-daos/sputnik-dao-contract` at `5434a59`, `policy.rs`, `proposals.rs`) and a probe on testnet with hand-made transactions ([docs/testnet-probe.md](docs/testnet-probe.md)):
-
-**Exist in Sputnik v2, used as they are:**
-- Roles (`Group` of accounts, `Member`, `Everyone`) with permissions per proposal kind and action (`transfer:AddProposal`, `call:VoteApprove`, wildcards).
-- Vote policies per role and per proposal kind, as a ratio of the role (`[1, 2]`) or a weight (`"1"`), and a default vote policy. A proposal passes as soon as one role whose permissions cover the vote reaches its threshold.
-- Proposal kinds `Transfer` (NEAR or an NEP-141 token) and `FunctionCall`; a proposal bond, returned on approval, rejection and finalize-after-expiry and kept on removal; expiry after `proposal_period` and `Finalize`; `VoteRemove`; bounties; `FactoryInfoUpdate` (the factory's auto-update switch).
-
-**How the three tiers map onto them** (no new DAO code):
-
-| Tier | Flow |
-|---|---|
-| 1 | role `thanks` (the contract alone) may add and approve `transfer`, threshold 1 of 1: the contract files and approves in one transaction chain |
-| 2 | only role `thanks` may add `call` proposals, and the council's vote policy for `call` is weight 1: one council member passes or vetoes what the contract filed, and nothing else |
-| 3 | the contract files a `Transfer` and does not vote; the default policy needs a council majority |
-
-The probe showed each of these on testnet before the contract was written: the role vote executes a transfer at once, a `call` proposal passes on exactly one council vote and on nothing less, the council cannot file a `call`, a tier-3 transfer needs two votes, bonds come back as stated.
-
-**What Sputnik cannot do, and what Hat Tip adds:** Sputnik has no amount limits; the `thanks` role could approve a transfer of any size. The amounts behind the tiers are enforced by the contract's code alone, which is why the contract has no keys and its code hash is checked against this repository. Added outside the DAO: the rounds of thanks, the counting, reputation and strikes, the choice of tier per payout, `check_payout` recording each proposal's outcome, and the page. Turned off in the DAO: the factory's auto-update (`FactoryInfoUpdate`, check 8), so the factory owner cannot replace the DAO's code.
-
 ## Why NEAR
 
 - **A contract with no keys inside a DAO role.** After deployment every access key of the contract and of tUSD was deleted (contract: tx `3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv`, tUSD: `CLaqUhBJMMfWzeRoyCmmE42qGpSArK3inASpnn3LzDED`, 2026-11-08 10:20 UTC, [docs/testnet-launch.md](docs/testnet-launch.md)); nobody can redeploy them or change a parameter. The DAO's one lever is to remove the role, which pauses the contract (it reads the policy at every close and `sync()`; a failed filing pauses it too).
@@ -123,7 +119,7 @@ The probe showed each of these on testnet before the contract was written: the r
 
 ## Check it without an account
 
-Plain curl against the public testnet RPC; python3 only decodes the view results, which the RPC returns as bytes. Run from the repository root. FastNEAR's free endpoint answers HTTP 429 to a quick burst of calls: `--fail --retry` waits and tries again without mixing an error page into the answer (or use `https://near-testnet.drpc.org`). `scripts/judge-checks.sh` does all of this and more in about 10 seconds.
+Plain curl against the public testnet RPC; python3 only decodes the view results, which the RPC returns as bytes. Run from the repository root. FastNEAR's free endpoint answers HTTP 429 to a quick burst of calls: `--fail --retry` waits and tries again without mixing an error page into the answer (or use `https://near-testnet.drpc.org`). `scripts/judge-checks.sh` does all of this and more in about 15 seconds.
 
 ```sh
 C=thanks.hat-tip.testnet; T=tusd.hat-tip.testnet; D=hat-tip.sputnikv2.testnet
@@ -173,11 +169,12 @@ Before the parameters were fixed, [docs/SIMULATION.md](docs/SIMULATION.md) wrote
 - **The community is a demo, run mostly by labelled bots.** The Repair Café's eight members (five honest helpers, the colluding pair finn and gus, the free rider hugo) and the three council members are house accounts played by `scripts/house.mjs` with strategies published in `sim/params.json` ("house") and on every card. The council votes by a published rule: tier 2 is approved unless more than half of the receiver's points came from one giver it thanked back with at least 6 thanks (a welcome of 5 to a guest does not count); tier 3 only with at least three givers behind it. They run in GitHub Actions ([.github/workflows/house.yml](.github/workflows/house.yml)), with keys only from a repository secret. At launch all three council seats are house accounts (`council-a`, `-b`, `-c`); no human holds one.
 - **Visitors are real.** A guest's thanks, seat and payout are real transactions on testnet, relayed through public function-call keys (in `web/js/config.js`, public on purpose; anyone can spend their allowance, which pauses guest play until they are refilled).
 - **Rounds move when someone calls.** The clock decides when a round ends; a call (the keeper, the page, anyone) closes it.
-- **The evidence comes from scripts.** The staging run on testnet (2026-11-07, 28 five-minute rounds, 744 transactions, 154 payouts: 48 tier 1, 65 tier 2, 41 tier 3; 6 council rejections and one removal, each with its strike; `audit()` balanced after every round) was driven by the house script and three browser-style guests ([docs/testnet-stage.md](docs/testnet-stage.md)). The final deployment, read 2026-11-08 at 11:24 UTC after its first three rounds of 20 minutes: 3 rounds closed, 16 payouts (3 tier 2, 13 tier 3; one tier-3 payout rejected with its strike), 340.91 tUSD paid, `audit()` balanced; tier 1 begins once a member's reputation passes 200 thanks, after a few rounds ([docs/testnet-launch.md](docs/testnet-launch.md)).
+- **The evidence comes from scripts.** The staging run on testnet (2026-11-07, 28 five-minute rounds, 744 transactions, 154 payouts: 48 tier 1, 65 tier 2, 41 tier 3; 6 council rejections and one removal, each with its strike; `audit()` balanced after every round) was driven by the house script and three browser-style guests ([docs/testnet-stage.md](docs/testnet-stage.md)). The final deployment ([docs/testnet-launch.md](docs/testnet-launch.md)), read 2026-11-08 at 18:35 UTC after 24 rounds of 20 minutes: 140 payouts, 38 in tier 1, 63 in tier 2 and 39 in tier 3, two of them rejected by the council with their strikes (both gus's: round 2, tier 3, and round 17, tier 2), 2,733.84 tUSD paid, `audit()` balanced. Tier 1 began in round 9, once the first member's reputation passed 200 thanks (payout 40 to ana, DAO #41).
 
 ## Honest limits
 
 - **Sputnik cannot limit amounts.** The tiers' amounts are enforced only by the contract's code: the `thanks` role could approve a transfer of any size. The DAO's protections are that the contract has no keys, its code hash matches this repository, and the council can remove the role with one majority proposal.
+- **Free riders are not stopped.** The rules discount mutual thanks, not idleness (the simulation turned the idle discount down: it costs honest members who skip a round and is evaded by a token allocation). A member who thanks nobody keeps everything others give him: in the demo, hugo's vague notes ("made coffee for the volunteers (1 item)") earn him thanks from the honest house members, and in round 22 he received 41 counted thanks from four givers, the second-largest payout of the round, approved by the council's rule. Over the simulation he gets about 2.7 % of the payouts.
 - **Collusion is dampened, not stopped.** A ring of four keeps +5.4 points of excess payout share in a 24-member community; colluders who thank one way only, alternating, pass reciprocity and the house council's rule. A ring as large as the community wins. Their first payouts land in tier 2 or 3, in front of the council, and a tier-1 payout cannot be stopped by the council (the auto limit and the 80 % round cap bound it).
 - **Sybils are kept out only by DAO membership.** A DAO that admits fake members pays them; a council that colludes approves what it likes. That is the DAO's own trust assumption.
 - **Popular people get thanked more than quiet ones.** Peer thanks measure how the community sees the work, not the work.
@@ -185,7 +182,7 @@ Before the parameters were fixed, [docs/SIMULATION.md](docs/SIMULATION.md) wrote
 - **Every payout stays in the DAO's storage.** Sputnik never deletes a proposal (except on removal): about 385 bytes, 0.0038 NEAR each. That is why small shares are carried, not paid.
 - **The contract's copy of the member and council lists** is as fresh as the last close of a round with allocations or `sync()`.
 - **The contract pays for its storage, the guests' too.** It starts with 11 NEAR (code, 108 rounds of logs with every guest seat taken, the bond float); with less than 1 NEAR free it refuses guests, and anyone can send it more ([contract/README.md](contract/README.md#storage)).
-- **Trezu was not run** (its hosted app is mainnet-only), and there are no bounties (see [Fits the track](#fits-the-track)).
+- **Trezu was not run** (its hosted app is mainnet-only). **No bounties:** the starter idea's bounty board is swapped for thanks after the work, with the requirements kept (see [Fits the track](#fits-the-track)).
 - **AI-generated code.** An AI coding agent (Claude) wrote the code and documentation from a human's brief during the hackathon window. The evidence that it works: the contract's tests in a mock VM with a model of the Sputnik DAO, the golden test against the simulation, `audit()` balanced on chain, and the staging run with all three tiers. No human reviewed it line by line, and the contract has not been audited.
 
 ## Run it yourself
@@ -204,12 +201,12 @@ It needs Ed25519 in WebCrypto (Chrome 137+, Safari 17+, Firefox 130+) and has a 
 **Tests.**
 
 ```sh
-node --test 'web/test/*.test.mjs'      # 82 tests: counting port vs the golden vectors, preview, giving, signing, policy checks, RPC, mock round, replay data; about 6 s
+node --test 'web/test/*.test.mjs'      # 93 tests: counting port vs the golden vectors, preview, giving, signing, policy checks, RPC, mock round, replay data, the close strip and the guest's result; about 7 s
 node --test 'scripts/test/*.test.mjs'  # 12 tests: the house council's rule and the keeper's window; under 1 s
 (cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build about 11 minutes, tests about 2 s
 (cd token && cargo test)              # 6 tests; cold build about 14 minutes
 python3 sim/hat_tip_sim.py --check    # the simulation reproduces the golden vectors, the replay and the launch parameters; about 1.5 s
-scripts/judge-checks.sh               # 14 read-only checks of the live deployment, about 9 s; --section staging for staging
+scripts/judge-checks.sh               # 14 read-only checks of the live deployment, about 15 s; --section staging for staging
 ```
 
 Measured 2026-11-08 on a 4-core Intel Mac (macOS 15), cold builds from an empty target directory.

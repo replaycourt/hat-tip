@@ -1,17 +1,17 @@
 # The page
 
-*Draft for the README section "The page". Numbers in mock mode are made up; the live page reads them from testnet.*
+*Numbers in mock mode are made up; the live page reads them from testnet.*
 
 A static page with no build step, no wallet and no third-party code. It shows one community, the demo *Repair Café*, as its Sputnik DAO and the Hat Tip contract see it, and lets a visitor take part as a guest.
 
 ## What a visitor sees
 
-**In 20 seconds.** The round that is running: a countdown, the round's budget and what the DAO holds. Each member is a card with this round's note ("fixed two kettles and a lamp"), the thanks received so far, and what they would be paid if the round closed now, with the tier that payout would land in. Below, the last round's payouts in three columns: *Paid automatically*, *Needs one council vote*, *Needs a council majority*. Each payout card carries its DAO proposal number. One button: *Give your 100 thanks*.
+**In 20 seconds.** The idea in one line, and the three tiers as tiles with the last round's numbers. The round that is running: a countdown, the round's budget and what the DAO holds, and whether now is a good time to join. Under it, a dark strip: how the last round became payouts, in five steps. Each member is a card with this round's note ("fixed two kettles and a lamp"), the thanks received so far, and what they would be paid if the round closed now, with the tier that payout would land in. Below, the last round's payouts in three columns: *Paid automatically*, *Needs one council vote*, *Needs a council majority*. Each payout card carries its DAO proposal number. One button: *Give your 100 thanks*.
 
 **In 2 minutes.**
 1. *Give your 100 thanks* makes a key in the browser and takes a guest seat; there is no wallet prompt. Tap +10 or drag a slider on the people whose work you value. While you do, every card's payout preview and tier move. A short line under a card says why the counted thanks differ from the given ones, for example "Thanked each other 40 with Gus: counted 20 each way."
 2. Add a note and send. The house members thank guests who write a note and give thanks. If they thank you, your own payout preview shows up.
-3. At the close, the page plays the close in five steps: thanks counted, budget split, proposals filed, approvals. Then the payouts move through the DAO. Tier 1 is paid at once by the contract's own vote. A tier-2 payout waits for one council member. A tier-3 payout needs two of three. A rejected payout is struck through and costs its receiver that round's points.
+3. At the close, the strip under the title plays the close in five steps: thanks counted, budget split, proposals filed (only the numbers filed so far, until all are), approvals per tier; *Replay the close* plays it again. The round card shows the guest's own result: who thanked back, and the payout or the share kept for later. Then the payouts move through the DAO, each with its approvals as marks (✓ who said yes, ○ a vote still needed). Tier 1 is paid at once by the contract's own vote. A tier-2 payout waits for one council member. A tier-3 payout needs two of three. A rejected payout is struck through and costs its receiver that round's points.
 4. Open any member (*rep … ›*) to see their record: reputation over the rounds, every round's points with the givers behind them (given → counted), every payout with its tier, DAO proposal and status, and the auto and co-sign limits for the next close.
 5. Open a proposal number to read the proposal live from the DAO: kind, amount, receiver and votes.
 6. *Ledger of rounds*: every closed round, who gave how much to whom and what counted, and what it paid in each tier.
@@ -19,7 +19,7 @@ A static page with no build step, no wallet and no third-party code. It shows on
 8. *How it works* states the rules from the contract's `config()` and the three tiers as the DAO's `get_policy` states them.
 9. *Proof*: the contract and the token have 0 access keys; their code hashes against `WASM_SHA256` in this repository; the DAO policy checked live (no `Everyone` role, only the contract's role may file call proposals, the three thresholds); the contract's `audit()`; the relay keys and the methods they may call; every transaction this tab sent.
 
-House members are demo accounts run by a script with a published strategy. Every one of them carries a visible label on its card ("house bot · honest helper", "house bot · demo: colluding pair", "house bot · demo: free rider", "house bot · council") and a bot mark on payouts and votes.
+House members are demo accounts run by a script with a published strategy. A line over the board says so once for all; every house member carries a bot mark (its full label as a tooltip), and the demo roles carry their label in full ("demo: colluding pair", "demo: free rider") with one line on what the card shows. Early in a round, before anyone has given, each card shows its last round's payout, dimmed.
 
 ## Run it
 
@@ -33,7 +33,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 - `?mock=1` plays a made-up Repair Café in the tab with no network at all: house members post notes and give thanks during the round, the round closes on the clock with the same counting as the contract, payouts go to a stand-in DAO with the demo policy, and the house council votes by its published rule. A banner says it is mock data. Knobs: `&round=<seconds>` (length of a round, default 180), `&at=<0..0.95>` (how far the round is at load, default 0.6), `&seed=<n>`.
 - Without `?mock=1` the page reads NEAR testnet. `?contract=stage` uses the staging deployment (`thanks.hat-tip-stage.testnet`, 5-minute rounds) instead of the final one.
-- Until `js/config.js` names a contract, the live page says the contract is not deployed yet and offers the mock. Today that is the default (`final`); the staging deployment is filled in.
+- Until `js/config.js` names a contract, the live page says the contract is not deployed yet and offers the mock. Both deployments are filled in; `final` (`thanks.hat-tip.testnet`) is the default.
 - The round length, the budget and every rule on the page come from the contract's `config()`; nothing about them is written into the page.
 
 Tests (Node 20 or later, no packages):
@@ -67,7 +67,9 @@ Gas the page attaches, from the contract's own needs (it refuses less and names 
 | File | What it does |
 |---|---|
 | `index.html` | the page; a strict Content Security Policy (`default-src 'self'`, no inline scripts or styles) |
-| `css/style.css` | the look: warm paper, ink, copper for thanks, one quiet colour per tier; no web fonts |
+| `css/style.css` | the look: warm paper, ink, copper for thanks, one quiet colour per tier |
+| `fonts/` | Source Serif 4 (SIL Open Font License, licence next to it), a Latin subset of the variable font, weights 400 to 700; see `fonts/README.md` |
+| `og.png` | the link preview, drawn from `docs/og/og-card.html` |
 | `js/config.js` | the deployments, RPC hosts, gas |
 | `js/logic.js` | pure functions: the round close in the contract's integer arithmetic (a port of `sim/hat_tip_sim.py`), the preview, explanations, tiers, giving, signing text, policy checks, proposals, records, formatting |
 | `js/near.js`, `js/chain.js` | base58, borsh, Ed25519 in WebCrypto, RPC with a fallback host, the gas pool and the guest's key; the client for the contract, its DAO and its token |
@@ -82,7 +84,6 @@ The NEAR layer, the gas pool, the proof drawer and the test layout are taken ove
 
 In headless Chrome against `?contract=stage` (desktop 1440×900 and phone 390×844), with no console errors and no CSP report: a guest arrives, gives thanks, sees the preview move, and the two `act` transactions land on chain (the round's gifts and note name the guest); the page closes due rounds through the relay; the close of the guest's round plays its five steps; the last round with payouts shows all three tiers with their DAO proposals (tier 1 paid at once, a tier-2 payout removed by the council with its strike, tier 3 approved by two council members); a member's record, a DAO proposal read live, the rules from `get_policy` and the proof drawer (code hashes match `WASM_SHA256`; staging keeps its keys, which the drawer says) all read correctly. Screenshots: `docs/shots/`.
 
-## Not yet
+## Notes
 
-- The final deployment: `DEPLOYMENTS.final` stays empty until the launch.
 - The mock plays the launch parameters and house strategies of `sim/params.json`, with a round of three minutes by default so that a close comes soon.

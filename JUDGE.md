@@ -1,21 +1,25 @@
 # Judging Hat Tip in five minutes
 
+**What it is, against the track.** The `social` track's starter idea is a bounty board with earned trust. Hat Tip swaps it for thanks after the work, as the hackathon's guide allows (*"Swap the starter idea for your own if you have a better one. Keep the requirements and the checkpoint."*): in a volunteer community most help is never posted or priced in advance, and the people who were helped are the ones who judge it. It keeps the four requirements and the checkpoint: custody and every approval in the community's existing Sputnik DAO; reputation on named accounts, every point traced to a round, its giver and the receiver's note of finished work; three tiers (the contract's own vote, one council vote, a normal DAO proposal); a public board with payouts, DAO links and each member's record; and the approval flows Sputnik has and Hat Tip adds. One row each, with where to check: [README, Fits the track](README.md#fits-the-track).
+
 Everything runs on NEAR testnet: the Hat Tip contract `thanks.hat-tip.testnet`, the token `tusd.hat-tip.testnet` and the Sputnik v2 DAO `hat-tip.sputnikv2.testnet` (launched 2026-11-08, [docs/testnet-launch.md](docs/testnet-launch.md)). You need a browser for the page, and bash, `curl` and `python3` for the checks. No account, wallet or install. A round lasts 20 minutes, so the path below shows the last close as a replay and your own thanks in the running round.
 
 ## 1. The five-minute path
 
 Open https://replaycourt.github.io/hat-tip/web/ in Chrome 137+, Safari 17+ or Firefox 130+. Giving thanks sends real testnet transactions, paid by the public relay keys. The same path as a 90-second video: https://x.com/replaycourt/status/2119435604131795220.
 
-1. **Open the page.** See the Repair Café's round board: *Round N*, the countdown *until round N closes*, *Budget* (120 tUSD), *The DAO holds*, *Thanks given*, *Guest seats*, and a card per member with this round's note and the thanks received so far. Every house member carries a *house bot* label: five honest helpers, the pair labelled "demo: colluding pair", the one labelled "demo: free rider", and the three council members.
-2. **Look at *Payouts of round N*,** the last round that paid. Three columns: *Paid automatically* (tier 1), *Needs one council vote* (tier 2), *Needs a council majority* (tier 3). Each card names the DAO proposal; tap it and see the proposal read live from the DAO: its kind (`Transfer` or `FunctionCall ft_transfer`), receiver, amount and the votes (on a tier-1 payout only *the contract*'s own). Tap *Replay the close* to see the last close in five steps: thanks counted, budget split, proposals filed, tier 1 executed.
-3. **Tap *Give your 100 thanks*.** No wallet prompt; the browser makes a key and takes a guest seat. Tap *+10* on a few cards and watch every card's payout preview and tier move as you go, once members have given this round (before that, a card says *Guest thanks count once members have given*: guests together steer at most 20 % of a round). Put thanks on finn or gus and read why counted differs from given (reciprocity, breadth).
-4. **Write a note and tap *Send my thanks*.** *Your thanks are in.* The transaction is listed under *Proof*, *Your transactions*, with its gas, linked to the explorer.
-5. **Open a member** (*rep … ›* on a card). See the reputation line over the rounds, each round's points with every giver behind them (given → counted), each payout with tier, DAO proposal and status (gus's record shows a payout the council rejected, with its strike), and the auto and co-sign limits for the next close.
-6. **Open *Rules*, then *Proof*.** *Rules* renders the DAO's `get_policy` (the three tiers as the DAO states them) and the contract's `config()`. *Proof* shows the contract and the token with *0 access keys*, the transaction that locked the contract, both code hashes against `WASM_SHA256` in this repository, the policy checks, `audit()`, the relay keys and the methods they may call, and your transactions.
+1. **Open the page.** See *Peer thanks, paid out by the café's own DAO* and the three tiers as tiles with the last round's numbers: *Paid at once*, *One council vote*, *Council majority*. On the right the round card: *Round N*, the countdown *until round N closes*, *Budget* (120 tUSD), *The DAO holds*, *Thanks given*, *Guest seats*, and *Give your 100 thanks* with a line on whether now is a good time to join.
+2. **Read the dark strip under it, *How round N became payouts*:** *Round closed*, *Counted*, *Split*, *Filed in the DAO* (the proposal numbers), *Approved* (the payouts per tier and how many are paid). Tap *Replay the close*: the five steps play again, in view.
+3. **Look at the board.** A card per member with this round's note and the thanks received so far; a line over it says all members are house bots with a published strategy. The demo roles say what they show: finn and gus, *Shows collusion: gives Gus 25 a round and gets 25 back. Mutual thanks count 25 %: 6.2 each way.*; hugo, *Shows free riding: fixes nothing, thanks nobody …*. Early in a round each card shows its last round's payout, dimmed.
+4. **Look at *Payouts of round N*,** the last round that paid. Three columns: *Paid automatically* (tier 1), *Needs one council vote* (tier 2), *Needs a council majority* (tier 3), each payout with its approvals as marks (*✓ the contract*, *✓ Council A*). Tap a proposal number and see the proposal read live from the DAO: its kind (`Transfer` or `FunctionCall ft_transfer`), receiver, amount and the votes (on a tier-1 payout only *the contract*'s own).
+5. **Tap *Give your 100 thanks*.** No wallet prompt; the browser makes a key and takes a guest seat. Tap *+10* on a few cards and watch every card's payout preview and tier move (before any member has given, a card says *Guest thanks count as soon as members start giving*: guests together steer at most 20 % of a round). Put thanks on finn or gus and read why counted differs from given (*Thanked each other 25 with Gus: counted 6.2 each way.*).
+6. **Write a note and tap *Send my thanks*.** *You tipped your hat to … people.* The transaction is listed under *Proof*, *Your transactions*, with its gas, linked to the explorer.
+7. **Open a member** (*rep … ›* on a card). See the reputation line over the rounds, each round's points with every giver behind them (given → counted), each payout with tier, DAO proposal and status, and the auto and co-sign limits for the next close. gus's record says how much of his points finn's thanks made (about a fifth) and shows the two payouts the council rejected, each with its strike.
+8. **Open *Rules*, then *Proof*.** *Rules* renders the DAO's `get_policy` (the three tiers as the DAO states them) and the contract's `config()`. *Proof* opens with *All N checks pass*, then the contract and the token with *0 access keys*, the transaction that locked the contract, both code hashes against `WASM_SHA256` in this repository, the policy checks, `audit()`, the relay keys and the methods they may call, and your transactions.
 
-To see your own payout: after the close (at most 20 minutes) the house members' welcome thanks give you a tier-2 payout if they thanked you; a house council member votes on it at least two minutes after it is filed, and the tUSD shows in your browser account. The README walks through the same steps: [How to use it](README.md#how-to-use-it).
+**To see your own result, join in the first half of a round.** Each house member gives once, between halfway and four fifths of the 20-minute round, and then thanks up to two guests who wrote a note and gave thanks (5 thanks each). A guest who joins later is not thanked back that round; the page says so. After the close, the round card shows your result: who thanked you back and what came of it. A share below 5 tUSD is kept for you and paid with a later round (most single welcomes are); above it, it is a tier-2 payout (a guest is never in tier 1), a house council member votes on it at least two minutes after it is filed, and the tUSD shows in your browser account. The README walks through the same steps: [How to use it](README.md#how-to-use-it).
 
-## 2. One-command checks (read-only, about 10 seconds)
+## 2. One-command checks (read-only, about 15 seconds)
 
 ```sh
 scripts/judge-checks.sh
@@ -23,10 +27,10 @@ scripts/judge-checks.sh
 
 It needs bash, curl and python3 (macOS or Linux), sends no transaction, reads everything at one final block, and prints PASS or FAIL for each check. Its exit code is the number of failed checks (65: the final deployment is not in `deploy/testnet.json` yet; it then says "not launched yet"). A read that gets no answer from FastNEAR or the dRPC fallback fails its check; it never passes.
 
-Expected (the final deployment, read 2026-11-08 at 11:24 UTC, after the first three rounds; `--section staging` checks the staging deployment, where checks 1 and 2 are INFO because staging keeps its keys):
+Expected (the final deployment, read 2026-11-08 at 18:35 UTC, while round 25 ran; the block, the round and the payout counts grow with every round; `--section staging` checks the staging deployment, where checks 1 and 2 are INFO because staging keeps its keys):
 
 ```
-Hat Tip (final): read-only checks of thanks.hat-tip.testnet, tusd.hat-tip.testnet and hat-tip.sputnikv2.testnet at block 276769163
+Hat Tip (final): read-only checks of thanks.hat-tip.testnet, tusd.hat-tip.testnet and hat-tip.sputnikv2.testnet at block 276813042
 RPC: https://test.rpc.fastnear.com, fallback https://near-testnet.drpc.org
 PASS  1. thanks.hat-tip.testnet has no access keys
 PASS  2. tusd.hat-tip.testnet has no access keys
@@ -36,10 +40,10 @@ PASS  5. DAO policy: the three tiers exactly (council of 3)
 PASS  6. DAO policy: no Everyone role
 PASS  7. DAO policy: call:AddProposal only in role thanks
 PASS  8. DAO factory auto-update off
-PASS  9. audit(): balanced, attributed, statuses, ids, carry (16 payouts)
-PASS  10. the last close is less than two rounds old (round 4)
+PASS  9. audit(): balanced, attributed, statuses, ids, carry (140 payouts)
+PASS  10. the last close is less than two rounds old (round 25)
 PASS  11. config(): dao = hat-tip.sputnikv2.testnet, token = tusd.hat-tip.testnet
-PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (16 payouts and DAO #0-#16, 16 by the contract)
+PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (40 payouts and DAO #101-#140, 40 by the contract)
 PASS  13. relay keys only call act, close_round, pay, check_payout, sync (11 relay keys)
 PASS  14. the DAO's code is one the factory sputnikv2.testnet publishes (version 3.31)
 All 14 checks passed.
@@ -60,7 +64,7 @@ All 14 checks passed.
 | 13 | Every function-call key on the gas account may only call `act`, `close_round`, `pay`, `check_payout`, `sync` on the contract; its one full-access key is not in the repository. |
 | 14 | The DAO's code hash is one of the versions the factory `sputnikv2.testnet` publishes (`get_contracts_metadata`): an unmodified Sputnik v2. |
 
-The same checks by hand, as curl one-liners: [Check it without an account](README.md#check-it-without-an-account). Checks 3 and 4 compare two numbers; that `WASM_SHA256` is the build of this source is shown by a rebuild: `cd contract && ./build.sh --check` (and `cd token && ./build.sh --check`) rebuild the wasm with cargo-near 0.22 and the toolchain pinned in `rust-toolchain.toml` and compare the sha256, and `python3 scripts/compare-wasm.py contract/target/near/hat_tip.wasm --deployment contract` (`token/target/near/tusd.wasm --deployment token`) compares the result with the code on chain, section by section. On the Intel Mac that built the deployed wasm, both rebuilds took about 4.5 minutes from a cold target directory and were byte-identical to the chain. CI repeats both rebuilds on every push on Linux, an Intel Mac and an arm64 Mac, reads the deployed code from the chain in the same job and fails on any difference. Its first run on the public repository ([run 42491248652](https://github.com/replaycourt/hat-tip/actions/runs/42491248652), 2026-11-08) found all six rebuilds byte-identical to the code on `thanks.hat-tip.testnet` and `tusd.hat-tip.testnet`.
+The same checks by hand, as curl one-liners: [Check it without an account](README.md#check-it-without-an-account). Checks 3 and 4 compare two numbers; that `WASM_SHA256` is the build of this source is shown by a rebuild: `cd contract && ./build.sh --check` (and `cd token && ./build.sh --check`) rebuild the wasm with cargo-near 0.22 and the toolchain pinned in `rust-toolchain.toml` and compare the sha256, and `python3 scripts/compare-wasm.py contract/target/near/hat_tip.wasm --deployment contract` (`token/target/near/tusd.wasm --deployment token`) compares the result with the code on chain, section by section. On the Intel Mac that built the deployed wasm, both rebuilds took about 4.5 minutes from a cold target directory and were byte-identical to the chain. CI repeats both rebuilds on every push on Linux, an Intel Mac and an arm64 Mac, reads the deployed code from the chain in the same job and fails on any difference. The first run with all three platforms ([run 42491248652](https://github.com/replaycourt/hat-tip/actions/runs/42491248652), 2026-11-08) found all six rebuilds byte-identical to the code on `thanks.hat-tip.testnet` and `tusd.hat-tip.testnet`.
 
 ## 3. Where each claim lives
 
@@ -86,7 +90,8 @@ Line numbers are at the deployed source (`contract/WASM_SHA256` `91e5f94a…4ab8
 | Gas: the largest round closes in one receipt; every chain fits its gas | `contract/src/config.rs:69-90`; `contract/src/pay.rs:27-56` | `contract/tests/gas.rs` | burnt gas per call: [docs/testnet-stage.md](docs/testnet-stage.md#gas-measured) |
 | The three tiers are the DAO's own policy | the policy in [DESIGN.md](DESIGN.md#the-three-tiers-in-the-dao); created and compared by `scripts/create-dao.mjs` | the tier probe on testnet, [docs/testnet-probe.md](docs/testnet-probe.md) | checks 5-8, 14 |
 | tUSD: fixed supply to the DAO, no mint | `new`, `token/src/lib.rs:47` | `token/tests/token.rs` | check 2, 4 |
-| The page counts like the contract and checks what it shows | `countRound`, `web/js/logic.js:101`; `policyReport`, `web/js/logic.js:614`; `proofHtml`, `web/js/ui.js:333` | `web/test/golden.test.mjs`, `web/test/logic.test.mjs` | |
+| The page counts like the contract and checks what it shows | `countRound`, `web/js/logic.js:101`; `policyReport`, `web/js/logic.js:614`; `proofHtml`, `web/js/ui.js:435` | `web/test/golden.test.mjs`, `web/test/logic.test.mjs` | |
+| The page tells the close and the demo from the chain's records: proposals filed so far, the colluding pair's real partner, a guest's own result | `pickReason`, `filedText`, `guestOutcome`, `web/js/logic.js:839`, `:886`, `:957`; `storyHtml`, `web/js/ui.js:162` | `web/test/story.test.mjs` | |
 | House members: labelled, published strategies, same rules | `scripts/house.mjs`; `house` in `sim/params.json`; `.github/workflows/house.yml` | the staging run | every house transaction in `docs/testnet-stage.json` |
 | The parameters were picked by a pre-registered rule | [docs/SIMULATION.md](docs/SIMULATION.md), `sim/hat_tip_sim.py` | `python3 sim/hat_tip_sim.py --check` | |
 
@@ -97,16 +102,16 @@ More evidence transactions (each path once) are in `deploy/testnet.json`, `stagi
 Measured 2026-11-08 on a 4-core Intel laptop (macOS 15), cold builds from an empty target directory:
 
 ```sh
-node --test 'web/test/*.test.mjs'      # 82 tests; Node 20+, no install; about 6 seconds
+node --test 'web/test/*.test.mjs'      # 93 tests; Node 20+, no install; about 7 seconds
 node --test 'scripts/test/*.test.mjs'  # 12 tests (the house council's rule, the keeper's window); under 1 second
 (cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build 11 minutes, tests about 2 seconds
 (cd token && cargo test)              # 6 tests (NEP-141, storage, fixed supply); cold build 14 minutes
 python3 sim/hat_tip_sim.py --check    # golden vectors, replay and launch parameters reproduced; about 1.5 seconds
-scripts/judge-checks.sh               # 14 read-only checks of the live deployment; about 9 seconds
+scripts/judge-checks.sh               # 14 read-only checks of the live deployment; about 15 seconds
 ```
 
 The contract's tests run the real contract in near-sdk's mock VM against a model of the Sputnik v2 DAO (2.3.1: bonds, per-kind permissions, role thresholds, execution, removal, expiry) and of the token, executing every receipt the contract creates and feeding the answers back into the callbacks with the gas each receipt attached. The table of test files is in [contract/README.md](contract/README.md#tests). Not done: an integration test in near-sandbox; the staging run on testnet covers the same paths against the real DAO.
 
 ## 5. What is real and what is not
 
-Testnet only; tUSD has no value; the Repair Café's eight members and three council members are labelled house bots with published strategies, run by GitHub Actions, voting and giving by the same rules as everyone; guests are real; public relay keys; rounds close when someone calls; AI-written code that no human reviewed line by line; no audit. What the rules do not stop: rings, one-way thanks, a guest farm, a colluding council, popularity. Details: [What is real and what is not](README.md#what-is-real-and-what-is-not), [Honest limits](README.md#honest-limits).
+Testnet only; tUSD has no value; the Repair Café's eight members and three council members are labelled house bots with published strategies, run by GitHub Actions, voting and giving by the same rules as everyone; guests are real; public relay keys; rounds close when someone calls; AI-written code that no human reviewed line by line; no audit. What the rules do not stop: rings, one-way thanks, free riders (hugo, who thanks nobody, keeps all he is given: in round 22 the second-largest payout), a guest farm, a colluding council, popularity. Details: [What is real and what is not](README.md#what-is-real-and-what-is-not), [Honest limits](README.md#honest-limits).
