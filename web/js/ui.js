@@ -310,18 +310,39 @@ function hashLine(got, want) {
   return got === want ? `<code>${esc(got)}</code> <b class="good">· matches WASM_SHA256 in the repository</b>` : `<code>${esc(got)}</code> <b class="bad">· expected ${esc(want)}</b>`
 }
 
+const RELAY_METHODS = new Set(['act', 'close_round', 'pay', 'check_payout', 'sync'])
+
+/**
+ * The gas account's keys as the proof drawer lists them: each key for this contract, checked to
+ * call nothing beyond the relay's five methods; keys the same account holds for another contract
+ * (the staging one) in one line, since they cannot call this one; a full-access key, neutral.
+ */
+export function relayLines(keys, contract) {
+  const out = []
+  const others = new Map()
+  for (const k of keys ?? []) {
+    const fc = k.access_key?.permission?.FunctionCall
+    if (!fc) out.push({ ok: null, full: true, key: k.public_key })
+    else if (fc.receiver_id !== contract) others.set(fc.receiver_id, (others.get(fc.receiver_id) ?? 0) + 1)
+    else out.push({ ok: fc.method_names.length > 0 && fc.method_names.every((m) => RELAY_METHODS.has(m)), key: k.public_key, methods: fc.method_names, allowance: fc.allowance ?? null })
+  }
+  for (const [other, n] of others) out.push({ ok: true, other, n })
+  return out
+}
+
 export function proofHtml(x) {
   const lk = (path, text) => link(x.explorer, x.mock, path, text)
   const check = (ok, label) => `<li class="${ok == null ? 'wait' : ok ? 'ok' : 'no'}"><span class="mark" aria-hidden="true"></span>${label}</li>`
   const relay = x.relayKeys == null
     ? '<li class="wait"><span class="mark"></span>checking…</li>'
-    : x.relayKeys
-        .map((k) => {
-          const fc = k.access_key?.permission?.FunctionCall
-          return fc
-            ? check(fc.receiver_id === x.contract, `<code>${esc(k.public_key.slice(0, 18))}…</code> may call only <code>${esc(fc.method_names.join(', '))}</code> on ${esc(fc.receiver_id === x.contract ? 'the contract' : fc.receiver_id)}, ${fc.allowance ? `allowance ${esc(L.fmtThanks(L.big(fc.allowance) / 10n ** 21n))} NEAR` : 'no allowance cap'}`)
-            : check(null, `<code>${esc(k.public_key.slice(0, 18))}…</code> full access (the pool owner’s key; not on this page)`)
-        })
+    : relayLines(x.relayKeys, x.contract)
+        .map((r) =>
+          r.other
+            ? check(true, `${esc(r.n)} more key${r.n === 1 ? '' : 's'} of this account ${r.n === 1 ? 'is' : 'are'} bound to <code>${esc(r.other)}</code>: ${r.n === 1 ? 'it' : 'they'} cannot call this contract`)
+            : r.full
+              ? check(null, `<code>${esc(r.key.slice(0, 18))}…</code> full access (the pool owner’s key; not on this page)`)
+              : check(r.ok, `<code>${esc(r.key.slice(0, 18))}…</code> may call only <code>${esc(r.methods.join(', ') || 'any method')}</code> on the contract, ${r.allowance ? `allowance ${esc(L.fmtThanks(L.big(r.allowance) / 10n ** 21n))} NEAR` : 'no allowance cap'}`),
+        )
         .join('')
   const audit = x.audit
   const txs = x.txs.length

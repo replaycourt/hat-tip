@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import * as L from '../js/logic.js'
-import { freshDrawer, pickAnchor, scrollFix } from '../js/ui.js'
+import { freshDrawer, pickAnchor, relayLines, scrollFix } from '../js/ui.js'
 
 test('a drawer opens at its top; only a refresh of the same drawer keeps its scroll', () => {
   assert.equal(freshDrawer(false, null, 'proof'), true, 'opening from closed')
@@ -62,4 +62,20 @@ test('early in a round a guest’s thanks count 0, and the card says why', () =>
   assert.equal(L.reasonText(r, (a) => L.displayName(a, guest)), 'Guest thanks count once members have given: guests together steer at most 20 % of a round.')
   const later = L.countRound(cfg, new Set(['ana.x.testnet', 'ben.x.testnet']), new Set([guest]), new Map([[guest, [['ana.x.testnet', 25]]], ['ben.x.testnet', [['ana.x.testnet', 25]]]]))
   assert.equal(L.explainReceiver(cfg, later, 'ana.x.testnet').reasons.find((x) => x.kind === 'guest').noMembers, false)
+})
+
+test('relay keys: this contract’s keys are checked, keys bound to another contract are no failure', () => {
+  const fc = (receiver_id, method_names, allowance = '1000000000000000000000000') => ({ public_key: `ed25519:${receiver_id}${method_names.join('')}`, access_key: { permission: { FunctionCall: { receiver_id, method_names, allowance } } } })
+  const keys = [
+    fc('thanks.hat-tip.testnet', ['act', 'close_round', 'pay', 'check_payout', 'sync']),
+    fc('thanks.hat-tip.testnet', ['act', 'withdraw']),
+    fc('thanks.hat-tip.testnet', []),
+    fc('thanks.hat-tip-stage.testnet', ['act']),
+    fc('thanks.hat-tip-stage.testnet', ['pay']),
+    { public_key: 'ed25519:owner', access_key: { permission: 'FullAccess' } },
+  ]
+  const lines = relayLines(keys, 'thanks.hat-tip.testnet')
+  assert.deepEqual(lines.map((l) => l.ok), [true, false, false, null, true], 'a method beyond the five, or any method, fails; the owner key is neutral')
+  assert.deepEqual(lines.at(-1), { ok: true, other: 'thanks.hat-tip-stage.testnet', n: 2 })
+  assert.deepEqual(relayLines(null, 'x'), [])
 })
