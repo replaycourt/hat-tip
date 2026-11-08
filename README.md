@@ -214,7 +214,7 @@ scripts/judge-checks.sh               # 14 read-only checks of the live deployme
 
 Measured 2026-11-08 on a 4-core Intel Mac (macOS 15), cold builds from an empty target directory.
 
-CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the tests on every push and rebuilds both wasm files, comparing them with `WASM_SHA256` and with the code on chain; on Linux, and once the repository is public also on an Intel and an arm64 Mac. Node 20 or newer, no install; Rust from `contract/rust-toolchain.toml` (1.95.0).
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the tests on every push and rebuilds both wasm files, comparing them with `WASM_SHA256` and with the code on chain, on Linux, an Intel Mac and an arm64 Mac; all six rebuilds are byte-identical to the deployed code. Node 20 or newer, no install; Rust from `contract/rust-toolchain.toml` (1.95.0).
 
 **Build.** `cd contract && ./build.sh --check` (and the same in `token/`) rebuilds the wasm with cargo-near 0.22 and compares its sha256 with `WASM_SHA256`; it fails if the wasm carries machine paths or exports a method beyond the expected list (no owner, admin, upgrade or withdraw method). `python3 scripts/compare-wasm.py contract/target/near/hat_tip.wasm --deployment contract` compares the result with the code on chain, section by section. Cold rebuilds on a 4-core Intel Mac (macOS 15, x86_64), which built the deployed wasm, take about 4.5 minutes per crate and are byte-identical to the chain.
 
