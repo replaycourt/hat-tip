@@ -100,20 +100,25 @@ const REPO = fileURLToPath(new URL('../../', import.meta.url))
 const DEPLOY = join(REPO, 'deploy/testnet.json')
 const CONTRACT_CONFIG = join(REPO, 'contract/src/config.rs')
 
-test('the stage deployment is the one deploy/testnet.json records, ready to play', { skip: !existsSync(DEPLOY) && 'no deploy/testnet.json' }, () => {
-  const dep = JSON.parse(readFileSync(DEPLOY, 'utf8')).staging
-  const st = DEPLOYMENTS.stage
-  assert.equal(st.contract, dep.contract)
-  assert.equal(st.gasAccount, dep.gas.account)
-  assert.equal(st.codeHash, dep.code_hashes.contract)
-  assert.equal(st.tokenCodeHash, dep.code_hashes.token)
-  assert.equal(st.lockTx, null, 'staging keeps its keys')
-  assert.deepEqual(st.gasKeys.map((k) => k.public_key).sort(), [...dep.gas.relay_keys].sort(), 'exactly the page relay keys')
-  for (const k of dep.gas.keeper_keys ?? []) assert.ok(!st.gasKeys.some((g) => g.public_key === k), 'never the keeper keys')
-  const house = Object.fromEntries([...dep.house.members.map((m) => [m.account, m.kind]), ...dep.house.council.map((c) => [c.account, 'council'])])
-  assert.deepEqual(st.house, house, 'every house member and council member labelled with its strategy')
-  assert.equal(DEPLOYMENTS.final.contract, null, 'final stays empty until the launch')
-})
+for (const [name, section] of [['stage', 'staging'], ['final', 'final']]) {
+  test(`the ${name} deployment is the one deploy/testnet.json records (${section}), ready to play`, { skip: !existsSync(DEPLOY) && 'no deploy/testnet.json' }, () => {
+    const dep = JSON.parse(readFileSync(DEPLOY, 'utf8'))[section]
+    const st = DEPLOYMENTS[name]
+    assert.equal(st.contract, dep.contract)
+    assert.equal(st.gasAccount, dep.gas.account)
+    assert.equal(st.codeHash, dep.code_hashes.contract)
+    assert.equal(st.tokenCodeHash, dep.code_hashes.token)
+    if (name === 'stage') assert.equal(st.lockTx, null, 'staging keeps its keys')
+    else {
+      assert.equal(st.lockTx, dep.txs['lock contract'].hash, 'the transaction that deleted the contract\'s keys')
+      assert.deepEqual(dep.locked, { token: true, contract: true }, 'the launch deleted every key of both')
+    }
+    assert.deepEqual(st.gasKeys.map((k) => k.public_key).sort(), [...dep.gas.relay_keys].sort(), 'exactly the page relay keys')
+    for (const k of dep.gas.keeper_keys ?? []) assert.ok(!st.gasKeys.some((g) => g.public_key === k), 'never the keeper keys')
+    const house = Object.fromEntries([...dep.house.members.map((m) => [m.account, m.kind]), ...dep.house.council.map((c) => [c.account, 'council'])])
+    assert.deepEqual(st.house, house, 'every house member and council member labelled with its strategy')
+  })
+}
 
 test('gas: every relayed call carries at least what the contract asks for', { skip: !existsSync(CONTRACT_CONFIG) && 'no contract source' }, () => {
   const src = readFileSync(CONTRACT_CONFIG, 'utf8')
@@ -142,10 +147,12 @@ test('gas: every relayed call carries at least what the contract asks for', { sk
 })
 
 test("a relay key's allowance covers the dearest call prepaid at the pessimistic gas price", { skip: !existsSync(DEPLOY) && 'no deploy/testnet.json' }, () => {
-  const dep = JSON.parse(readFileSync(DEPLOY, 'utf8')).staging
-  const allowance = BigInt(Math.round(Number(dep.gas.relay_allowance_near) * 1000)) * 10n ** 21n
-  const pessimistic = 1_000_000_000n // yocto per gas: 10x testnet's 10^8 (docs/testnet-probe.md, "Gas")
-  for (const gas of [ACT_GAS, CLOSE_GAS, PAY_GAS, CHECK_GAS]) assert.ok(gas * pessimistic <= allowance, `${gas} gas prepaid fits in ${dep.gas.relay_allowance_near} NEAR`)
+  for (const section of ['staging', 'final']) {
+    const dep = JSON.parse(readFileSync(DEPLOY, 'utf8'))[section]
+    const allowance = BigInt(Math.round(Number(dep.gas.relay_allowance_near) * 1000)) * 10n ** 21n
+    const pessimistic = 1_000_000_000n // yocto per gas: 10x testnet's 10^8 (docs/testnet-probe.md, "Gas")
+    for (const gas of [ACT_GAS, CLOSE_GAS, PAY_GAS, CHECK_GAS]) assert.ok(gas * pessimistic <= allowance, `${section}: ${gas} gas prepaid fits in ${dep.gas.relay_allowance_near} NEAR`)
+  }
 })
 
 test('the round length is read from the contract, never written into the page', () => {

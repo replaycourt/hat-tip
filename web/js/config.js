@@ -22,14 +22,39 @@
 
 export const DEPLOYMENTS = {
   final: {
-    contract: null,
-    gasAccount: null,
-    codeHash: null,
-    tokenCodeHash: null,
-    lockTx: null,
-    // PUBLIC on purpose once filled: function-call keys of the gas account (see the top).
-    gasKeys: [],
-    house: {},
+    contract: 'thanks.hat-tip.testnet',
+    gasAccount: 'hat-tip-gas.testnet',
+    codeHash: 'ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw',
+    tokenCodeHash: '41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip',
+    // the transaction that deleted the contract's last access key (the token's: deploy/testnet.json)
+    lockTx: '3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv',
+    // PUBLIC on purpose: function-call keys of hat-tip-gas.testnet that may only call `act`,
+    // `close_round`, `pay`, `check_payout` and `sync` on thanks.hat-tip.testnet, 1 NEAR allowance each
+    // (see the comment at the top).
+    gasKeys: [
+      { public_key: 'ed25519:E6vMBKyzNucHWaNS9uftUgjvauG2KV3NhzYC4TfbYbhP', private_key: 'ed25519:27pHtuC6ThEQt6PztCopNVbm74hHPEcZrGakXLaWr8YS3183bYLm823Wdt27XfYraGA8s6iP7bC1f8Mtz76Mpj9w' },
+      { public_key: 'ed25519:7dyTJWdWfJGr3reJbdRgWqmkvMBNWYowFCjuwRLG3K23', private_key: 'ed25519:2ufjwwB19SMuag9tgxFq4dE4GnTsdZk7v59Bsi4nosaUy2UfJbmnsRXuW7rvmXtNScezR7nQ7eJLECksu98mx1KR' },
+      { public_key: 'ed25519:9tiwC6aJLdKgXKbyKUUreLfdtC3TRAc82JLjbrcXWNHf', private_key: 'ed25519:5WyU7oBC7oxdCbFziZXANFJKEekzCM3f4jLXiihAkem1RUzmUP2iU8zfrEJXvSmBH8nvGfm44ULxCGoStvuZyp8H' },
+      { public_key: 'ed25519:BupXM8rghjsQRpG7YZPSeBb7K9r8WnC5Y4FHXnRBLeyo', private_key: 'ed25519:4aokLUNeqg6CVAUMbbJZihxPUQ5C5Hts5EkjCecVhkPs4mU1as9jfNsVgHKp8FiCYrHTyyWca8YKfYf55JDB4c65' },
+      { public_key: 'ed25519:CeFh5vho9ntyfsLy38YGybdBx8Sfktp8S8N2nTmKsjuA', private_key: 'ed25519:2RVUK4sHBa3kJiHJFbCxfx2ewoFA3sviePsUfwGmExNuP8xFKXXyQiJz86UeszRNASJBaHy8UEjG7Q74fSgqNHcL' },
+      { public_key: 'ed25519:GQcSZqG7cuc1vyTk8Q5DE7LNFbc4B6tVJRm99shCU64g', private_key: 'ed25519:4Dk2yC3G9EDVUsWK6ddA2fqeuuQkxWkgv229oeY6hKiwmYQ9Zzn2FwBmiX2rEQSc9o8NkEoBDT8hL7DkYvVf4j9a' },
+      { public_key: 'ed25519:F2yntQecGNwR6q9HTUkVqUp34Df6VGYet9ZF6qTU5RcS', private_key: 'ed25519:3Kho5pM7vYBy1a3D1Bv6g1LfzZYjP8jB8KfFqVJBD3Jb6QLZSZ3yQ3qbp7xeJsroNhKQVEMqfbUVjDShucYEXh1x' },
+      { public_key: 'ed25519:7xm3RYG7zvNArABspDHckL1d5zjcknMKvswtJYuT5JK4', private_key: 'ed25519:5BbkUmt7riS6rYtiiwwVnGDbWqHmPtFbs8p9imQs5oT8AkS5WVnzDgy5C9HhXi25z5huDeWcfJ8MphcU92DMH2Hx' },
+    ],
+    // The labelled house members and council (deploy/testnet.json, house; sim/params.json).
+    house: {
+      'ana.hat-tip.testnet': 'honest',
+      'ben.hat-tip.testnet': 'honest',
+      'cleo.hat-tip.testnet': 'honest',
+      'dina.hat-tip.testnet': 'honest',
+      'emil.hat-tip.testnet': 'honest',
+      'finn.hat-tip.testnet': 'pair',
+      'gus.hat-tip.testnet': 'pair',
+      'hugo.hat-tip.testnet': 'free_rider',
+      'council-a.hat-tip.testnet': 'council',
+      'council-b.hat-tip.testnet': 'council',
+      'council-c.hat-tip.testnet': 'council',
+    },
   },
   stage: {
     contract: 'thanks.hat-tip-stage.testnet',

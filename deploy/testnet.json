@@ -1,7 +1,730 @@
 {
  "network": "testnet",
  "about": "Public facts of the Hat Tip deployments on NEAR testnet: accounts, code hashes, the DAO policy, the config, the relay and house public keys, and the setup transactions. Section `staging`: the staging deployment (keys kept, 5-minute rounds; docs/testnet-stage.md). Section `final`: the keyless launch, added at launch. No secrets: private keys stay in the git-ignored .secrets/ and the legacy keychain.",
- "final": null,
+ "final": {
+  "accounts": {
+   "hat-tip.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-3.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-4.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-5.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-6.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-7.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "thanks.hat-tip.testnet": {
+    "role": "contract",
+    "funded_near": "11.000",
+    "full_access_key": "ed25519:6kx9vVMuacszs7J1Av91eHct5hujrihZCRxYZ24LeHhE"
+   },
+   "tusd.hat-tip.testnet": {
+    "role": "token",
+    "funded_near": "2.500",
+    "full_access_key": "ed25519:8G3hfLtCyD8kphqrqs2Ny3GWMYTPvAik6iUqActhJj9s"
+   },
+   "ana.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:4JeeV7JatwretHyngmLdNpvN2pVWWRUm8ZcDZLRuADJB",
+    "function_call_key": {
+     "public_key": "ed25519:CUMRT4gTAxbSWDdu32ePSfRaf3iCg52dqWdrGsTB8Vmk",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "ben.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:2nUR4u29qdZcLLKE7aDdb3XxG7m1Pq8wYAVX6aRMJ48W",
+    "function_call_key": {
+     "public_key": "ed25519:CeAgs7Pkf5eyGNcQ2sLVdNxS6Anbr3bhCBs49apjNpBF",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "cleo.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:J497KJy1hqkRu8FeDwChoiYjCsHZYco6sbdCQQy8s8u2",
+    "function_call_key": {
+     "public_key": "ed25519:EAeWGi17LQMDjhjNJPdhzzUjw9yHFkf5EwcnNYraTCSD",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "dina.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:7MCxSZhkEyedn8GVaFXLvEFKNHBFBUzPzLoe3HwJEcsa",
+    "function_call_key": {
+     "public_key": "ed25519:A244RVZkdN6SGtz9Mqi1nsHCshAK3mD4BiCTaoo28eN5",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "emil.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:5grZhXpRquxTyqNKYXyKYpd6Uhsgi5PUCvLeYPC4H1ce",
+    "function_call_key": {
+     "public_key": "ed25519:7vqU1avBd6vEeX15RcPxYSkpvum8ysfPyupCWtyuq34r",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "finn.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:6Yamz1DAkf8dTogcXQ443FP2Mrcqx7PML5gWUmDGj3hf",
+    "function_call_key": {
+     "public_key": "ed25519:6wNdNvp5BM7XHjhAA8ei5Rssz922XwQXP5QnV8gVGbw2",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "gus.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:3XcaG2StkhBDUNK94mawq5aPJXPzL1Xex13B3FKTFeM8",
+    "function_call_key": {
+     "public_key": "ed25519:BfqK6LisQzjHW3t4FzeTyPTfCArppRCTCgg7snVyvK9Y",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "hugo.hat-tip.testnet": {
+    "role": "member",
+    "funded_near": "0.700",
+    "full_access_key": "ed25519:44SGD2xFH4oiySPJYXWJexpVXPqeinfKHGxiyhDP2Fsx",
+    "function_call_key": {
+     "public_key": "ed25519:BQ2DadFLZw24VK1uBroV2sFDEb8CQzG3WMk23vrQDDXN",
+     "receiver": "thanks.hat-tip.testnet",
+     "methods": [
+      "allocate",
+      "note"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "council-a.hat-tip.testnet": {
+    "role": "council",
+    "funded_near": "1.500",
+    "full_access_key": "ed25519:D8XvCcUdYbQodTi8yJebpaQTp3Uj7idr7AMEwpVC1AY1",
+    "function_call_key": {
+     "public_key": "ed25519:Fs3wdUjxQoaBGEibagfVGwpbw13hSu9g4aGTGKfykHHf",
+     "receiver": "hat-tip.sputnikv2.testnet",
+     "methods": [
+      "act_proposal"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "council-b.hat-tip.testnet": {
+    "role": "council",
+    "funded_near": "1.500",
+    "full_access_key": "ed25519:cy4PRSZthCgG1fpZY2FYa3Kkqyhxw4J9rMfkdrWpCLZ",
+    "function_call_key": {
+     "public_key": "ed25519:AaEZ8L81ArNn1QZhvqjLCpTTss4V8mmSPCY1jc26AMbm",
+     "receiver": "hat-tip.sputnikv2.testnet",
+     "methods": [
+      "act_proposal"
+     ],
+     "allowance_near": "2.00"
+    }
+   },
+   "council-c.hat-tip.testnet": {
+    "role": "council",
+    "funded_near": "1.500",
+    "full_access_key": "ed25519:2CF1hKX2gH9PC4L5YsLigDpHRuZswfLPu6qohjxNyWkY",
+    "function_call_key": {
+     "public_key": "ed25519:9UDhw9J5qLva7sP2hqbfbGmeQwj4ZaM2Pq5DteSesas4",
+     "receiver": "hat-tip.sputnikv2.testnet",
+     "methods": [
+      "act_proposal"
+     ],
+     "allowance_near": "2.00"
+    }
+   }
+  },
+  "txs": {
+   "faucet hat-tip.testnet": {
+    "hash": "XXbjpb4jkgb8ZDkgBJANn7FnPkPVKAmCHu1VSPsu8KX",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-3.testnet": {
+    "hash": "4cCCgWC16x8PrpHAzxXAqTWchmdd2QC9ML7nUuCWHeWK",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-4.testnet": {
+    "hash": "5wzoLh73BFYm37LQhhkon7eajvBiKk9BWSnMaU4HzxjR",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-5.testnet": {
+    "hash": "BwBA3sDUHRcG839BXW2yBnVjqrNP9uMbRog4A7Ak3eV8",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-6.testnet": {
+    "hash": "ENR6WUZTZ3xb5jYJUUyqru2QH9pG6AUVaumZH2STYwHT",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-7.testnet": {
+    "hash": "GauFJKeCD2uYD6bYgwjBcYVddQXnMFRYwqLk4JbBvYw",
+    "note": "faucet, 10 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-fund-3.testnet": {
+    "hash": "C5jUpoiTBkKDSgEBxhskQNBPV4Bq76TmuzFWX6CmLY2s",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-fund-4.testnet": {
+    "hash": "PuVKdLxjYxj8YN928HQEQx57iybZNXAypEnLf1NcryG",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-fund-5.testnet": {
+    "hash": "BgndD7dkzEBjAXDZayBHagtNbXfQ8Gy5pB9HskdGJdnB",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-fund-6.testnet": {
+    "hash": "5WQNvtEkMyoAg5RB6GUfyqvLajJ1gLkGzoaDyZBK47tL",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-fund-7.testnet": {
+    "hash": "3nFq5i4K2VU9vkRP8gGy6KqUQqQuGL7Rq9vngbDSzTZS",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "9.9500 NEAR"
+   },
+   "fund hat-tip.testnet from hat-tip-stage.testnet": {
+    "hash": "D1FqsdQgQgQvSmMeMP87UfqanSFozpPSJpqQdcnM9JvJ",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "5.3000 NEAR"
+   },
+   "fund hat-tip-gas.testnet from thanks.hat-tip-stage.testnet": {
+    "hash": "GzYXpoCX3sfkQJHQsSMHdRbUU5Xvt5cZoorQFT3Dzjbj",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "5.0000 NEAR"
+   },
+   "create thanks.hat-tip.testnet": {
+    "hash": "BEi4nZm5Nf4zFY2pQZqTj34EMNFx6kDMcayAHfQaBGaz",
+    "tgas": 8.34,
+    "fee_near": "0.007115",
+    "note": "11.000 NEAR"
+   },
+   "create tusd.hat-tip.testnet": {
+    "hash": "126Z1rLPhh747w7SgbWckfw4fJgnSwB5V7b92ELJFQWU",
+    "tgas": 8.34,
+    "fee_near": "0.007115",
+    "note": "2.500 NEAR"
+   },
+   "create ana.hat-tip.testnet": {
+    "hash": "84uJ18e6bvsJKRymetWHYaMoGZeGWniRzi99E38NY5Qo",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create ben.hat-tip.testnet": {
+    "hash": "2KiAzoXV9Y8hJUhaG6h1dRC7VrKSmFHsEgzw2XbCzx59",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create cleo.hat-tip.testnet": {
+    "hash": "EJCjzTs8on75RyNF5q7h9dcUs5j7MPBorhaWabenJxFC",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create dina.hat-tip.testnet": {
+    "hash": "3xE1EWqxZsAuYPv7erPsrh44Dd5ydpPSjnd1GmCVXKVX",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create emil.hat-tip.testnet": {
+    "hash": "HPHaGGg8LNfC5mYtgMRZ4nBpkRfpiRhbWUEh99p78nDB",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create finn.hat-tip.testnet": {
+    "hash": "5vyPkXoQsDGwpRjr4VzCfe1VRnixoLCkXQa9r3u3Rr1q",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create gus.hat-tip.testnet": {
+    "hash": "7iyZV2iycW2bwGxf5tHsQ8mw1oDmmJLbusWdnQh3jvCh",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create hugo.hat-tip.testnet": {
+    "hash": "DFH26V3PHLrU4iDXQA7s1QCja9UFkgwAmchWYag9xx6X",
+    "tgas": 8.55,
+    "fee_near": "0.007136",
+    "note": "0.700 NEAR"
+   },
+   "create council-a.hat-tip.testnet": {
+    "hash": "DUYoP1GyiU74FxoS2TrQa2AfaixZ59hrSVBp7k2Y674a",
+    "tgas": 8.55,
+    "fee_near": "0.007135",
+    "note": "1.500 NEAR"
+   },
+   "create council-b.hat-tip.testnet": {
+    "hash": "C36pXtPQUw7hhfBGFnDmJHNQyRoL3if6BM7diU9oYsnL",
+    "tgas": 8.55,
+    "fee_near": "0.007135",
+    "note": "1.500 NEAR"
+   },
+   "create council-c.hat-tip.testnet": {
+    "hash": "7vqMvgbStERTWpT8kHFzq48aD8D4BgWM86s2nYA6KVSi",
+    "tgas": 8.55,
+    "fee_near": "0.007135",
+    "note": "1.500 NEAR"
+   },
+   "create DAO": {
+    "hash": "7L74Nhy14y4sy1jrL5oQ1w2qNKKqgB9CcXChCc5XS1q2",
+    "tgas": 89.24,
+    "fee_near": "0.015160",
+    "note": "6.00 NEAR attached by hat-tip.testnet"
+   },
+   "top up DAO": {
+    "hash": "HohuDv53w6rqmjC7dpjS9NJBC7Spnf2Gwx4EPDvVEKKq",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "29.000 NEAR for proposal storage"
+   },
+   "auto-update off: proposal": {
+    "hash": "Fw4s86RZ4sAdGDP6RuiKfxHyA2Kztfi4krDXQ8KARLBG",
+    "tgas": 2.54,
+    "fee_near": "0.000254",
+    "note": "proposal 0 by council-a"
+   },
+   "auto-update off: vote": [
+    {
+     "hash": "DMPevEz83Ne1LyCKnPkHZw2vq2Dwx4umQtsV7YSewoRL",
+     "tgas": 2.72,
+     "fee_near": "0.000272",
+     "note": "council-a.hat-tip.testnet"
+    },
+    {
+     "hash": "BqDHAfLm8trtNKwpWgvziVYBMZuzFc45htpzykxTaaLG",
+     "tgas": 3.55,
+     "fee_near": "0.000333",
+     "note": "council-b.hat-tip.testnet"
+    }
+   ],
+   "fund hat-tip-gas.testnet from hat-tip.testnet": {
+    "hash": "CughNCcX5drS3D8APyR9sY6R3MAz3CisA4zof5Rx3auc",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "5.0000 NEAR"
+   },
+   "deploy token": {
+    "hash": "DHhXPW3rBCJqBu5dYHy7fe94XCmduDUAJi4rssh9cnyU",
+    "tgas": 14.55,
+    "fee_near": "0.001455",
+    "note": "deploy + new, 167062 bytes"
+   },
+   "deploy contract": {
+    "hash": "9vWXckVuNoJavfiFJj2Rvd8CY6vCKAZa5gS1CUmr5Rbe",
+    "tgas": 27.97,
+    "fee_near": "0.002798",
+    "note": "deploy + new, 359545 bytes"
+   },
+   "first sync": {
+    "hash": "BwNrena544uUUDwdngJXCoS4sP42xeSzZy91rYem93BB",
+    "tgas": 7.34,
+    "fee_near": "0.000690"
+   },
+   "gas pool keys": {
+    "hash": "BVpsWfDSqwAzwudKNEZYLvAv9Rz53r65oPQheQre9fNq",
+    "tgas": 2.46,
+    "fee_near": "0.000247",
+    "note": "8 page + 3 keeper keys"
+   },
+   "lock token": {
+    "hash": "CLaqUhBJMMfWzeRoyCmmE42qGpSArK3inASpnn3LzDED",
+    "tgas": 0.4,
+    "fee_near": "0.000041",
+    "note": "every access key deleted"
+   },
+   "lock contract": {
+    "hash": "3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv",
+    "tgas": 0.4,
+    "fee_near": "0.000041",
+    "note": "every access key deleted"
+   }
+  },
+  "root": "hat-tip.testnet",
+  "contract": "thanks.hat-tip.testnet",
+  "token": "tusd.hat-tip.testnet",
+  "dao": "hat-tip.sputnikv2.testnet",
+  "house": {
+   "strategies": "sim/params.json, house; played by scripts/house.mjs",
+   "members": [
+    {
+     "account": "ana.hat-tip.testnet",
+     "name": "ana",
+     "kind": "honest",
+     "label": null,
+     "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise."
+    },
+    {
+     "account": "ben.hat-tip.testnet",
+     "name": "ben",
+     "kind": "honest",
+     "label": null,
+     "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise."
+    },
+    {
+     "account": "cleo.hat-tip.testnet",
+     "name": "cleo",
+     "kind": "honest",
+     "label": null,
+     "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise."
+    },
+    {
+     "account": "dina.hat-tip.testnet",
+     "name": "dina",
+     "kind": "honest",
+     "label": null,
+     "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise."
+    },
+    {
+     "account": "emil.hat-tip.testnet",
+     "name": "emil",
+     "kind": "honest",
+     "label": null,
+     "strategy": "Works in about nine rounds out of ten. When working: fixes round(items_mean * lognormal(0, items_sigma)) items, posts a note naming them, and hands out 100 thanks: first welcome_each thanks to each of up to welcome_max guests who posted a note and gave thanks this round (picked at random), then the rest to the other house members in proportion to the items in their notes times lognormal(0, noise_sigma) noise, whole thanks, at most cap_per_receiver each and max_receivers in all, dropping anyone below focus of the top pick. Skips the round (no note, no thanks) otherwise."
+    },
+    {
+     "account": "finn.hat-tip.testnet",
+     "name": "finn",
+     "kind": "pair",
+     "label": "demo: colluding pair",
+     "strategy": "Labelled 'demo: colluding pair'. Works like an honest member, but every round it works gives its partner cap_per_receiver thanks first, then welcomes guests and spreads the rest like an honest member."
+    },
+    {
+     "account": "gus.hat-tip.testnet",
+     "name": "gus",
+     "kind": "pair",
+     "label": "demo: colluding pair",
+     "strategy": "Labelled 'demo: colluding pair'. Works like an honest member, but every round it works gives its partner cap_per_receiver thanks first, then welcomes guests and spreads the rest like an honest member."
+    },
+    {
+     "account": "hugo.hat-tip.testnet",
+     "name": "hugo",
+     "kind": "free_rider",
+     "label": "demo: free rider",
+     "strategy": "Labelled 'demo: free rider'. Fixes nothing, posts a vague note every round (it claims one item with probability free_rider_claim, which the others read as one item), and never gives thanks."
+    }
+   ],
+   "council": [
+    {
+     "account": "council-a.hat-tip.testnet",
+     "name": "council-a",
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    },
+    {
+     "account": "council-b.hat-tip.testnet",
+     "name": "council-b",
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    },
+    {
+     "account": "council-c.hat-tip.testnet",
+     "name": "council-c",
+     "rule": "Votes in the DAO by the published rule, at least two minutes after the payout is filed. Tier 2: approve, unless more than half of the receiver's points this round came from one giver whom the receiver also thanked with at least council_rule.partner_min thanks this round (a partner; a welcome of welcome_each thanks to a guest is not one); then reject. Tier 3: approve if at least three givers stand behind the receiver's points this round; otherwise reject."
+    }
+   ],
+   "council_rule": {
+    "partner_min": 6,
+    "about": "The fewest thanks the receiver must have given its top giver in the round for the council to read the pair as partners; picked by sim/hat_tip_sim.py council (docs/SIMULATION.md, 'The house council's partner threshold')."
+   }
+  },
+  "dao_policy": {
+   "roles": [
+    {
+     "name": "council",
+     "kind": {
+      "Group": [
+       "council-c.hat-tip.testnet",
+       "council-a.hat-tip.testnet",
+       "council-b.hat-tip.testnet"
+      ]
+     },
+     "permissions": [
+      "add_member_to_role:AddProposal",
+      "policy:AddProposal",
+      "policy_add_or_update_role:AddProposal",
+      "config:AddProposal",
+      "*:Finalize",
+      "*:VoteReject",
+      "policy_update_parameters:AddProposal",
+      "transfer:AddProposal",
+      "policy_update_default_vote_policy:AddProposal",
+      "remove_member_from_role:AddProposal",
+      "vote:AddProposal",
+      "*:VoteRemove",
+      "*:VoteApprove",
+      "factory_info_update:AddProposal",
+      "policy_remove_role:AddProposal"
+     ],
+     "vote_policy": {
+      "call": {
+       "weight_kind": "RoleWeight",
+       "quorum": "0",
+       "threshold": "1"
+      }
+     }
+    },
+    {
+     "name": "thanks",
+     "kind": {
+      "Group": [
+       "thanks.hat-tip.testnet"
+      ]
+     },
+     "permissions": [
+      "call:AddProposal",
+      "transfer:Finalize",
+      "transfer:VoteApprove",
+      "transfer:AddProposal",
+      "call:Finalize"
+     ],
+     "vote_policy": {
+      "transfer": {
+       "weight_kind": "RoleWeight",
+       "quorum": "0",
+       "threshold": [
+        1,
+        1
+       ]
+      }
+     }
+    },
+    {
+     "name": "members",
+     "kind": {
+      "Group": [
+       "emil.hat-tip.testnet",
+       "gus.hat-tip.testnet",
+       "ben.hat-tip.testnet",
+       "ana.hat-tip.testnet",
+       "dina.hat-tip.testnet",
+       "cleo.hat-tip.testnet",
+       "hugo.hat-tip.testnet",
+       "finn.hat-tip.testnet"
+      ]
+     },
+     "permissions": [],
+     "vote_policy": {}
+    }
+   ],
+   "default_vote_policy": {
+    "weight_kind": "RoleWeight",
+    "quorum": "0",
+    "threshold": [
+     1,
+     2
+    ]
+   },
+   "proposal_bond": "10000000000000000000000",
+   "proposal_period": "86400000000000",
+   "bounty_bond": "1000000000000000000000000",
+   "bounty_forgiveness_period": "86400000000000"
+  },
+  "code_hashes": {
+   "dao": "AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH",
+   "token": "41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip",
+   "contract": "ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw"
+  },
+  "dao_version": "2.3.1",
+  "factory": "sputnikv2.testnet",
+  "factory_auto_update": false,
+  "wasm_sha256": {
+   "token": "2cc43cf6998ccb454b21ec031a1d535d467a73074b8192a5d3cf7aa66e5b46e1",
+   "contract": "91e5f94a8b9bd7aa4faf3a870455a4db2014b0f9017fb70aa4b181c0ba194ab8"
+  },
+  "locked": {
+   "token": true,
+   "contract": true
+  },
+  "config": {
+   "dao": "hat-tip.sputnikv2.testnet",
+   "token": "tusd.hat-tip.testnet",
+   "members_role": "members",
+   "council_role": "council",
+   "thanks_role": "thanks",
+   "genesis_ms": 1794133200000,
+   "round_ms": 1200000,
+   "thanks_per_round": 100,
+   "cap_per_receiver": 25,
+   "max_receivers": 10,
+   "reciprocal_bp": 2500,
+   "quadratic": false,
+   "breadth_k": 3,
+   "breadth_bp": 2500,
+   "idle_bp": 10000,
+   "decay_bp": 750,
+   "round_budget": "120000000",
+   "min_payout": "5000000",
+   "carry_rounds": 12,
+   "reserve": "0",
+   "auto_rep_min": 200,
+   "auto_per_thanks": "60000",
+   "auto_max": "30000000",
+   "cosign_base": "14400000",
+   "cosign_per_thanks": "60000",
+   "cosign_max": "30000000",
+   "auto_share_bp": 8000,
+   "guest_seats": 6,
+   "guest_weight_bp": 5000,
+   "guest_cap_bp": 2000,
+   "max_members": 24,
+   "max_catchup": 36,
+   "log_keep": 108,
+   "note_max_bytes": 80,
+   "guest_receive_cap_bp": 800
+  },
+  "genesis_iso": "2026-11-08T10:20:00.000Z",
+  "gas": {
+   "account": "hat-tip-gas.testnet",
+   "methods": [
+    "act",
+    "close_round",
+    "pay",
+    "check_payout",
+    "sync"
+   ],
+   "relay_keys": [
+    "ed25519:E6vMBKyzNucHWaNS9uftUgjvauG2KV3NhzYC4TfbYbhP",
+    "ed25519:7dyTJWdWfJGr3reJbdRgWqmkvMBNWYowFCjuwRLG3K23",
+    "ed25519:9tiwC6aJLdKgXKbyKUUreLfdtC3TRAc82JLjbrcXWNHf",
+    "ed25519:BupXM8rghjsQRpG7YZPSeBb7K9r8WnC5Y4FHXnRBLeyo",
+    "ed25519:CeFh5vho9ntyfsLy38YGybdBx8Sfktp8S8N2nTmKsjuA",
+    "ed25519:GQcSZqG7cuc1vyTk8Q5DE7LNFbc4B6tVJRm99shCU64g",
+    "ed25519:F2yntQecGNwR6q9HTUkVqUp34Df6VGYet9ZF6qTU5RcS",
+    "ed25519:7xm3RYG7zvNArABspDHckL1d5zjcknMKvswtJYuT5JK4"
+   ],
+   "relay_allowance_near": "1.00",
+   "keeper_keys": [
+    "ed25519:2r1LkomRuwVRck8NF4sR85MQKRJ3A7bSPAThirrvSDdX",
+    "ed25519:BpAkZb4Kw3aq36AHjyxGUEF4cUagnaXNZJLYQacjFyY7",
+    "ed25519:Eh6jpJonsPm486ELhCAKjsisNHGqCz7smHHEb9JJR1cg"
+   ],
+   "keeper_allowance_near": "5.00",
+   "relay_private_keys": ".secrets/gas-pool-thanks.hat-tip.testnet.json (git-ignored; public by design, for web/js/config.js)",
+   "allowances_why": "Page keys 1 NEAR each: one key must prepay its dearest call (pay, 300 Tgas = 0.3 NEAR at the pessimistic 10^9 yocto per gas) and keeps about 0.7 NEAR for burnt gas, about 1,400 relayed calls at 0.0005 NEAR; 8 keys cap a drain of the page relay at 8 NEAR. Keeper keys 5 NEAR each (3 keys, 15 NEAR cap): the keeper burnt about 0.0105 NEAR a round on staging, about 12.9 NEAR for the 1,224 rounds of 20 minutes from 2026-11-08 to 2026-11-25. All keys draw from the gas account balance (19.5 NEAR at launch)."
+  },
+  "launched": "2026-11-08",
+  "lock_txs": {
+   "contract": {
+    "hash": "3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv",
+    "block": 276762765,
+    "at": "2026-11-08T10:20:43Z"
+   },
+   "token": {
+    "hash": "CLaqUhBJMMfWzeRoyCmmE42qGpSArK3inASpnn3LzDED",
+    "block": 276762758,
+    "at": "2026-11-08T10:20:39Z"
+   }
+  },
+  "lockTx": "3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv",
+  "funding": {
+   "from": "six faucet accounts (hat-tip.testnet, hat-tip-fund-3 to -7, 60 NEAR), 5.3 NEAR from the staging root and 5 NEAR from the staging contract (to the gas account)",
+   "contract": "11 NEAR (sim/params.json testnet.contract_near)",
+   "token": "2.5 NEAR",
+   "dao": "6 NEAR at creation + 29 NEAR for proposal storage (about 0.0038 NEAR a payout: about 7,800 payouts, past 2026-11-25 at 6 a round)",
+   "house": "0.7 NEAR per member (about 0.0005 NEAR a round: 0.6 NEAR to 2026-11-25), 1.5 NEAR per council member; their function-call keys 2 NEAR allowance",
+   "gas_account": "+10 NEAR (9.5 before)"
+  },
+  "first_rounds": {
+   "when": "2026-11-08 10:21-11:23 UTC, rounds 1-3 (20 minutes each)",
+   "script": "scripts/house.mjs run --section final --rounds 3 (seed 2026110810), keys from the environment only",
+   "transactions": 102,
+   "failed": 0,
+   "refused": 0,
+   "payouts": 16,
+   "by_tier": {
+    "2": {
+     "paid": 3
+    },
+    "3": {
+     "paid": 12,
+     "rejected": 1
+    }
+   },
+   "paid_tusd": "340.913948",
+   "audit": "balanced, points_attributed, statuses_ok, filed_have_ids, carry_ok all true",
+   "judge_checks": "All 14 checks passed (2026-11-08 11:24 UTC)",
+   "compare_wasm": "contract and token byte-identical to the builds of contract/WASM_SHA256 and token/WASM_SHA256"
+  },
+  "evidence_txs": {
+   "lock_contract": "3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv",
+   "lock_token": "CLaqUhBJMMfWzeRoyCmmE42qGpSArK3inASpnn3LzDED",
+   "close_round_1": "B1o9KZQtpwZAJFFmAkKJGtJrEZEiqCsrZ4LNYmyQktR6",
+   "tier3_council_vote_1": "3EkQL42pWZKqxb8SsEDtf9LmLYBjrHJ1eqZdEF9HAoGi",
+   "tier3_council_vote_2_executes": "CEsspTSr87WsUAfQoTgrs39f9rUPLx57LMBFUL5LtUDC",
+   "tier3_check_paid": "Fgpi5zoMEXy88sbGbCrizDyun6gZSrYCvhnet3L4K86r",
+   "tier2_council_vote": "HWqF8TwFMpYpBou1yYogmphbxQmogxkvpjtA8bRrRAu5",
+   "tier2_check_1_noted": "E77Bg8Wt8kSxDWKKkte4K1Y5BYK4PHAyaLmb9LUYXCHh",
+   "tier2_check_2_paid": "CYwpLHZeKczgfuRUidmQLVzfrTwqBmtK6mGv1YGjGc6c",
+   "tier3_check_rejected_struck": "FES7kqe6RPn9mi1Snv1igx78yTkunmcSfmPpqypjTepj"
+  }
+ },
  "staging": {
   "accounts": {
    "hat-tip-stage.testnet": {
