@@ -370,9 +370,15 @@ case "$DFROM" in
   "" | *[!0-9]*) ;;
   *) RECENT="$RECENT$(view "$DAO" get_proposals "$(b64 "$(printf '{"from_index":%s,"limit":100}' "$DFROM")")")" ;;
 esac
-got=$(python3 -I - "$TOKEN" "$BLAST" "$BOUNTIES" "$RECENT" <<'PY'
+# The answers go through files, not argv: 100 proposals exceed Linux's 128 KB limit for one argument.
+BFILE=$(mktemp) && RFILE=$(mktemp) || exit 70
+printf '%s' "$BOUNTIES" >"$BFILE"
+printf '%s' "$RECENT" >"$RFILE"
+got=$(python3 -I - "$TOKEN" "$BLAST" "$BFILE" "$RFILE" <<'PY'
 import json, sys
 TOKEN, last = sys.argv[1], sys.argv[2]
+sys.argv[3] = open(sys.argv[3], encoding="utf-8").read()
+sys.argv[4] = open(sys.argv[4], encoding="utf-8").read()
 def decode(raw, what):
     ans = json.loads(raw)
     r = ans.get("result")
@@ -403,6 +409,7 @@ except Exception as e:
     print("error: %s" % (e,))
 PY
 )
+rm -f "$BFILE" "$RFILE"
 report "15. bounties: open ones in tUSD, and finished work paid by the DAO" "$got" "bounties live"
 
 if [ "$FAILED" -eq 0 ]; then echo "All $TOTAL checks passed."; else echo "$FAILED of $TOTAL checks failed."; fi
