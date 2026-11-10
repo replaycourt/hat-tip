@@ -53,7 +53,8 @@ test('one config module names the deployments; only known names are accepted', (
   assert.equal(pickDeployment('?contract=__proto__').name, 'final')
   assert.equal(pickDeployment('').name, 'final')
   for (const [name, d] of Object.entries(DEPLOYMENTS)) {
-    assert.deepEqual(Object.keys(d).sort(), ['codeHash', 'contract', 'gasAccount', 'gasKeys', 'house', 'lockTx', 'tokenCodeHash'], name)
+    assert.deepEqual(Object.keys(d).sort(), ['bountyProposals', 'codeHash', 'contract', 'gasAccount', 'gasKeys', 'house', 'lockTx', 'tokenCodeHash'], name)
+    assert.ok(d.bountyProposals.every((id) => Number.isInteger(id) && id >= 0), `${name}: bounty proposal ids`)
     if (d.contract) assert.match(d.contract, /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.testnet$/, name)
     if (d.gasAccount) assert.match(d.gasAccount, /^[a-z0-9_-]+(\.[a-z0-9_-]+)*\.testnet$/, name)
     for (const h of [d.codeHash, d.tokenCodeHash].filter(Boolean)) assert.equal(b58decode(h).length, 32, `${name}: a base58 sha256`)

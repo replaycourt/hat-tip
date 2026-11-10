@@ -92,7 +92,7 @@
       <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>DAO treasury, no multisig</b><span class="req-how">Money and approvals stay in the café’s own Sputnik DAO.</span><a class="req-link" id="req-policy" href="#policy">The DAO’s policy ›</a></li>
       <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Traceable reputation</b><span class="req-how">Named accounts; every point traces to a round, its giver and a note of finished work.</span><a class="req-link" id="req-record" href="#board">A member’s record ›</a></li>
       <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Three approval tiers</b><span class="req-how">Auto-approved, one council vote, or a council majority, by record.</span><a class="req-link" id="req-proposal" href="#payouts">A proposal the contract filed ›</a></li>
-      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>A public board</b><span class="req-how">Notes, thanks, live payouts with their votes, every record.</span><a class="req-link" href="#board">This round’s board ›</a></li>
+      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>A public board</b><span class="req-how">Notes, thanks, live payouts with their votes, every record, and the DAO’s bounties with their claims.</span><a class="req-link" href="#board">This round’s board ›</a><a class="req-link req-link-2" id="req-bounties" href="#bounties">Bounties and claims ›</a></li>
       <li class="req req-answer"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Checkpoint: approval flows</b><span class="req-how">Which flows Sputnik already has, and which Hat Tip adds.</span><a class="req-link" href="#flows">The answer ›</a></li>
     </ol>
   </section>
@@ -151,6 +151,31 @@
     <p class="carried" id="carried"></p>
   </section>
 
+  <section class="bounties" id="bounties" aria-labelledby="bounties-title">
+    <div class="section-head">
+      <h2 id="bounties-title">Bounties</h2>
+      <p class="sub">Jobs the café can name in advance, posted as Sputnik DAO bounties: a member posts one, a council majority approves the money, a member claims it with a bond and files the work, and one council vote pays it from the treasury. Its poster then thanks the finisher in that round.</p>
+    </div>
+    <div class="tiers bounty-cols">
+      <div class="tier bcol bcol-open">
+        <h3><span class="tier-num" id="b-open-n">–</span>Open</h3>
+        <p class="tier-rule">Approved by the council, waiting for someone to claim them; new ones in the vote.</p>
+        <ol class="tier-list" id="b-open"><li class="skeleton-line" aria-hidden="true"></li></ol>
+      </div>
+      <div class="tier bcol bcol-work">
+        <h3><span class="tier-num" id="b-work-n">–</span>Being worked on</h3>
+        <p class="tier-rule">Claimed with a bond. Filed work waits for one council vote.</p>
+        <ol class="tier-list" id="b-work"><li class="skeleton-line" aria-hidden="true"></li></ol>
+      </div>
+      <div class="tier bcol bcol-done">
+        <h3><span class="tier-num" id="b-done-n">–</span>Done and paid</h3>
+        <p class="tier-rule">The DAO paid the amount to the finisher and returned the bonds.</p>
+        <ol class="tier-list" id="b-done"><li class="skeleton-line" aria-hidden="true"></li></ol>
+      </div>
+    </div>
+    <p class="carried b-foot"><span id="b-foot-state">Reading the DAO’s bounties…</span> As a guest you can watch: claiming and filing work take a NEAR account in the café’s <code>members</code> role (the DAO admits members by a council vote) and the bond, which comes back when the work is approved or given up within a day. Read live with <code>get_bounties</code>, <code>get_bounty_claims</code> and the DAO’s proposals.</p>
+  </section>
+
   <section class="replay" id="replay" aria-labelledby="replay-title">
     <div class="section-head">
       <h2 id="replay-title">The same thanks, counted twice</h2>
@@ -194,7 +219,7 @@
             <li>Roles (a group of accounts, token holders, everyone), with permissions per proposal kind and action (<code>transfer:AddProposal</code>, <code>call:VoteApprove</code>).</li>
             <li>A vote policy per role and kind, as a ratio or a weight, and a default one: the three tiers are three of them.</li>
             <li><code>Transfer</code> and <code>FunctionCall</code> proposals, the bond, expiry and <code>Finalize</code>, <code>VoteRemove</code>.</li>
-            <li>Bounties (<code>AddBounty</code>, <code>bounty_claim</code>, <code>BountyDone</code>) for work posted before it is done; this DAO leaves them off.</li>
+            <li>Bounties (<code>AddBounty</code>, <code>bounty_claim</code>, <code>BountyDone</code>) for work posted before it is done, with the claim bond: <a href="#bounties">live here</a>, next to the thanks.</li>
           </ul>
         </div>
         <div class="flow-col">
@@ -206,9 +231,10 @@
           </ul>
         </div>
         <div class="flow-col">
-          <h4>Turned off in the DAO</h4>
+          <h4>Set in the DAO’s policy</h4>
           <ul>
-            <li>The factory’s auto-update, so nobody can replace the DAO’s code.</li>
+            <li>The factory’s auto-update off, so nobody can replace the DAO’s code.</li>
+            <li>Members may post bounties and file their work, nothing else; one council vote approves finished work, a majority any new bounty.</li>
           </ul>
         </div>
       </div>

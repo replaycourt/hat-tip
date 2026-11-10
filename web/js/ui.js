@@ -158,6 +158,23 @@ export function payoutHtml(p, { name, stage, marks = [], fresh = false, me, hous
   </li>`
 }
 
+/**
+ * One row of the bounty board (logic.js bountyColumns): the task, its amount, who posted, claimed or
+ * finished it (names as text, each opens the member's record), and its DAO proposal.
+ */
+export function bountyHtml(b, { name, house }) {
+  const amount = b.unit === 'tUSD' ? tusd(b.amount) : `${L.fmtInt(b.amount)} ${b.unit}`
+  const who = b.people.map(([what, a]) => `${esc(what)} <button class="p-name b-who" type="button" data-record="${esc(a)}">${esc(name(a))}${botMark(a, house)}</button>`).join(' · ')
+  return `<li class="payout bounty ${esc(b.state)}"${b.id != null ? ` data-bounty="${esc(b.id)}"` : ''}>
+    <div class="p-main">
+      <div class="p-top"><b class="b-title" title="${esc(b.description)}">${b.id != null ? `<span class="b-id">#${esc(b.id)}</span> ` : ''}${esc(b.title)}</b><b class="p-amt">${esc(amount)}</b></div>
+      <div class="p-stage"><span class="p-dot" aria-hidden="true"></span><span>${esc(b.line)}</span></div>
+      ${who ? `<div class="b-people">${who}</div>` : ''}
+    </div>
+    ${b.proposal != null ? `<button class="p-prop" type="button" data-proposal="${esc(b.proposal)}" title="Open DAO proposal #${esc(b.proposal)}">#${esc(b.proposal)}</button>` : ''}
+  </li>`
+}
+
 /** The close of a round in five steps, revealed one by one (`step` 0..5; 5 shows all). */
 export function storyHtml(s, step) {
   const none = s.points === 0n

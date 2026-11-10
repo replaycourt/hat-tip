@@ -7,6 +7,8 @@
 //   code_hashes.contract/token  -> codeHash / tokenCodeHash (base58, as view_account reports them)
 //   house.members / council     -> house: { account: strategy kind }
 //   txs (the last key deletion) -> lockTx
+//   bounties.proposals (add, done)  -> bountyProposals: the DAO proposals of the bounties, read
+//                                    by id (Sputnik has no index by kind; payouts bury them)
 // The DAO and the token are not listed: the page reads them from the contract's config().
 //
 // Guests never see a wallet. Their browser makes an Ed25519 key, and every action is signed with
@@ -28,6 +30,8 @@ export const DEPLOYMENTS = {
     tokenCodeHash: '41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip',
     // the transaction that deleted the contract's last access key (the token's: deploy/testnet.json)
     lockTx: '3FSsP2Hcq81rxjeAm1Won8tSdW6VYedk2j59vk23q7xv',
+    // the DAO proposals of the bounties (deploy/testnet.json, final.bounties.proposals)
+    bountyProposals: [1103, 1104, 1105, 1106, 1107, 1108, 1112, 1113, 1114],
     // PUBLIC on purpose: function-call keys of hat-tip-gas.testnet that may only call `act`,
     // `close_round`, `pay`, `check_payout` and `sync` on thanks.hat-tip.testnet, 1 NEAR allowance each
     // (see the comment at the top).
@@ -62,6 +66,7 @@ export const DEPLOYMENTS = {
     codeHash: 'ApXWMjk6wgykDyEdNAPBagSNYZHnvMwioQcqpykZKGQw',
     tokenCodeHash: '41kVaTjWBmhriofB8Q3QKzZNCWdE7TNqVhPiRe8eHFip',
     lockTx: null,
+    bountyProposals: [],
     // PUBLIC on purpose: function-call keys of hat-tip-gas.testnet that may only call `act`,
     // `close_round`, `pay`, `check_payout` and `sync` on thanks.hat-tip-stage.testnet, 1 NEAR allowance each
     // (see the comment at the top).

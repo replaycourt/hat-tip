@@ -668,6 +668,11 @@ export function proposalInfo(p) {
     kind = `FunctionCall ${a?.method_name ?? ''}`.trim()
     receiver = args?.receiver_id ?? null
     amount = args?.amount ? big(args.amount) : null
+  } else if (p.kind?.AddBounty) {
+    amount = big(p.kind.AddBounty.bounty?.amount ?? 0)
+  } else if (p.kind?.BountyDone) {
+    kind = `BountyDone (bounty #${p.kind.BountyDone.bounty_id})`
+    receiver = p.kind.BountyDone.receiver_id
   }
   const votes = Object.entries(p.votes ?? {}).sort((a, b) => cmp(a[0], b[0]))
   return {
@@ -683,6 +688,116 @@ export function proposalInfo(p) {
     rejections: votes.filter(([, v]) => v === 'Reject').length,
     submittedMs: p.submission_time ? Number(big(p.submission_time) / 1_000_000n) : null,
   }
+}
+
+// ---- bounties (DESIGN.md, "Bounties") ----------------------------------------------------------
+
+const kindName = (p) => Object.keys(p?.kind ?? {})[0] ?? null
+export const isBountyProposal = (p) => kindName(p) === 'AddBounty' || kindName(p) === 'BountyDone'
+// `times` counts down as the bounty is done (Sputnik keeps it at 0), so the bounty may have fewer
+const sameBounty = (proposed, b) => proposed.description === b.description && String(proposed.token) === String(b.token) && String(proposed.amount) === String(b.amount) && Number(b.times) <= Number(proposed.times) && String(proposed.max_deadline) === String(b.max_deadline)
+
+/**
+ * The bounties as one list (scripts/bounty-lib.mjs `bountyBoard`, the same rules): every bounty of
+ * get_bounties with its poster (the proposer of the approved AddBounty with the same content), its
+ * claims (get_bounty_claims of the accounts asked), its BountyDone proposals and a state: open,
+ * claimed, review (work filed, the council has not decided), done, expired (a claim past its
+ * deadline holds the slot) or blocked (claimed by an account not asked about). Also the AddBounty
+ * proposals in the vote and the declined ones. Times in nanoseconds.
+ */
+export function bountyBoard({ bounties = [], proposals = [], claims = {}, counts = {}, nowNs = 0n }) {
+  const now = big(nowNs)
+  const props = [...proposals].sort((a, b) => a.id - b.id)
+  const adds = props.filter((p) => kindName(p) === 'AddBounty')
+  const dones = props.filter((p) => kindName(p) === 'BountyDone')
+  const used = new Set()
+  const out = []
+  for (const b of [...bounties].sort((x, y) => x.id - y.id)) {
+    const add = adds.find((p) => p.status === 'Approved' && !used.has(p.id) && sameBounty(p.kind.AddBounty.bounty, b)) ?? null
+    if (add) used.add(add.id)
+    const cl = []
+    for (const [account, list] of Object.entries(claims)) {
+      for (const c of list ?? []) {
+        if (Number(c.bounty_id) !== Number(b.id)) continue
+        const end = big(c.start_time) + big(c.deadline)
+        cl.push({ account, startNs: String(c.start_time), endNs: String(end), completed: Boolean(c.completed), expired: !c.completed && now > end })
+      }
+    }
+    cl.sort((x, y) => cmp(big(x.startNs), big(y.startNs)))
+    const done = dones.filter((p) => Number(p.kind.BountyDone.bounty_id) === Number(b.id)).map((p) => ({
+      proposal: p.id, finisher: p.kind.BountyDone.receiver_id, proposer: p.proposer, status: p.status, report: p.description ?? '', submittedNs: String(p.submission_time ?? 0),
+    }))
+    const count = Number(counts[b.id] ?? cl.length)
+    const times = Number(b.times)
+    const running = cl.filter((c) => !c.completed && !c.expired)
+    let state
+    if (times === 0) state = 'done'
+    else if (cl.some((c) => c.completed)) state = 'review'
+    else if (running.length && count >= times) state = 'claimed'
+    else if (count > cl.length && count >= times) state = 'blocked'
+    else if (count >= times) state = 'expired'
+    else state = 'open'
+    out.push({
+      id: Number(b.id), description: b.description ?? '', token: b.token, amount: String(b.amount), times, maxDeadlineNs: String(b.max_deadline),
+      poster: add?.proposer ?? null, addProposal: add?.id ?? null, claims: cl, done, claimCount: count, state,
+      paid: done.filter((x) => x.status === 'Approved').length,
+    })
+  }
+  const pick = (b) => ({ description: b.description ?? '', token: b.token, amount: String(b.amount), times: Number(b.times), maxDeadlineNs: String(b.max_deadline) })
+  const pending = adds.filter((p) => p.status === 'InProgress').map((p) => ({ proposal: p.id, poster: p.proposer, ...pick(p.kind.AddBounty.bounty), submittedNs: String(p.submission_time ?? 0), votes: p.votes ?? {} }))
+  const declined = adds.filter((p) => ['Rejected', 'Removed', 'Expired'].includes(p.status)).map((p) => ({ proposal: p.id, poster: p.proposer, status: p.status, ...pick(p.kind.AddBounty.bounty) }))
+  return { bounties: out, pending, declined }
+}
+
+/** The task of a bounty text the house writes ("Fix the toaster (posted by ana, round 916)"). */
+export const bountyTitle = (description) => String(description ?? '').replace(/\s*\(posted by [^)]*\)\s*$/, '').trim() || 'A bounty'
+
+/**
+ * The bounty board's three columns. open: approved and claimable, then proposals in the council's
+ * vote; work: claimed, work filed, or a claim past its deadline; done: paid (newest first, at most
+ * `doneMax`). Each row says who did what in words; `proposal` is the DAO proposal to link.
+ */
+export function bountyColumns(board, { nowMs, tokenId, doneMax = 6, majority = 2 }) {
+  const now = BigInt(Math.floor(nowMs)) * 1_000_000n
+  const ms = (ns) => Number(big(ns) / 1_000_000n)
+  const left = (endNs) => fmtLeft(ms(endNs) - Number(now / 1_000_000n))
+  const paidIn = (b) => (String(b.token) === String(tokenId) ? 'tUSD' : b.token ? b.token : 'NEAR')
+  const open = []
+  const work = []
+  const done = []
+  for (const b of board.bounties) {
+    const base = { id: b.id, title: bountyTitle(b.description), description: b.description, amount: b.amount, unit: paidIn(b), poster: b.poster }
+    if (b.state === 'open') open.push({ ...base, state: 'open', proposal: b.addProposal, line: `${fmtLeft(ms(b.maxDeadlineNs))} to finish once claimed`, people: b.poster ? [['posted by', b.poster]] : [] })
+    else if (b.state === 'claimed') {
+      const c = b.claims.find((x) => !x.completed && !x.expired)
+      work.push({ ...base, state: 'claimed', proposal: b.addProposal, line: `${left(c.endNs)} left to file the work`, people: [['claimed by', c.account]] })
+    } else if (b.state === 'review') {
+      const c = b.claims.find((x) => x.completed)
+      const d = [...b.done].reverse().find((x) => x.status === 'InProgress' && x.finisher === c.account) ?? null
+      work.push({ ...base, state: 'review', proposal: d?.proposal ?? null, line: 'work filed: one council vote pays it', people: [['done by', c.account]] })
+    } else if (b.state === 'expired' || b.state === 'blocked') {
+      const c = b.claims.find((x) => x.expired)
+      work.push({ ...base, state: 'expired', proposal: b.addProposal, line: b.state === 'blocked' ? 'claimed by an account outside the café' : 'claim ran out: the slot frees on the next bounty_done', people: c ? [['claimed by', c.account]] : [] })
+    } else if (b.state === 'done') {
+      const d = [...b.done].reverse().find((x) => x.status === 'Approved') ?? null
+      done.push({ ...base, state: 'done', proposal: d?.proposal ?? null, line: d ? 'paid from the DAO' : 'done', people: [...(d ? [['done by', d.finisher]] : []), ...(b.poster ? [['posted by', b.poster]] : [])], at: d ? ms(d.submittedNs) : 0 })
+    }
+  }
+  for (const p of board.pending) {
+    const yes = Object.values(p.votes ?? {}).filter((v) => v === 'Approve').length
+    open.push({ id: null, title: bountyTitle(p.description), description: p.description, amount: p.amount, unit: paidIn(p), poster: p.poster, state: 'proposed', proposal: p.proposal, line: `proposed: the council majority decides (${yes} of ${majority})`, people: [['posted by', p.poster]] })
+  }
+  done.sort((a, b) => b.at - a.at || b.id - a.id)
+  return { open, work, done: done.slice(0, doneMax), doneTotal: done.length }
+}
+
+function fmtLeft(msLeft) {
+  const m = Math.max(0, Math.round(msLeft / 60_000))
+  if (m < 60) return `${m} min`
+  if (m >= 48 * 60) return `${Math.round(m / (24 * 60))} days`
+  const h = Math.floor(m / 60)
+  const r = m % 60
+  return r ? `${h} h ${r} min` : `${h} h`
 }
 
 /** "Council A and C" for ["Council A", "Council C"]; "Ana, Ben and Cleo" otherwise. */
@@ -1031,6 +1146,14 @@ export function fmtThanks(milli) {
   const whole = m / MILLI
   const tenth = (m % MILLI) / 100n
   return group(whole) + (tenth ? '.' + tenth : '')
+}
+
+/** yoctoNEAR as NEAR with at most three decimals, rounded down: "1", "0.01". */
+export function fmtNear(yocto) {
+  const milli = big(yocto) / 10n ** 21n
+  const whole = milli / 1000n
+  const frac = (milli % 1000n).toString().padStart(3, '0').replace(/0+$/, '')
+  return group(whole) + (frac ? '.' + frac : '')
 }
 
 export function fmtPct(bp) {

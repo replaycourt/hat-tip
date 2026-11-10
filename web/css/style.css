@@ -1519,6 +1519,81 @@ body.closing .progress-fill {
 .p-prop:hover {
   border-color: var(--teal);
 }
+/* ---- bounties: open, being worked on, done and paid ---- */
+.bcol-open {
+  border-top-color: var(--teal);
+}
+.bcol-work {
+  border-top-color: var(--t2);
+}
+.bcol .tier-num {
+  width: auto;
+  min-width: 24px;
+  padding: 0 6px;
+  border-radius: 99px;
+}
+.bcol-open .tier-num {
+  background: var(--teal);
+}
+.bcol-work .tier-num {
+  background: var(--t2);
+}
+.bounty {
+  align-items: flex-start;
+}
+.bounty .p-prop {
+  margin-top: 2px;
+}
+.bounty .p-stage {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.bounty .p-dot {
+  margin-top: 5px;
+}
+.b-title {
+  font-weight: 650;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.b-id {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.b-people {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.b-who {
+  font-size: inherit;
+}
+.bounty.open .p-dot {
+  background: var(--teal);
+  animation: none;
+}
+.bounty.proposed .p-dot,
+.bounty.expired .p-dot {
+  background: var(--muted);
+  animation: none;
+}
+.bounty.proposed {
+  border: 1px dashed var(--line-2);
+  background: transparent;
+}
+.bounty.done .p-dot {
+  background: var(--t1);
+  animation: none;
+}
+.b-foot {
+  max-width: 78ch;
+}
+.req-link-2 {
+  margin-top: 0;
+  padding-top: 1px;
+}
 .carried {
   margin: 10px 2px 0;
   color: var(--muted);

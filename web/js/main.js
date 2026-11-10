@@ -42,6 +42,7 @@ const S = {
   fresh: new Set(), // payout ids that just changed state
   helped: new Set(),
   seated: new Set(), // rounds this browser's guest was seen seated in (for the guest's own result)
+  bounty: null, // the DAO's bounty board (chain.js bountyData), read once the section is near
   phase: 'boot',
 }
 const SEAT_STORE = MOCK ? 'hattip:mock-seats:v1' : 'hattip:seats:v1'
@@ -94,6 +95,7 @@ async function boot() {
   renderReqs()
   route({ boot: true })
   ledgerWhenSeen()
+  bountiesWhenSeen()
   // the ledger also names the last payout of a tier this round left empty: read it soon, not first
   setTimeout(() => {
     if (S.ledger.length || !S.last || [1, 2, 3].every((t) => S.lastPayouts.some((p) => Number(p.tier) === t))) return
@@ -389,6 +391,10 @@ function renderReqs() {
   if (S.report) {
     const ok = S.report.checks.filter((c) => c.ok).length
     U.setText('req-policy', `Its policy: ${ok} of ${S.report.checks.length} checks pass ›`)
+  }
+  if (S.bountyCols) {
+    const n = S.bountyCols.open.filter((b) => b.state === 'open').length
+    U.setText('req-bounties', n ? `${n} open ${n === 1 ? 'bounty' : 'bounties'}, claims ›` : 'Bounties and claims ›')
   }
 }
 
@@ -824,6 +830,63 @@ function ledgerWhenSeen() {
     { rootMargin: '600px 0px' },
   )
   io.observe(el)
+}
+
+// ---- bounties -------------------------------------------------------------------------------------
+
+/** The bounty board is read when its section comes near, then every minute while the tab is seen. */
+function bountiesWhenSeen() {
+  const start = () => {
+    loadBounties()
+    setInterval(() => !document.hidden && loadBounties(), 60_000)
+  }
+  if (!globalThis.IntersectionObserver) return start()
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return
+      io.disconnect()
+      start()
+    },
+    { rootMargin: '600px 0px' },
+  )
+  io.observe(U.$('bounties'))
+  // the requirements strip names the open bounties: read them once soon either way
+  setTimeout(() => !S.bounty && loadBounties(), 6000)
+}
+
+let bountyBusy = false
+async function loadBounties() {
+  if (bountyBusy || !client?.bountyData) return
+  bountyBusy = true
+  try {
+    const accounts = [...new Set([...(S.report?.members ?? []), ...(S.state?.members ?? [])])]
+    S.bounty = await client.bountyData(accounts)
+    renderBounties()
+  } catch (e) {
+    console.info('bounties', e?.message ?? e)
+    if (!S.bounty) U.$('b-foot-state').textContent = 'The DAO could not be read just now; trying again in a minute.'
+  } finally {
+    bountyBusy = false
+  }
+}
+
+function renderBounties() {
+  if (!S.bounty) return
+  const board = L.bountyBoard({ ...S.bounty, nowNs: BigInt(Date.now()) * 1_000_000n })
+  const cols = L.bountyColumns(board, { nowMs: Date.now(), tokenId: S.cfg?.token, majority: tier3Votes() })
+  S.bountyCols = cols
+  const fill = (id, rows, empty) => {
+    U.$(id).innerHTML = rows.length ? rows.map((b) => U.bountyHtml(b, { name, house: client.house })).join('') : `<li class="tier-empty">${U.esc(empty)}</li>`
+  }
+  fill('b-open', cols.open, 'Nothing open right now; the house posts a new job within the hour.')
+  fill('b-work', cols.work, 'Nobody is working on a bounty right now.')
+  fill('b-done', cols.done, 'No bounty finished yet.')
+  U.setText('b-open-n', String(cols.open.filter((b) => b.state === 'open').length))
+  U.setText('b-work-n', String(cols.work.length))
+  U.setText('b-done-n', String(cols.doneTotal))
+  const bond = S.policy?.bounty_bond ? L.fmtNear(S.policy.bounty_bond) : null
+  U.setText('b-foot-state', `${S.bounty.lastBountyId} bounties posted so far.${bond ? ` The claim bond is ${bond} NEAR.` : ''}`)
+  renderReqs()
 }
 
 async function loadLedger(older = false) {

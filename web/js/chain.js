@@ -169,6 +169,7 @@ export class Client {
     this.tokenCodeHash = deployment.tokenCodeHash
     this.lockTx = deployment.lockTx
     this.house = deployment.house ?? {}
+    this.bountyHints = deployment.bountyProposals ?? []
     this.pool = pool ?? new GasPool(rpc, deployment.gasKeys, deployment.gasAccount)
     this.identity = null
     this.nonce = 0
@@ -230,6 +231,60 @@ export class Client {
   }
   daoBalance() {
     return this.rpc.view(this.token, 'ft_balance_of', { account_id: this.dao })
+  }
+  /**
+   * What the bounty board needs from the DAO: the last 50 bounties, the claims of `accounts`, the
+   * claim counts of the bounties not done, and the bounty proposals among the last `back` proposals
+   * (read once, then only the new ones; those still in the vote are read again).
+   */
+  async bountyData(accounts, { back = 300 } = {}) {
+    const dao = this.dao
+    const v = (method, args = {}) => this.rpc.view(dao, method, args)
+    const lastB = Number(await v('get_last_bounty_id'))
+    const bounties = lastB ? ((await v('get_bounties', { from_index: Math.max(0, lastB - 50), limit: 50 })) ?? []) : []
+    const scan = (this.bountyScan ??= { next: null, byId: new Map() })
+    const lastP = Number(await v('get_last_proposal_id'))
+    if (scan.next === null) scan.next = Math.max(0, lastP - back)
+    for (let at = scan.next; at < lastP; at += 100) {
+      for (const q of (await v('get_proposals', { from_index: at, limit: Math.min(100, lastP - at) })) ?? []) {
+        const k = Object.keys(q.kind ?? {})[0]
+        if (k === 'AddBounty' || k === 'BountyDone') scan.byId.set(Number(q.id), q)
+      }
+    }
+    scan.next = Math.max(scan.next, lastP)
+    // the bounty proposals deploy/testnet.json records (config.js bountyProposals), however old:
+    // read once, in runs of nearby ids
+    const hints = [...new Set(this.bountyHints.map(Number))].filter((id) => id < lastP && !scan.byId.has(id) && !(scan.hinted ??= new Set()).has(id)).sort((a, b) => a - b)
+    for (let i = 0; i < hints.length; ) {
+      let j = i
+      while (j + 1 < hints.length && hints[j + 1] - hints[i] < 100 && hints[j + 1] - hints[j] <= 10) j++
+      for (const q of (await v('get_proposals', { from_index: hints[i], limit: hints[j] - hints[i] + 1 })) ?? []) {
+        const k = Object.keys(q.kind ?? {})[0]
+        if (k === 'AddBounty' || k === 'BountyDone') scan.byId.set(Number(q.id), q)
+      }
+      for (let x = i; x <= j; x++) scan.hinted.add(hints[x])
+      i = j + 1
+    }
+    const open = [...scan.byId.values()].filter((q) => q.status === 'InProgress')
+    if (open.length) {
+      const from = Math.min(...open.map((q) => Number(q.id)))
+      const to = Math.max(...open.map((q) => Number(q.id)))
+      for (let at = from; at <= to; at += 100) {
+        const got = new Map(((await v('get_proposals', { from_index: at, limit: Math.min(100, to - at + 1) })) ?? []).map((q) => [Number(q.id), q]))
+        for (const q of open) if (Number(q.id) >= at && Number(q.id) < at + 100) got.has(Number(q.id)) ? scan.byId.set(Number(q.id), got.get(Number(q.id))) : scan.byId.delete(Number(q.id))
+      }
+    }
+    const claims = {}
+    const counts = {}
+    await Promise.all([
+      ...accounts.map(async (a) => {
+        claims[a] = (await v('get_bounty_claims', { account_id: a }).catch(() => [])) ?? []
+      }),
+      ...bounties.filter((b) => Number(b.times) > 0).map(async (b) => {
+        counts[b.id] = Number(await v('get_bounty_number_of_claims', { id: b.id }))
+      }),
+    ])
+    return { bounties, proposals: [...scan.byId.values()], claims, counts, lastBountyId: lastB }
   }
   balanceOf(account) {
     return this.rpc.view(this.token, 'ft_balance_of', { account_id: account })

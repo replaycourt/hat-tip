@@ -726,6 +726,32 @@ function b64(text) {
 const clone = (v) => JSON.parse(JSON.stringify(v, (k, x) => (typeof x === 'bigint' ? x.toString() : x)))
 const later = (v, ms = 120) => new Promise((res) => setTimeout(() => res(clone(v)), ms))
 
+/**
+ * A made-up bounty board at time `t`: one bounty done and paid, one with its work filed, one
+ * claimed, two open, one posted and in the council's vote. Ids and shapes as Sputnik returns them.
+ */
+export function mockBounties(t, token) {
+  const ns = (ms) => String(BigInt(Math.floor(ms)) * 1_000_000n)
+  const H = 3_600_000
+  const deadline = ns(2 * H)
+  const b = (id, task, poster, amount, times = 1) => ({ id, description: `${task} (posted by ${poster.split('.')[0]}, round ${100 + id})`, token, amount: String(amount * 1_000_000), times, max_deadline: deadline })
+  const [ana, ben, cleo, dina] = ['ana', 'ben', 'cleo', 'dina'].map(acc)
+  const bounties = [b(0, 'Fix the toaster that trips the fuse', ana, 10, 0), b(1, 'Free the jammed sewing machine', cleo, 15), b(2, 'Replace the cracked lamp socket', ben, 8), b(3, 'Sort the screw box by size', dina, 5), b(4, 'Repair the coffee grinder', ana, 20)]
+  const add = (id, x, proposer, status, at) => ({ id, proposer, description: 'Bounty', status, submission_time: ns(at), vote_period_end: ns(at + 24 * H), votes: status === 'InProgress' ? { [COUNCIL[0]]: 'Approve' } : { [COUNCIL[0]]: 'Approve', [COUNCIL[1]]: 'Approve' }, kind: { AddBounty: { bounty: { description: x.description, token, amount: x.amount, times: 1, max_deadline: deadline } } } })
+  const proposals = [
+    add(900, bounties[0], ana, 'Approved', t - 3 * H), add(901, bounties[1], cleo, 'Approved', t - 2 * H), add(902, bounties[2], ben, 'Approved', t - 1.5 * H),
+    add(903, bounties[3], dina, 'Approved', t - H), add(904, bounties[4], ana, 'Approved', t - 0.6 * H),
+    add(905, b(5, 'Mend the torn tool bag', ben, 5), ben, 'InProgress', t - 0.05 * H),
+    { id: 906, proposer: ben, description: 'Done: New fuse and a tightened plug; toasted twice, the fuse holds.', status: 'Approved', submission_time: ns(t - 2.2 * H), votes: { [COUNCIL[2]]: 'Approve' }, kind: { BountyDone: { bounty_id: 0, receiver_id: ben } } },
+    { id: 907, proposer: dina, description: 'Done: Removed thread from the bobbin case, oiled, sews again.', status: 'InProgress', submission_time: ns(t - 0.04 * H), votes: {}, kind: { BountyDone: { bounty_id: 1, receiver_id: dina } } },
+  ]
+  const claims = {
+    [dina]: [{ bounty_id: 1, start_time: ns(t - 0.8 * H), deadline, completed: true }],
+    [cleo]: [{ bounty_id: 2, start_time: ns(t - 0.3 * H), deadline, completed: false }],
+  }
+  return { bounties, proposals, claims, counts: { 1: 1, 2: 1, 3: 0, 4: 0 }, lastBountyId: 5 }
+}
+
 /** The page's client, against the world above. Same methods and shapes as Client in chain.js. */
 export class MockClient {
   constructor({ world, now, roundMs, at, seed, latencyMs = 90 } = {}) {
@@ -788,6 +814,10 @@ export class MockClient {
   }
   tiers(account) {
     return this.read(() => this.world.memberView(account).limits)
+  }
+  /** A made-up bounty board in the shapes of the DAO's views (chain.js `bountyData`). */
+  bountyData() {
+    return this.read(() => mockBounties(this.world.now(), MOCK_IDS.token))
   }
   daoBalance() {
     return this.read(() => s(this.world.dao.balance))
