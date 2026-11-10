@@ -352,9 +352,12 @@ export function split(total, prefs, cap, maxN, focus) {
   return [...alloc].filter(([, t]) => t >= 1).sort((a, b) => (a[0] < b[0] ? -1 : 1))
 }
 
-/** The number of items a note claims: its first whole number, else 0 (sim/params.json, house). */
+/**
+ * The number of items a note claims: its first whole number, else 0 (sim/params.json, house). A
+ * number after `#` is a bounty number ("+ bounty #12"), not an item count.
+ */
 export function itemsOf(note) {
-  const m = /\b(\d+)\b/.exec(note ?? '')
+  const m = /(?<!#)\b(\d+)\b/.exec(note ?? '')
   return m ? Number(m[1]) : 0
 }
 

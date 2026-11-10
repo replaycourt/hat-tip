@@ -8,7 +8,15 @@
 # member (allocate and note on the contract), per council member (act_proposal on the DAO) and for
 # the keeper (the relay methods on the contract), for the deployment named in it. The script checks
 # every key on chain and refuses a full-access key. Without the secret the job logs "no house keys,
-# nothing to do" and succeeds. It reads nothing else secret and writes nothing to the repository.
+# nothing to do" and succeeds.
+#
+# Bounties (DESIGN.md, "Bounties"): posting, claiming and filing finished work attach the DAO's bonds,
+# which a function-call key cannot, so they use the optional secret HOUSE_BOUNTY_KEYS: one dedicated
+# full-access key per bounty member (sim/params.json house.bounties.members), used only through a
+# signer that refuses everything but AddBounty proposals, bounty_claim, bounty_done and bounty_giveup
+# on the DAO (scripts/bounty-chain.mjs). Without it the council still votes on bounty proposals and
+# posters still thank finishers; nobody in the house posts or claims. The job reads nothing else
+# secret and writes nothing to the repository.
 name: House
 
 on:
@@ -41,6 +49,7 @@ jobs:
       - name: Run the house
         env:
           HOUSE_KEYS: ${{ secrets.HOUSE_KEYS }}
+          HOUSE_BOUNTY_KEYS: ${{ secrets.HOUSE_BOUNTY_KEYS }}
           MINUTES: ${{ github.event.inputs.minutes || '350' }}
           SEED: ${{ github.run_id }}
         run: |

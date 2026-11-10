@@ -36,6 +36,13 @@
 //   does not make the guest a partner); tier 3, two votes: approve if at least three givers stand
 //   behind the receiver's points this round, else reject. A proposal a human already decided is
 //   left alone; votes already cast count.
+// - bounties (sim/params.json house.bounties, DESIGN.md "Bounties"; checked every 45 s once the DAO
+//   policy allows them): the honest members keep about open_target bounties open (at most one new
+//   AddBounty per post_every_minutes), claim open ones claim_after_minutes after the house first
+//   sees them, and file the work with bounty_done work_minutes after the claim; the council votes
+//   on bounty proposals by the published rule two minutes after they are filed (AddBounty: two
+//   votes; BountyDone: one); when the work is approved, the finisher's note names the bounty and
+//   the poster adds thanks_each thanks to the finisher in that round's allocation.
 //
 // Keys: the environment variable HOUSE_KEYS (JSON, .github/workflows/house.yml passes the secret of
 // that name), else the git-ignored .secrets/house-keys-<contract>.json. Format:
@@ -44,6 +51,12 @@
 // Every key must be a function-call key on chain (members: allocate and note on the contract;
 // council: act_proposal on the DAO; keeper: the relay methods on the contract); a full-access key is
 // refused. Without keys the script logs "no house keys, nothing to do" and exits 0.
+// Bounty keys: posting, claiming and filing work attach the DAO's bonds, which a function-call key
+// cannot, so the bounty members' bounty keys are full-access keys: HOUSE_BOUNTY_KEYS, else
+// .secrets/house-bounty-keys-<contract>.json (scripts/bounty-chain.mjs). The script uses them only
+// through a signer that refuses everything but AddBounty proposals, bounty_claim, bounty_done and
+// bounty_giveup on the DAO. Without them the council still votes on bounty proposals and posters
+// still thank finishers; nobody in the house posts or claims.
 //
 // --rounds N    play N rounds, then keep closing, paying, voting and checking until their payouts
 //               are final (at most 10 more minutes), and exit. Never runs forever.
@@ -58,10 +71,14 @@
 // --remove k    staging test: the first tier-2 payout of the run's k-th round gets one council
 //               VoteRemove instead of the rule (the DAO deletes the proposal and keeps the bond;
 //               the contract records `removed` and a strike)
+// --bounty-scale f  staging test: the bounty timings (post_every_minutes, claim_after_minutes,
+//               work_minutes) times f, so that a few bounty cycles fit into an hour of 5-minute rounds
 // --log f       append every transaction record (JSON lines) to f
 // --dry-run     read the chain, print the plan of the current round; send nothing
 import { existsSync, readFileSync } from 'node:fs'
 import { accessKeys, hex, nearPublicKey, newKey, rpc, sign, view } from './near-lite.mjs'
+import { bountyBoard, bountyDecision, bountyNote, bountyPolicyState, bountyText, withBountyThanks } from './bounty-lib.mjs'
+import { BOUNTY_GAS, BountyProposals, allBounties, bountySigners, claimsAndCounts, loadBountyKeys } from './bounty-chain.mjs'
 import {
   FINAL_STATUSES, GAS, MEMBER_METHODS, COUNCIL_METHODS, RELAY_METHODS, Recorder, cli, councilDecision, deployment, freeBalance, houseKeysFile, itemsOf, readWindow,
   loadParams, nearStr, publicKeyOfSeed, readJson, seedSigner, short, sleep, split, stamp, stream, tryView, tusd, writeSecret,
@@ -82,6 +99,14 @@ const d = deployment(section)
 const params = loadParams()
 const H = params.house
 const B = H.behaviour
+const BR0 = H.bounties
+const bountyScale = Number(opt('bounty-scale', '1'))
+const BR = bountyScale === 1 ? BR0 : {
+  ...BR0, post_every_minutes: BR0.post_every_minutes * bountyScale,
+  claim_after_minutes: BR0.claim_after_minutes.map((x) => x * bountyScale), work_minutes: BR0.work_minutes.map((x) => x * bountyScale),
+}
+const msOf = (ns) => Number(BigInt(ns) / 1_000_000n)
+const kindOf = (q) => Object.keys(q.kind ?? {})[0]
 const accountOf = (name) => `${name}.${d.root}`
 
 function loadKeys() {
@@ -129,7 +154,10 @@ async function loadHouse(keys) {
     if (problem) console.log(`keeper key: ${problem}`)
     else keepers.push(seedSigner(k.account, k.seed))
   }
-  return { members, council, keepers }
+  const bk = loadBountyKeys(d)
+  const bounty = bk ? await bountySigners(bk, new Set(BR.members.map(accountOf)), d.dao) : new Map()
+  if (!bounty.size) console.log('no bounty keys: the council votes on bounty proposals and posters thank finishers; nobody in the house posts or claims')
+  return { members, council, keepers, bounty }
 }
 
 // ---- reports ----------------------------------------------------------------------------------------
@@ -166,6 +194,15 @@ async function report(house, cfg, { full = true } = {}) {
     if (a !== null && a < 5n * 10n ** 22n) low.push(`the house key of ${p.account} has ${nearStr(a, 3)} NEAR of allowance left`)
   }
   if (rows.length) lines.push(`house (NEAR free / key allowance): ${rows.join(', ')}`)
+  if (full && house?.bounty?.size) {
+    const policy = await view(d.dao, 'get_policy').catch(() => null)
+    const need = policy ? BigInt(policy.bounty_bond) + BigInt(policy.proposal_bond) + 5n * 10n ** 22n : null
+    for (const a of house.bounty.keys()) {
+      const b = await freeBalance(a).catch(() => null)
+      const claims = await view(d.dao, 'get_bounty_claims', { account_id: a }).catch(() => [])
+      if (need && b && !claims.length && b.free < need) low.push(`${a} has ${nearStr(b.free, 3)} NEAR free, less than a bounty claim's bonds (${nearStr(need, 2)}); it does not claim`)
+    }
+  }
   for (const l of lines) console.log(`[${stamp()}] ${l}`)
   for (const l of low) warn(l)
   return low
@@ -210,7 +247,7 @@ function planRound(seed, r, quiet) {
 }
 
 /** A member's allocation from the round as the chain shows it (notes, seats, guests' gifts). */
-function allocationFor(m, r, seed, rv, cfg, house) {
+function allocationFor(m, r, seed, rv, cfg, house, extra = []) {
   const rng = stream(seed, 'give', r, m.name)
   const notes = new Map((rv?.notes ?? []).map(([a, t]) => [a, t]))
   const seats = new Set(rv?.seats ?? [])
@@ -227,11 +264,13 @@ function allocationFor(m, r, seed, rv, cfg, house) {
     left -= cap
     exclude.add(partner)
   }
+  // bounty thanks (house.bounties.thanks_each to a finisher): off the top here, on top of the split below
+  left -= extra.reduce((s, [, t]) => s + t, 0)
   const prefs = house.members
     .filter((o) => !exclude.has(o.account))
     .map((o) => [itemsOf(notes.get(o.account)) * rng.lognormal(B.noise_sigma), o.account])
-  gifts.push(...split(left, prefs, cap, cfg.max_receivers - gifts.length, B.focus))
-  return gifts.sort((a, b) => (a[0] < b[0] ? -1 : 1))
+  gifts.push(...split(left, prefs, cap, cfg.max_receivers - gifts.length - extra.length, B.focus))
+  return withBountyThanks(gifts, extra, cap)
 }
 
 // ---- the house council's rule -------------------------------------------------------------------------
@@ -299,6 +338,20 @@ async function run() {
   let earlier = [] // open payouts below openFrom, read one by one
   let drainSince = null
   const problems = []
+  // bounties: proposals read incrementally, when each open bounty was first seen, the council's
+  // decisions, the approved work already thanked, and the thanks and notes owed per round
+  const bp = new BountyProposals(d.dao)
+  const bountySeen = new Map()
+  const bountyDecided = new Map()
+  const thanked = new Set()
+  const owed = new Map() // round -> { gifts: Map(poster -> [[finisher, thanks]]), notes: Map(finisher -> [bounty ids]) }
+  const owedIn = (round) => {
+    if (!owed.has(round)) owed.set(round, { gifts: new Map(), notes: new Map() })
+    return owed.get(round)
+  }
+  let bountyFacts = null
+  let bountyFactsAt = 0
+  let lastBountyTick = 0
 
   const keeperCall = async (method, args, gas, label, round = null) => {
     if (!house.keepers.length) return null
@@ -437,6 +490,148 @@ async function run() {
     return open
   }
 
+  const tickBounties = async (r) => {
+    if (Date.now() - lastBountyTick < 45_000) return
+    lastBountyTick = Date.now()
+    if (!bountyFacts || Date.now() - bountyFactsAt > 600_000) {
+      const policy = await view(d.dao, 'get_policy')
+      const group = (n) => new Set(policy.roles.find((x) => x.name === n)?.kind?.Group ?? [])
+      const state = bountyPolicyState(policy, { contract: d.contract }).state
+      if (state !== 'after' && bountyFacts?.state !== state) console.log(`[${stamp()}] bounties: the DAO policy is "${state}", not the bounty policy; no bounty actions`)
+      bountyFacts = { state, members: group('members'), council: group('council'), proposalBond: BigInt(policy.proposal_bond), bountyBond: BigInt(policy.bounty_bond) }
+      bountyFactsAt = Date.now()
+    }
+    if (bountyFacts.state !== 'after') return
+    const initial = bp.next === null
+    const proposals = await bp.refresh()
+    const bounties = await allBounties(d.dao, { recent: 100 }) // older ones are done long since
+    const { claims, counts } = await claimsAndCounts(d.dao, house.members.map((m) => m.account), bounties)
+    const now = Date.now()
+    const board = bountyBoard({ bounties, proposals, claims, counts, nowNs: BigInt(now) * 1_000_000n })
+    const posterOf = (id) => board.bounties.find((x) => x.id === Number(id))?.poster ?? null
+    const claimOf = (who, id) => (claims[who] ?? []).find((c) => Number(c.bounty_id) === Number(id)) ?? null
+    const open = board.bounties.filter((x) => x.state !== 'done').length
+    const isHouse = (a) => house.members.some((m) => m.account === a && m.signer)
+    // work approved before the last round is history (a restarted run does not thank it again)
+    if (initial) for (const q of proposals) if (q.kind.BountyDone && q.status === 'Approved' && msOf(q.submission_time) < startOf(r - 1)) thanked.add(q.id)
+
+    // the council, by the published rule, two minutes after a bounty proposal is filed
+    for (const q of proposals) {
+      if (q.status !== 'InProgress' || now - msOf(q.submission_time) < COUNCIL_DELAY_MS) continue
+      let dec = bountyDecided.get(q.id)
+      if (!dec) {
+        dec = bountyDecision(q, BR, { token: d.token, members: bountyFacts.members, council: bountyFacts.council, open, posterOf, claimOf })
+        bountyDecided.set(q.id, dec)
+        console.log(`[${stamp()}] council on DAO #${q.id} (${kindOf(q)}): ${dec.vote ? (dec.approve ? 'approve' : 'reject') : 'no vote'}, ${dec.why}`)
+      }
+      if (!dec.vote) continue
+      const isDone = kindOf(q) === 'BountyDone'
+      const action = dec.approve ? 'VoteApprove' : 'VoteReject'
+      let votes = q.votes ?? {}
+      let cast = Object.entries(votes).filter(([a, v]) => house.council.some((c) => c.account === a) && v === (dec.approve ? 'Approve' : 'Reject')).length
+      for (const c of house.council) {
+        if (cast >= (isDone ? 1 : 2)) break
+        if (!c.signer || c.account in votes) continue
+        const res = await rec.call(c.signer, d.dao, 'act_proposal', { id: q.id, action, proposal: q.kind },
+          { gas: isDone ? BOUNTY_GAS.voteDone : BOUNTY_GAS.vote, label: `${c.name} ${action} DAO #${q.id} (${kindOf(q)})`, round: r })
+        if (!res.ok) {
+          problems.push(res)
+          break
+        }
+        cast++
+        const cur = await view(d.dao, 'get_proposal', { id: q.id }).catch(() => null)
+        if (!cur || cur.status !== 'InProgress') break
+        votes = cur.votes ?? {}
+      }
+    }
+
+    // approved work: the finisher's note names the bounty, the poster adds thanks this round
+    for (const q of proposals) {
+      if (!q.kind.BountyDone || q.status !== 'Approved' || thanked.has(q.id)) continue
+      thanked.add(q.id)
+      const id = Number(q.kind.BountyDone.bounty_id)
+      const finisher = q.kind.BountyDone.receiver_id
+      const poster = posterOf(id)
+      const round = now > startOf(r + 1) - 45_000 ? r + 1 : r
+      const o = owedIn(round)
+      if (isHouse(finisher)) o.notes.set(finisher, [...(o.notes.get(finisher) ?? []), id])
+      if (poster && poster !== finisher && isHouse(poster)) o.gifts.set(poster, [...(o.gifts.get(poster) ?? []), [finisher, BR.thanks_each]])
+      console.log(`[${stamp()}] bounty #${id} done by ${short(finisher)} (DAO #${q.id} approved): ${poster && isHouse(poster) ? `${poster.split('.')[0]} adds ${BR.thanks_each} thanks in round ${round}` : 'not posted by the house'}`)
+    }
+
+    // the bounty members: one action per check, finishing first, then claiming, then posting
+    if (!house.bounty.size) return
+    const bond = bountyFacts.bountyBond
+    const pbond = bountyFacts.proposalBond
+    const freeOf = async (a) => (await freeBalance(a)).free
+    const nameOf = (a) => a.split('.')[0]
+    for (const [a, s] of house.bounty) {
+      for (const c of claims[a] ?? []) {
+        if (c.completed) continue
+        const id = Number(c.bounty_id)
+        const start = msOf(c.start_time)
+        if (now > start + msOf(c.deadline)) {
+          // past the deadline: free the slot (the DAO keeps the bond)
+          const res = await rec.call(s, d.dao, 'bounty_done', { id, account_id: a, description: 'claim expired' }, { gas: BOUNTY_GAS.done, label: `${nameOf(a)} frees its expired claim on bounty #${id}`, round: r })
+          if (!res.ok) problems.push(res)
+          return
+        }
+        const [w0, w1] = BR.work_minutes
+        const workMs = (w0 + (w1 - w0) * stream('bounty-work', d.contract, id, a)()) * 60_000
+        if (now < start + workMs) continue
+        if ((await freeOf(a)) < pbond + 3n * 10n ** 22n) {
+          warn(`${a} cannot pay the proposal bond to file bounty #${id}`)
+          continue
+        }
+        const task = BR.tasks.find(([t]) => (bounties.find((x) => Number(x.id) === id)?.description ?? '').startsWith(t))
+        const res = await rec.call(s, d.dao, 'bounty_done', { id, description: task ? `Done: ${task[2]}` : 'Done, as the bounty describes.' },
+          { gas: BOUNTY_GAS.done, deposit: pbond, label: `${nameOf(a)} files bounty #${id} as done`, round: r })
+        if (!res.ok) problems.push(res)
+        return
+      }
+    }
+    const holding = new Set(Object.entries(claims).filter(([, l]) => (l ?? []).length).map(([a]) => a))
+    const minDeadline = BigInt(BR.work_minutes[1] + 5) * 60_000_000_000n
+    for (const x of board.bounties) {
+      if (x.state !== 'open') {
+        bountySeen.delete(x.id)
+        continue
+      }
+      if (!bountySeen.has(x.id)) bountySeen.set(x.id, now)
+      if (x.token !== d.token || BigInt(x.maxDeadlineNs) < minDeadline) continue
+      const rng = stream('bounty-claim', d.contract, x.id)
+      const [c0, c1] = BR.claim_after_minutes
+      if (now < bountySeen.get(x.id) + (c0 + (c1 - c0) * rng()) * 60_000) continue
+      for (const a of rng.sample([...house.bounty.keys()].sort(), house.bounty.size)) {
+        if (a === x.poster || holding.has(a)) continue
+        if ((await freeOf(a)) < bond + pbond + 5n * 10n ** 22n) continue
+        const res = await rec.call(house.bounty.get(a), d.dao, 'bounty_claim', { id: x.id, deadline: x.maxDeadlineNs },
+          { gas: BOUNTY_GAS.claim, deposit: bond, label: `${nameOf(a)} claims bounty #${x.id} (${tusd(x.amount)} tUSD)`, round: r })
+        if (!res.ok) problems.push(res)
+        return
+      }
+    }
+    const houseAdds = proposals.filter((q) => q.kind.AddBounty && house.bounty.has(q.proposer))
+    const lastPost = Math.max(0, ...houseAdds.map((q) => msOf(q.submission_time)))
+    const waiting = houseAdds.filter((q) => q.status === 'InProgress').length
+    const openNow = board.bounties.filter((x) => x.state === 'open').length
+    if (openNow + waiting >= BR.open_target || now - lastPost < BR.post_every_minutes * 60_000) return
+    if (now < startOf(r) + 0.05 * L || now > startOf(r + 1) - 60_000) return
+    const taken = [...board.bounties.filter((x) => x.state !== 'done').map((x) => x.description), ...board.pending.map((p) => p.description)]
+    const tasks = BR.tasks.filter(([t]) => !taken.some((desc) => desc.startsWith(t)))
+    if (!tasks.length) return
+    const rng = stream('bounty-post', seed, r)
+    const [task, amount] = rng.pick(tasks)
+    for (const a of rng.sample([...house.bounty.keys()].sort(), house.bounty.size)) {
+      if ((await freeOf(a)) < pbond + 3n * 10n ** 22n) continue
+      const bounty = { description: bountyText(task, nameOf(a), r), token: d.token, amount: String(BigInt(amount) * 1_000_000n), times: 1, max_deadline: String(BigInt(BR.deadline_minutes) * 60_000_000_000n) }
+      const res = await rec.call(house.bounty.get(a), d.dao, 'add_proposal', { proposal: { description: `Bounty: ${task}, ${amount} tUSD`, kind: { AddBounty: { bounty } } } },
+        { gas: BOUNTY_GAS.post, deposit: pbond, label: `${nameOf(a)} posts "${task}" (${amount} tUSD)`, round: r })
+      if (!res.ok) problems.push(res)
+      return
+    }
+  }
+
   const tickMembers = async (r, runIndex) => {
     if (r < first || r > lastPlayed) return
     if (!plans.has(r)) plans.set(r, planRound(seed, r, quietK.has(runIndex)))
@@ -448,25 +643,32 @@ async function run() {
       done.set(`${r}:guest`, true)
       await playGuest(r, cfg, rec, keeperCall, problems)
     }
+    const o = owed.get(r)
     for (const m of house.members) {
       if (!m.signer) continue
       const p = plan[m.name]
-      if (!p.works) continue
+      // bounties: the finisher's note names the bounty, the poster's thanks include the finisher;
+      // a note or an allocation already sent this round is sent again with them
+      const ids = o?.notes.get(m.account) ?? []
+      const extra = o?.gifts.get(m.account) ?? []
+      if (!p.works && !ids.length && !extra.length) continue
+      const text = bountyNote(p.works ? p.note : null, ids)
       const kn = `${r}:${m.name}:note`
-      if (!done.get(kn) && Date.now() >= startOf(r) + p.tNote * L && Date.now() < end - 20_000) {
-        done.set(kn, true)
-        const res = await rec.call(m.signer, d.contract, 'note', { round: r, text: p.note }, { gas: GAS.note, label: `${m.name} note "${p.note}"`, round: r, receipts: false }).catch((e) => ({ ok: false, error: e.message }))
+      if (text && done.get(kn) !== text && Date.now() >= startOf(r) + p.tNote * L && Date.now() < end - 20_000) {
+        done.set(kn, text)
+        const res = await rec.call(m.signer, d.contract, 'note', { round: r, text }, { gas: GAS.note, label: `${m.name} note "${text}"`, round: r, receipts: false }).catch((e) => ({ ok: false, error: e.message }))
         if (!res.ok) problems.push(res)
       }
       const ka = `${r}:${m.name}:alloc`
-      if (p.gives && !done.get(ka) && Date.now() >= startOf(r) + p.tAlloc * L) {
-        done.set(ka, true)
+      const sig = JSON.stringify(extra)
+      if ((p.gives || extra.length) && done.get(ka) !== sig && Date.now() >= startOf(r) + p.tAlloc * L) {
+        done.set(ka, sig)
         if (Date.now() > end - 20_000) {
           console.log(`[${stamp()}] r${r} ${m.name}: too close to the round's end, no thanks this round`)
           continue
         }
         const rv = await view(d.contract, 'round', { n: r })
-        const gifts = allocationFor(m, r, seed, rv, cfg, house)
+        const gifts = p.gives ? allocationFor(m, r, seed, rv, cfg, house, extra) : withBountyThanks([], extra, cfg.cap_per_receiver)
         const res = await rec.call(m.signer, d.contract, 'allocate', { round: r, gifts, note: null },
           { gas: GAS.allocate, label: `${m.name} allocate ${gifts.map(([a, t]) => `${short(a).split('.')[0]}:${t}`).join(' ')}`, round: r, receipts: false }).catch((e) => ({ ok: false, error: e.message }))
         if (!res.ok || res.value?.ok === false) {
@@ -482,6 +684,7 @@ async function run() {
     try {
       const st = await tickKeeper()
       const open = await tickPayouts(st)
+      await tickBounties(r).catch((e) => console.log(`[${stamp()}] bounty check failed: ${e.message.slice(0, 300)}; going on`))
       await tickMembers(r, r - first + 1)
       if (r > lastReportRound) {
         lastReportRound = r

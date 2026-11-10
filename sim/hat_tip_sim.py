@@ -982,6 +982,59 @@ def community_script(scenario, seed, cap, strategy="mutual", rounds=COMMUNITY_RO
     return pop, script
 
 
+# The house's Sputnik bounties (DESIGN.md "Bounties"; scripts/house.mjs plays them). Not part of
+# the simulation: they add a poster's thanks_each thanks to a finisher per finished bounty.
+HOUSE_BOUNTIES = {
+    "about": "Sputnik DAO bounties in the testnet demo (DESIGN.md, 'Bounties'), played by "
+             "scripts/house.mjs. Not simulated: the simulation plays the rounds without them; "
+             "a finished bounty adds thanks_each of its poster's 100 thanks to the finisher.",
+    "members": ["ana", "ben", "cleo", "dina", "emil"],
+    "open_target": 2,
+    "post_every_minutes": 60,
+    "deadline_minutes": 120,
+    "claim_after_minutes": [10, 50],
+    "work_minutes": [10, 45],
+    "thanks_each": 10,
+    "min_tusd": 5,
+    "max_tusd": 20,
+    "max_deadline_minutes": 20160,
+    "max_open": 6,
+    "report_min_chars": 10,
+    "member": ("The honest house members post, claim and finish bounties. While fewer than "
+               "open_target bounties are open and none was posted in the last "
+               "post_every_minutes, one of them (picked at random) posts a task from the list "
+               "below as an AddBounty proposal: paid in tUSD from the DAO, one finisher, a claim "
+               "deadline of deadline_minutes. A member that holds no claim claims an open "
+               "bounty it did not post claim_after_minutes after the house first sees it open "
+               "(bond: the DAO's bounty_bond), files the work with bounty_done work_minutes "
+               "later, with the task's report as the proposal's text. When the council approves "
+               "the work, the finisher's note that round names the bounty ('+ bounty #12'; a "
+               "number after # is not an item count) and the poster gives the finisher "
+               "thanks_each thanks on top of its regular thanks that round, also in a round it "
+               "does not otherwise work (at most cap_per_receiver to one receiver)."),
+    "council": ("Votes on bounty proposals at least two minutes after they are filed. "
+                "AddBounty, two votes (council majority): approve a task a member or council "
+                "member posts, paid in tUSD, between min_tusd and max_tusd, for one finisher, "
+                "with a claim deadline of at most max_deadline_minutes, while fewer than "
+                "max_open bounties are open; otherwise reject. BountyDone, one vote: approve "
+                "the work a member files itself for a bounty it claimed and did not post, with a "
+                "report of at least report_min_chars characters; otherwise reject."),
+    "tasks": [
+        ["Fix the toaster that trips the fuse", 10, "New fuse and a tightened plug; toasted twice, the fuse holds."],
+        ["Re-glue the wobbly chair from the reading corner", 5, "Joints cleaned and glued, clamped overnight; it stands firm."],
+        ["Replace the cracked lamp socket", 8, "Fitted a new E27 socket and strain relief; lamp tested."],
+        ["Sharpen the kitchen knives of the cafe", 6, "Six knives sharpened on the stones and honed."],
+        ["Rewire the frayed extension lead", 12, "Cut back the damaged cable, new plug, continuity tested."],
+        ["Free the jammed sewing machine", 15, "Removed thread from the bobbin case, oiled, sews again."],
+        ["Repair the coffee grinder", 20, "Replaced the worn burr carrier; grinds evenly again."],
+        ["Mend the torn tool bag", 5, "Stitched the seam and patched the base."],
+        ["Sort the screw box by size", 5, "Sorted into labelled jars, M3 to M8."],
+        ["Calibrate the soldering station", 7, "Checked the tip with a thermometer, offset set, new tip."],
+        ["Fix the radio's volume knob", 6, "Cleaned the potentiometer and glued the knob insert."],
+        ["Replace the vacuum cleaner belt", 9, "New belt fitted, brush roll spins freely."],
+    ],
+}
+
 # The testnet house community (DESIGN.md "House members"): five honest contributors, a
 # colluding pair, a free rider; three council members vote by the published rule.
 HOUSE = [
@@ -2568,6 +2621,7 @@ def house_document():
                                       "add it through an AddMemberToRole proposal or leave "
                                       "it out."},
         "note_singular": {"{n} %s" % many: "1 %s" % one for _, one, many in NOTE_ITEMS},
+        "bounties": HOUSE_BOUNTIES,
     }
 
 
