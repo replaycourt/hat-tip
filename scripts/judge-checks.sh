@@ -162,35 +162,50 @@ for pair in "contract:$CONTRACT" "token:$TOKEN"; do
   report "$([ "$dir" = contract ] && echo 3 || echo 4). code hash of $acc = $dir/WASM_SHA256" "$got" "$want"
 done
 
-# 5. The DAO policy states the three tiers exactly: role `thanks` is the contract alone with exactly
-#    transfer:AddProposal, transfer:VoteApprove, call:AddProposal, transfer:Finalize, call:Finalize
-#    and `transfer` 1 of 1 (tier 1); the council approves a `call` with one vote (tier 2); everything
-#    else needs the default council majority, 1/2 (tier 3).
+# 5. The DAO policy states the three tiers and the bounties exactly: role `thanks` is the contract
+#    alone with exactly transfer:AddProposal, transfer:VoteApprove, call:AddProposal,
+#    transfer:Finalize, call:Finalize and `transfer` 1 of 1 (tier 1); the council approves a `call`
+#    (tier 2) and a `bounty_done` (finished bounty work) with one vote; everything else, an
+#    `add_bounty` (posting a bounty) too, needs the default council majority, 1/2 (tier 3).
 POLICY=$(view "$DAO" get_policy "$EMPTY_ARGS")
 got=$(printf '%s' "$POLICY" | check '
 roles = {x["name"]: x for x in v["roles"]}
 t, c = roles.get("thanks"), roles.get("council")
+one = {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"}
 problems = []
 if not t or t["kind"] != {"Group": [CONTRACT]}: problems.append("role thanks is not the contract alone")
 elif sorted(t["permissions"]) != sorted(["transfer:AddProposal", "transfer:VoteApprove", "call:AddProposal", "transfer:Finalize", "call:Finalize"]): problems.append("role thanks permissions %s" % t["permissions"])
 elif t["vote_policy"] != {"transfer": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": [1, 1]}}: problems.append("role thanks vote policy %s" % t["vote_policy"])
 if not c: problems.append("no council role")
-elif c["vote_policy"] != {"call": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"}}: problems.append("council vote policy %s" % c["vote_policy"])
+elif c["vote_policy"] != {"call": one, "bounty_done": one}: problems.append("council vote policy %s" % c["vote_policy"])
 if v["default_vote_policy"] != {"weight_kind": "RoleWeight", "quorum": "0", "threshold": [1, 2]}: problems.append("default vote policy %s" % v["default_vote_policy"])
-out = "; ".join(problems) or "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2"
+out = "; ".join(problems) or "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2, bounty work 1 vote"
 if not problems: out += " (council of %d)" % len(c["kind"].get("Group", []))')
-report "5. DAO policy: the three tiers exactly" "$got" "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2"
+report "5. DAO policy: the three tiers and the bounty vote exactly" "$got" "tier 1 thanks transfer 1/1, tier 2 council call 1 vote, tier 3 council 1/2, bounty work 1 vote"
 
-# 6, 7. Nobody else can file: there is no Everyone role, and only role `thanks` may add a `call`
-#       proposal (no other role holds call:AddProposal or a wildcard covering it).
+# 6, 7. Nobody else can file: there is no Everyone role; only role `thanks` may add a `call`
+#       proposal (no other role holds call:AddProposal or a wildcard covering it); role `members`
+#       may file exactly two kinds, a bounty (add_bounty) and its finished work (bounty_done), and
+#       vote on nothing; the council may file what the demo policy lists and add_bounty.
 got=$(printf '%s' "$POLICY" | check '
 out = "no Everyone role" if all(x["kind"] != "Everyone" for x in v["roles"]) else "an Everyone role exists"')
 report "6. DAO policy: no Everyone role" "$got" "no Everyone role"
 got=$(printf '%s' "$POLICY" | check '
 cover = {"call:AddProposal", "call:*", "*:AddProposal", "*:*"}
 who = sorted(x["name"] for x in v["roles"] if cover & set(x["permissions"]))
-out = "call:AddProposal only in %s" % (",".join(who) or "no role")')
-report "7. DAO policy: call:AddProposal only in role thanks" "$got" "call:AddProposal only in thanks"
+roles = {x["name"]: x for x in v["roles"]}
+m, c = roles.get("members") or {}, roles.get("council") or {}
+council = {"transfer:AddProposal", "config:AddProposal", "policy:AddProposal", "policy_add_or_update_role:AddProposal",
+    "policy_remove_role:AddProposal", "policy_update_default_vote_policy:AddProposal", "policy_update_parameters:AddProposal",
+    "add_member_to_role:AddProposal", "remove_member_from_role:AddProposal", "factory_info_update:AddProposal",
+    "vote:AddProposal", "add_bounty:AddProposal", "*:VoteApprove", "*:VoteReject", "*:VoteRemove", "*:Finalize"}
+out = "call:AddProposal only in %s" % (",".join(who) or "no role")
+if sorted(m.get("permissions", [])) != ["add_bounty:AddProposal", "bounty_done:AddProposal"] or m.get("vote_policy") != {}:
+    out += "; members %s" % m.get("permissions")
+else:
+    out += "; members file only add_bounty, bounty_done"
+if set(c.get("permissions", [])) != council: out += "; council permissions %s" % sorted(set(c.get("permissions", [])) ^ council)')
+report "7. DAO policy: call:AddProposal only in role thanks; members file only bounties" "$got" "call:AddProposal only in thanks; members file only add_bounty, bounty_done"
 
 # 8. The factory cannot upgrade the DAO's code: get_factory_info().auto_update is false.
 got=$(view "$DAO" get_factory_info "$EMPTY_ARGS" | check 'out = "auto_update %s" % str(v["auto_update"]).lower()')
@@ -328,6 +343,67 @@ h = sys.argv[7]
 found = [m for c, m in v if c == h]
 out = ("code the factory publishes (version %s)" % ".".join(map(str, found[0]["version"]))) if found else "code hash %s is not among the factory versions" % h' "$DAO_HASH")
 report "14. the DAO's code is one the factory $FACTORY publishes" "$got" "code the factory publishes"
+
+# 15. Bounties run: the DAO holds bounties in tUSD, at least one is open or being worked on (times
+#     left), and a member's finished work (a BountyDone proposal) was approved and paid: Sputnik
+#     counts a bounty's `times` down only when its payout succeeded. The BountyDone proposals are
+#     the ones deploy/testnet.json records (bounties.proposals.done) and any among the DAO's last
+#     100 proposals; each is read live.
+BLAST=$(view "$DAO" get_last_bounty_id "$EMPTY_ARGS" | check 'out = v')
+case "$BLAST" in
+  "" | *[!0-9]*) BOUNTIES="" ;;
+  *) ARGS=$(printf '{"from_index":%s,"limit":100}' "$(( BLAST > 100 ? BLAST - 100 : 0 ))"); BOUNTIES=$(view "$DAO" get_bounties "$(b64 "$ARGS")") ;;
+esac
+DONE_IDS=$(python3 -I - "$ROOT/deploy/testnet.json" "$SECTION" <<'PY'
+import json, sys
+s = json.load(open(sys.argv[1], encoding="utf-8")).get(sys.argv[2]) or {}
+print(" ".join(str(i) for i in ((s.get("bounties") or {}).get("proposals") or {}).get("done", [])[-5:]))
+PY
+)
+RECENT=""
+for id in $DONE_IDS; do
+  RECENT="$RECENT$(view "$DAO" get_proposals "$(b64 "$(printf '{"from_index":%s,"limit":1}' "$id")")")
+"
+done
+DFROM=$(view "$DAO" get_last_proposal_id "$EMPTY_ARGS" | check 'out = max(0, v - 100)')
+case "$DFROM" in
+  "" | *[!0-9]*) ;;
+  *) RECENT="$RECENT$(view "$DAO" get_proposals "$(b64 "$(printf '{"from_index":%s,"limit":100}' "$DFROM")")")" ;;
+esac
+got=$(python3 -I - "$TOKEN" "$BLAST" "$BOUNTIES" "$RECENT" <<'PY'
+import json, sys
+TOKEN, last = sys.argv[1], sys.argv[2]
+def decode(raw, what):
+    ans = json.loads(raw)
+    r = ans.get("result")
+    if r is None or "error" in r:
+        raise ValueError("RPC error for %s: %s" % (what, json.dumps(ans.get("error") or r)[:200]))
+    return json.loads(bytes(r["result"]).decode())
+try:
+    if not sys.argv[3].strip() or not sys.argv[4].strip():
+        raise ValueError("no answer from the RPC for get_bounties or get_proposals")
+    bounties = {b["id"]: b for b in decode(sys.argv[3], "get_bounties()")}
+    props = {q["id"]: q for line in sys.argv[4].splitlines() if line.strip() for q in decode(line, "get_proposals()")}
+    live = [b for b in bounties.values() if b["times"] > 0 and b["token"] == TOKEN]
+    paid = [q for q in sorted(props.values(), key=lambda q: q["id"]) if "BountyDone" in q["kind"] and q["status"] == "Approved"
+            and (bounties.get(q["kind"]["BountyDone"]["bounty_id"]) or {}).get("times") == 0]
+    done = [b for b in bounties.values() if b["times"] == 0]
+    if not bounties:
+        print("no bounties in the DAO")
+    elif not live:
+        print("%s bounties, none open or being worked on" % last)
+    elif not paid:
+        print("%s bounties, %d open or being worked on, no approved and paid bounty work found" % (last, len(live)))
+    else:
+        q = paid[-1]
+        b = bounties[q["kind"]["BountyDone"]["bounty_id"]]
+        print("bounties live (%s posted, %d open or being worked on, %d done and paid; DAO #%d paid bounty #%d, %s tUSD, to %s)" % (
+            last, len(live), len(done), q["id"], b["id"], int(b["amount"]) / 1e6, q["kind"]["BountyDone"]["receiver_id"]))
+except Exception as e:
+    print("error: %s" % (e,))
+PY
+)
+report "15. bounties: open ones in tUSD, and finished work paid by the DAO" "$got" "bounties live"
 
 if [ "$FAILED" -eq 0 ]; then echo "All $TOTAL checks passed."; else echo "$FAILED of $TOTAL checks failed."; fi
 exit "$FAILED"
