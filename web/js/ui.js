@@ -371,6 +371,7 @@ export function proposalHtml(p, { name, dao, explorer, mock, payout, house, cont
       <div><dt>Amount</dt><dd>${info.amount != null ? esc(tusd(info.amount)) : '–'}</dd></div>
       <div><dt>To</dt><dd>${info.receiver ? esc(name(info.receiver)) : '–'}</dd></div>
     </dl>
+    ${info.proposer ? `<p class="prop-by">Filed by <b>${esc(L.voterName(info.proposer, { contract, name }))}</b>${info.proposer === contract ? `, <code>${esc(contract)}</code>, which has no keys` : ''}.</p>` : ''}
     ${payout ? `<p>Tier ${esc(payout.tier)}: ${esc(L.TIER_NAMES[payout.tier])}. Filed by the contract for round ${esc(payout.round)}.</p>` : ''}
     <h3>Votes</h3><ul class="votes">${votes}</ul>
     <p class="muted fine">Read live from the DAO ${link(explorer, mock, `address/${dao}`, dao)} with <code>get_proposal({"id": ${esc(info.id)}})</code>.</p>
@@ -501,6 +502,50 @@ export function proofHtml(x) {
     </ul>
     <h3>Your transactions</h3>
     <ul class="tx-list">${txs}</ul>`
+}
+
+// ---- the DAO's policy ---------------------------------------------------------------------------
+
+/**
+ * The DAO's policy as get_policy returns it, role by role: who holds the role, the vote each
+ * proposal kind needs from it (and which tier that makes), what it may do; then the default policy,
+ * the policy checks and the raw answer. Every account and string from the chain goes through esc().
+ */
+export function policyHtml(policy, report, { dao, explorer, mock, contract, name, thanksRole = 'thanks', councilRole = 'council' }) {
+  if (!policy) return '<p class="muted">Could not read the DAO’s policy. Try again.</p>'
+  const check = (ok, label) => `<li class="${ok ? 'ok' : 'no'}"><span class="mark" aria-hidden="true"></span>${label}</li>`
+  const tierOf = (role, kind) => (role === thanksRole && kind === 'transfer' ? 1 : role === councilRole && kind === 'call' ? 2 : null)
+  const people = (accounts) => {
+    const names = accounts.map((a) => (a === contract ? `the contract (${a})` : name(a)))
+    return `${esc(L.joinNames(names))} <span class="muted">· ${esc(accounts.length)} account${accounts.length === 1 ? '' : 's'}</span>`
+  }
+  const who = (w) => (w.group ? people(w.group) : w.everyone ? '<b class="bad">everyone</b>' : w.member != null ? `any member with at least ${esc(w.member)} tokens` : `<code>${esc(w.other)}</code>`)
+  const roles = L.policyRoles(policy)
+    .map((r) => {
+      const votes = r.votes.map((v) => {
+        const t = tierOf(r.name, v.kind)
+        return `<li><code>${esc(v.kind)}</code> passes with ${esc(L.thresholdText(v.threshold))} of this role${t ? ` ${pill(t)}` : ''}</li>`
+      })
+      return `<li class="pol-role">
+        <p class="pol-head"><code class="pol-name">${esc(r.name)}</code> ${who(r.who)}</p>
+        ${votes.length ? `<ul class="pol-votes">${votes.join('')}</ul>` : ''}
+        <p class="pol-perms">${r.permissions.length ? `may: ${r.permissions.map((p) => `<code>${esc(p)}</code>`).join(' ')}` : '<span class="muted">no permissions: the list of members the contract reads</span>'}</p>
+      </li>`
+    })
+    .join('')
+  const t3 = report?.tiers?.find((t) => t.tier === 3)
+  const bond = policy.proposal_bond != null ? L.fmtTusd(L.big(policy.proposal_bond) / 10n ** 18n) : null // yoctoNEAR to 6 places
+  const periodMs = policy.proposal_period != null ? Number(L.big(policy.proposal_period) / 1_000_000n) : null
+  return `
+    ${mock ? '<p class="mock-note">Mock mode: a stand-in DAO in this tab. Nothing below is on chain.</p>' : ''}
+    <p>The money and every approval stay in the community’s Sputnik DAO. The three tiers are three of its own vote policies.</p>
+    <h3>Roles</h3>
+    <ul class="pol-roles">${roles}</ul>
+    <h3>Every other proposal</h3>
+    <p>The default vote policy: ${esc(L.defaultPolicyText(policy))} of a role${t3 ? `, so a transfer the contract files without its own vote needs ${esc(t3.votes)} council votes ${pill(3)}` : ''}.${bond ? ` Each proposal’s bond is ${esc(bond)} NEAR` : ''}${periodMs ? `; a proposal expires after ${esc(L.fmtDuration(periodMs))}` : ''}.</p>
+    ${report ? `<h3>Checked against the design</h3><ul class="checks">${report.checks.map((c) => check(c.ok, esc(c.label))).join('')}</ul>` : ''}
+    <p class="muted fine">Read live from the DAO ${link(explorer, mock, `address/${dao}`, dao)} with <code>get_policy</code>. Sputnik has no amount limits: the amounts behind the tiers are the contract’s code, and the contract has no keys.</p>
+    <details class="raw"><summary>The policy as the DAO returns it</summary><pre>${esc(JSON.stringify(policy, null, 1))}</pre></details>`
 }
 
 // ---- keeping the reader's place -----------------------------------------------------------------

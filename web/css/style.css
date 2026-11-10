@@ -1124,6 +1124,88 @@ body.closing .progress-fill {
   font-weight: 650;
 }
 
+/* ---- the track's requirements: one line each, with the link that proves it ---- */
+.reqs {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 10px 16px 12px;
+}
+.reqs-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0 0 8px;
+}
+.reqs-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.reqs-sub {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.reqs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.req {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 14px;
+  border-left: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.38;
+  color: var(--ink-2);
+}
+.req:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+.req:last-child {
+  padding-right: 0;
+}
+.req-name {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.req-name .ico-check {
+  flex: none;
+  margin-top: 1px;
+}
+.req-answer .ico-check {
+  background: var(--copper);
+}
+.req-link {
+  margin-top: auto;
+  padding-top: 3px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.reqs + .story {
+  margin-top: 12px;
+}
+#board,
+#payouts,
+#ledger,
+#rules {
+  scroll-margin-top: 12px;
+}
+
 /* ---- the close story: always under the hero, plays at every close ---- */
 .story {
   margin: 8px 0 0;
@@ -1926,6 +2008,34 @@ body.closing .progress-fill {
 }
 
 /* ---- rules ---- */
+.flows {
+  margin-top: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 2px 22px 14px;
+  scroll-margin-top: 16px;
+}
+.flows-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.8fr;
+  gap: 4px 26px;
+}
+.flow-col h4 {
+  margin: 4px 0 4px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.flow-col ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+}
+.flow-col li {
+  margin: 5px 0;
+}
 .rules-body {
   background: var(--card);
   border: 1px solid var(--line);
@@ -2315,6 +2425,42 @@ body.closing .progress-fill {
   border-radius: 10px;
   padding: 10px 12px;
 }
+.prop-by {
+  margin: 0 0 8px;
+}
+.pol-roles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pol-role {
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+.pol-head {
+  margin: 0 0 4px;
+}
+.pol-name {
+  font-weight: 700;
+  font-size: 0.95em;
+  margin-right: 4px;
+}
+.pol-votes {
+  margin: 0 0 4px;
+  padding-left: 18px;
+}
+.pol-votes .pill {
+  margin-left: 4px;
+}
+.pol-perms {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+.pol-perms code {
+  overflow-wrap: anywhere;
+}
 .raw summary {
   cursor: pointer;
   color: var(--teal);
@@ -2523,6 +2669,21 @@ body.cold .nav-link {
   .tier-rule {
     min-height: 0;
   }
+  .reqs-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 0;
+  }
+  .req,
+  .req:first-child {
+    border-left: 0;
+    padding: 0 14px 0 0;
+  }
+  .req-answer {
+    grid-column: 1 / -1;
+  }
+  .flows-grid {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 640px) {
   body {
@@ -2597,6 +2758,42 @@ body.cold .nav-link {
   }
   .tile-rule {
     display: none;
+  }
+  .reqs {
+    padding: 9px 12px 4px;
+  }
+  .reqs-head {
+    margin-bottom: 4px;
+  }
+  .reqs-list {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .req,
+  .req:first-child {
+    padding: 7px 0 8px;
+    border-top: 1px solid var(--line);
+  }
+  .req:first-child {
+    border-top: 0;
+  }
+  .req-answer {
+    grid-column: auto;
+  }
+  /* on a phone: the name, then the line and its link run on as one paragraph */
+  .req {
+    display: block;
+  }
+  .req-name {
+    margin-bottom: 2px;
+  }
+  .req-link {
+    display: inline;
+    margin-left: 4px;
+    padding-top: 0;
+  }
+  .flows {
+    padding: 2px 14px 12px;
   }
   .tile-last {
     margin: 0;

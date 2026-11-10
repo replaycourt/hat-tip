@@ -1071,3 +1071,61 @@ export function fmtAgo(ms) {
   if (m < 60) return `${m} min ago`
   return `${Math.round(m / 60)} h ago`
 }
+
+// ---- links into the page -----------------------------------------------------------------------
+
+/** A NEAR account id as the protocol accepts it: 2-64 characters, lower-case parts joined by dots. */
+export const isAccountId = (a) => typeof a === 'string' && a.length >= 2 && a.length <= 64 && /^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$/.test(a)
+
+/**
+ * A link that opens one of the page's drawers: `#policy`, `#proof`, `#record=<account>` or
+ * `#proposal=<id>`. Anything else (`#board`, `#rules`, a malformed account) is null: no drawer.
+ */
+export function parseRoute(hash) {
+  const h = String(hash ?? '').replace(/^#/, '')
+  if (h === 'policy' || h === 'proof') return { kind: h }
+  const rec = /^record=(.+)$/.exec(h)
+  if (rec) {
+    let account = null
+    try {
+      account = decodeURIComponent(rec[1])
+    } catch {
+      return null
+    }
+    return isAccountId(account) ? { kind: 'record', account } : null
+  }
+  const prop = /^proposal=(\d{1,12})$/.exec(h)
+  return prop ? { kind: 'proposal', id: Number(prop[1]) } : null
+}
+
+/**
+ * The DAO proposal the requirements strip links to: the newest tier-1 payout of the round shown (the
+ * contract filed it and approved it with its own vote), else the newest payout filed at all.
+ */
+export function reqProposal(payouts = []) {
+  const filed = payouts.filter((p) => p.dao_proposal != null).sort((a, b) => Number(b.dao_proposal) - Number(a.dao_proposal))
+  const p = filed.find((x) => Number(x.tier) === 1) ?? filed[0]
+  return p ? { id: Number(p.dao_proposal), tier: Number(p.tier) } : null
+}
+
+/**
+ * The DAO's roles as get_policy states them, for the policy drawer: who is in each role, what it
+ * may do, and how many votes each proposal kind needs from it.
+ */
+export function policyRoles(policy) {
+  return (policy?.roles ?? []).map((r) => {
+    const k = r.kind
+    const who = k?.Group ? { group: [...k.Group].sort() } : isEveryone(r) ? { everyone: true } : k?.Member != null ? { member: String(k.Member) } : { other: JSON.stringify(k) }
+    const votes = Object.entries(r.vote_policy ?? {})
+      .sort((a, b) => cmp(a[0], b[0]))
+      .map(([kind, v]) => ({ kind, threshold: v?.threshold ?? null }))
+    return { name: String(r.name), who, permissions: [...(r.permissions ?? [])].map(String).sort(), votes }
+  })
+}
+
+/** Sputnik's default vote policy as words: "more than 1/2", or "3 votes" for a weight. */
+export function defaultPolicyText(policy) {
+  const t = policy?.default_vote_policy?.threshold
+  if (Array.isArray(t)) return `more than ${t[0]}/${t[1]}`
+  return thresholdText(t)
+}

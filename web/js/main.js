@@ -91,6 +91,8 @@ async function boot() {
   document.body.classList.add('live')
   await Promise.all([loadPolicy(), poll({ first: true })])
   renderRules()
+  renderReqs()
+  route({ boot: true })
   ledgerWhenSeen()
   // the ledger also names the last payout of a tier this round left empty: read it soon, not first
   setTimeout(() => {
@@ -140,9 +142,10 @@ function wire() {
   U.$('btn-story-replay').addEventListener('click', () => playStory(true))
   U.$('btn-older').addEventListener('click', () => loadLedger(true))
   U.$('btn-replay-open').addEventListener('click', openReplay)
-  U.$('drawer-close').addEventListener('click', U.closeDrawer)
-  U.$('drawer-backdrop').addEventListener('click', U.closeDrawer)
-  document.addEventListener('keydown', (e) => e.key === 'Escape' && U.drawerOpen() && U.closeDrawer())
+  U.$('drawer-close').addEventListener('click', closeDrawer)
+  U.$('drawer-backdrop').addEventListener('click', closeDrawer)
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && U.drawerOpen() && closeDrawer())
+  globalThis.addEventListener('hashchange', () => route())
   // one listener for every button made from data: records, proposals, ledger rows, +10 and −
   document.addEventListener('click', (e) => {
     const t = e.target.closest?.('[data-record],[data-proposal],[data-round],[data-step]')
@@ -182,6 +185,7 @@ async function loadPolicy() {
   } catch (e) {
     console.info('policy', e?.message ?? e)
   }
+  renderReqs()
 }
 
 async function poll({ first = false } = {}) {
@@ -319,6 +323,7 @@ const name = (a) => L.displayName(a, S.me)
 
 function render() {
   renderHero()
+  renderReqs()
   renderStory()
   renderBoard()
   renderPayouts()
@@ -362,6 +367,29 @@ function renderHero() {
   when.className = `give-when when-${timing.phase}`
   renderTiles()
   tick()
+}
+
+/**
+ * The track's requirements under the hero: the links to a member's record and to a proposal the
+ * contract filed come from the chain, and the policy link says how many of its checks pass.
+ */
+function renderReqs() {
+  const st = S.state
+  if (!st || !client) return
+  const acc = st.members.find((a) => client.house?.[a] === 'honest') ?? st.members[0]
+  if (acc) {
+    U.$('req-record').href = `#record=${acc}`
+    U.setText('req-record', `${name(acc)}’s record ›`)
+  }
+  const p = L.reqProposal(S.lastPayouts)
+  if (p) {
+    U.$('req-proposal').href = `#proposal=${p.id}`
+    U.setText('req-proposal', p.tier === 1 ? `DAO #${p.id}, auto-approved ›` : `DAO #${p.id}, filed by the contract ›`)
+  }
+  if (S.report) {
+    const ok = S.report.checks.filter((c) => c.ok).length
+    U.setText('req-policy', `Its policy: ${ok} of ${S.report.checks.length} checks pass ›`)
+  }
 }
 
 /** The three tier tiles under the hero, with the last round that paid. */
@@ -846,6 +874,41 @@ function renderRules() {
 }
 
 // ---- drawers ------------------------------------------------------------------------------------
+
+/**
+ * Opens the drawer a link names (#policy, #proof, #record=<account>, #proposal=<id>). At boot, a
+ * plain anchor (#board, #flows, …) is jumped to again: the browser did so before the page filled in.
+ */
+function route({ boot = false } = {}) {
+  const r = L.parseRoute(location.hash)
+  if (!r && boot && location.hash.length > 1) {
+    let el = null
+    try {
+      el = document.getElementById(decodeURIComponent(location.hash.slice(1)))
+    } catch {
+      /* not an id */
+    }
+    el?.scrollIntoView({ block: 'start' })
+  }
+  if (!r || !client || !S.cfg) return
+  if (r.kind === 'policy') return openPolicy()
+  if (r.kind === 'proof') return openProof()
+  if (r.kind === 'record') return openMember(r.account)
+  if (r.kind === 'proposal') return openProposal(r.id)
+}
+
+/** Closes the drawer and drops the link that opened it, so the same link opens it again. */
+function closeDrawer() {
+  U.closeDrawer()
+  if (L.parseRoute(location.hash)) history.replaceState(null, '', location.pathname + location.search)
+}
+
+async function openPolicy() {
+  const draw = () => U.policyHtml(S.policy, S.report, { dao: S.cfg.dao, explorer: EXPLORER, mock: MOCK, contract: client.contract, name, thanksRole: S.cfg.thanks_role, councilRole: S.cfg.council_role })
+  U.openDrawer('policy', 'The DAO’s policy', '<p class="muted">Reading the DAO…</p>')
+  await loadPolicy()
+  if (U.drawerIs('policy')) U.openDrawer('policy', 'The DAO’s policy', draw())
+}
 
 async function openMember(account) {
   U.openDrawer('member', 'Record', '<p class="muted">Reading the record…</p>', `member:${account}`)

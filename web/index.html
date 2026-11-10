@@ -83,6 +83,20 @@
     </aside>
   </section>
 
+  <section class="reqs" id="reqs" aria-labelledby="reqs-title">
+    <div class="reqs-head">
+      <h2 class="reqs-title" id="reqs-title">Social Money track: four requirements and the checkpoint</h2>
+      <p class="reqs-sub">each link opens its proof on this page, read live from NEAR testnet</p>
+    </div>
+    <ol class="reqs-list">
+      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>DAO treasury, no multisig</b><span class="req-how">Money and approvals stay in the café’s own Sputnik DAO.</span><a class="req-link" id="req-policy" href="#policy">The DAO’s policy ›</a></li>
+      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Traceable reputation</b><span class="req-how">Named accounts; every point traces to a round, its giver and a note of finished work.</span><a class="req-link" id="req-record" href="#board">A member’s record ›</a></li>
+      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Three approval tiers</b><span class="req-how">Auto-approved, one council vote, or a council majority, by record.</span><a class="req-link" id="req-proposal" href="#payouts">A proposal the contract filed ›</a></li>
+      <li class="req"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>A public board</b><span class="req-how">Notes, thanks, live payouts with their votes, every record.</span><a class="req-link" href="#board">This round’s board ›</a></li>
+      <li class="req req-answer"><b class="req-name"><span class="ico-check" aria-hidden="true"></span>Checkpoint: approval flows</b><span class="req-how">Which flows Sputnik already has, and which Hat Tip adds.</span><a class="req-link" href="#flows">The answer ›</a></li>
+    </ol>
+  </section>
+
   <section class="story" id="story" aria-labelledby="story-title" hidden>
     <div class="story-inner">
       <div class="story-head">
@@ -93,7 +107,7 @@
     </div>
   </section>
 
-  <section class="board" aria-labelledby="board-title">
+  <section class="board" id="board" aria-labelledby="board-title">
     <div class="section-head">
       <h2 id="board-title">This round at the café</h2>
       <p class="sub" id="board-sub">What each member did, the thanks they got so far, and what they would be paid if the round closed now.</p>
@@ -171,6 +185,35 @@
       <p class="sub" id="rules-sub">Read from the contract’s <code>config()</code> and the DAO’s <code>get_policy</code>.</p>
     </div>
     <div class="rules-body" id="rules-body"><p class="muted">Reading the rules…</p></div>
+    <div class="flows" id="flows">
+      <h3 class="rules-h">Which approval flows exist, and which Hat Tip adds</h3>
+      <div class="flows-grid">
+        <div class="flow-col">
+          <h4>In Sputnik v2 already, used as they are</h4>
+          <ul>
+            <li>Roles (a group of accounts, token holders, everyone), with permissions per proposal kind and action (<code>transfer:AddProposal</code>, <code>call:VoteApprove</code>).</li>
+            <li>A vote policy per role and kind, as a ratio or a weight, and a default one: the three tiers are three of them.</li>
+            <li><code>Transfer</code> and <code>FunctionCall</code> proposals, the bond, expiry and <code>Finalize</code>, <code>VoteRemove</code>.</li>
+            <li>Bounties (<code>AddBounty</code>, <code>bounty_claim</code>, <code>BountyDone</code>) for work posted before it is done; this DAO leaves them off.</li>
+          </ul>
+        </div>
+        <div class="flow-col">
+          <h4>Added by Hat Tip, outside the DAO</h4>
+          <ul>
+            <li>Amount limits. Sputnik has none, so the contract’s code picks the tier, and the contract has no keys.</li>
+            <li>Rounds of thanks, the counting, reputation and strikes.</li>
+            <li>Every payout filed as a DAO proposal, its outcome read back (<code>pay</code>, <code>check_payout</code>).</li>
+          </ul>
+        </div>
+        <div class="flow-col">
+          <h4>Turned off in the DAO</h4>
+          <ul>
+            <li>The factory’s auto-update, so nobody can replace the DAO’s code.</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted fine">From the Sputnik v2 source and a probe on testnet: <a href="https://github.com/replaycourt/hat-tip#which-approval-flows-exist-and-which-we-add">the full answer</a>.</p>
+    </div>
   </section>
 
   <footer class="foot">
