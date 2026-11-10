@@ -187,6 +187,14 @@
      ],
      "allowance_near": "2.00"
     }
+   },
+   "hat-tip-fund-8.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
+   },
+   "hat-tip-fund-9.testnet": {
+    "created": "testnet faucet (NEAR CLI sponsor-by-faucet-service)",
+    "near": "10.00"
    }
   },
   "txs": {
@@ -406,6 +414,50 @@
     "tgas": 0.4,
     "fee_near": "0.000041",
     "note": "every access key deleted"
+   },
+   "faucet hat-tip-fund-8.testnet": {
+    "hash": "DLJrQzw9Hy1Nm5C8cjXyvJDwf8f8N4zd9aJ1URz7Y5xN",
+    "note": "faucet, 10 NEAR"
+   },
+   "faucet hat-tip-fund-9.testnet": {
+    "hash": "AtVYB3iixZvHA5o819rxNcgDuHTC5dknaRSEDmaYwgB8",
+    "note": "faucet, 10 NEAR"
+   },
+   "fund ana.hat-tip.testnet from hat-tip-fund-9.testnet": {
+    "hash": "J4GdriYbQVBTJJVyCxgMr7oGNDWjtZeBP6WRrUY9tJsi",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund ben.hat-tip.testnet from hat-tip-fund-9.testnet": {
+    "hash": "6DXBVJ7b4AphQErHyWvpcy2sNeK59zfaQZ4c8UqEoYg2",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund cleo.hat-tip.testnet from hat-tip-fund-9.testnet": {
+    "hash": "9MeuYCmEsGYDZ7iziACUacTQGSNEfDUQyKBCK6JycJ9p",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund dina.hat-tip.testnet from hat-tip-fund-9.testnet": {
+    "hash": "E5q9rW2BEQaUCJCv9GX3p2X8n8mGbXLujZUZ1VmULn6p",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund emil.hat-tip.testnet from hat-tip-fund-9.testnet": {
+    "hash": "cvbnMPULFuj7nkrFyPosaPaxb5EyaRXXBXBzXie7NDo",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund hat-tip.sputnikv2.testnet from hat-tip-fund-8.testnet": {
+    "hash": "EXeiiAgwWixmmBYvErWtv8uKdbMYeks5YQVkzM4AqdGr",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "5.0000 NEAR"
    }
   },
   "root": "hat-tip.testnet",
@@ -723,6 +775,341 @@
    "tier2_check_1_noted": "E77Bg8Wt8kSxDWKKkte4K1Y5BYK4PHAyaLmb9LUYXCHh",
    "tier2_check_2_paid": "CYwpLHZeKczgfuRUidmQLVzfrTwqBmtK6mGv1YGjGc6c",
    "tier3_check_rejected_struck": "FES7kqe6RPn9mi1Snv1igx78yTkunmcSfmPpqypjTepj"
+  },
+  "bounties": {
+   "txs": {
+    "policy: file role council (DAO #1101)": {
+     "hash": "4Eg9shBKkKpnAYFxTyKUWo4bkZGUyNTrrhAgSJR26j33",
+     "tgas": 2.8,
+     "fee_near": "0.000280",
+     "ok": true,
+     "at": "2026-11-10T22:17:29.495Z"
+    },
+    "policy: file role members (DAO #1102)": {
+     "hash": "ErXendLVG3fsz5Qefe9spUV1A8CyPXCzmTLVRU4tCnNW",
+     "tgas": 2.66,
+     "fee_near": "0.000266",
+     "ok": true,
+     "at": "2026-11-10T22:17:31.395Z"
+    },
+    "policy: vote role council (DAO #1101)": [
+     {
+      "hash": "4UnfPQAazaHCByLjdsjYK7vjcQehPEu6feXuwiH7CJy6",
+      "tgas": 3.05,
+      "fee_near": "0.000305",
+      "ok": true,
+      "at": "2026-11-10T22:17:50.755Z"
+     },
+     {
+      "hash": "HEzbVgKj6PNDk92DSqHK8XDfNGqoY5NThHkQT873PVBJ",
+      "tgas": 4.15,
+      "fee_near": "0.000393",
+      "ok": true,
+      "at": "2026-11-10T22:17:53.790Z"
+     }
+    ],
+    "policy: vote role members (DAO #1102)": [
+     {
+      "hash": "3ybHJzUVXNsCBkuB8SM2CgVQjoxcW6NadwFgc3n5G55B",
+      "tgas": 2.89,
+      "fee_near": "0.000290",
+      "ok": true,
+      "at": "2026-11-10T22:17:56.078Z"
+     },
+     {
+      "hash": "6141Hk54UYeiAVotyWr1MHQXQGp2TkXpufuCuTD5Lrps",
+      "tgas": 3.98,
+      "fee_near": "0.000377",
+      "ok": true,
+      "at": "2026-11-10T22:17:59.136Z"
+     }
+    ],
+    "post by ana (DAO #1103)": {
+     "hash": "FwMPyqiDCSaa4AnNad4me2jBxDWKVSg4JvJfzkdfSpHy",
+     "tgas": 2.59,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:33.618Z"
+    },
+    "post by ben (DAO #1104)": {
+     "hash": "FasntvGBTeQFEiuUBXKQPt96nSYoP78rdRwnoy1KZDT8",
+     "tgas": 2.58,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:36.761Z"
+    },
+    "post by cleo (DAO #1105)": {
+     "hash": "B8ECPuf51h2GdTgDAjXq48n1kRdeTCFnsGvoZa6N7gp5",
+     "tgas": 2.58,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:39.609Z"
+    },
+    "post by dina (DAO #1106)": {
+     "hash": "3kekXbBDsdPSop49WK3QL6Bp8zsZ8VkMA7LDsiDEaB9U",
+     "tgas": 2.58,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:42.838Z"
+    },
+    "post by emil (DAO #1107)": {
+     "hash": "EmcCU62yPgZF883BFvWwXrG6cuAMiwVYQ2VrwKehgE8J",
+     "tgas": 2.58,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:46.463Z"
+    },
+    "post by ana (DAO #1108)": {
+     "hash": "4CBVwGVo79YasbB9uAxdyRzN5yDcdb9jvTVZKqdP2dUW",
+     "tgas": 2.58,
+     "fee_near": "0.000259",
+     "ok": true,
+     "at": "2026-11-10T22:18:49.616Z"
+    },
+    "vote AddBounty DAO #1103": [
+     {
+      "hash": "CgD7U9BFJMmKBSgLAfeM95x8gFnJKfvhN7dwGuqUkr7W",
+      "tgas": 2.77,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:02.246Z"
+     },
+     {
+      "hash": "EmEh6oA1LzZHysveYqE4KBV4cL2Rqg5xWKKM6G3dJjKk",
+      "tgas": 3.6,
+      "fee_near": "0.000338",
+      "ok": true,
+      "at": "2026-11-10T22:21:05.656Z"
+     }
+    ],
+    "vote AddBounty DAO #1104": [
+     {
+      "hash": "8o4f8D14q3d96A1xnNdGQQneU2TVTtztyk5byRk2KkZd",
+      "tgas": 2.77,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:07.755Z"
+     },
+     {
+      "hash": "HGeMwgT5EBbbmyh9d7nWRx2nqAegSroHPfNLyTSca3ut",
+      "tgas": 3.6,
+      "fee_near": "0.000339",
+      "ok": true,
+      "at": "2026-11-10T22:21:10.073Z"
+     }
+    ],
+    "vote AddBounty DAO #1105": [
+     {
+      "hash": "5CxMbtek3BJWxyGf85W6XVRWAAmtzZZMtyBY93EfyM9v",
+      "tgas": 2.77,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:12.719Z"
+     },
+     {
+      "hash": "2HtubbN35ay3YXhZY8QpWyR3anWrYtypg17T9TuFQ6nm",
+      "tgas": 3.61,
+      "fee_near": "0.000339",
+      "ok": true,
+      "at": "2026-11-10T22:21:15.639Z"
+     }
+    ],
+    "vote AddBounty DAO #1106": [
+     {
+      "hash": "EgNSAcqc1NYq3i58NCmwVcRggpVmEavD9ugzProAWd5N",
+      "tgas": 2.76,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:17.448Z"
+     },
+     {
+      "hash": "GgSjBWcsTXBJV23a5BVSjsLfTgeN2EfVRnDPT4rwwXYz",
+      "tgas": 3.61,
+      "fee_near": "0.000339",
+      "ok": true,
+      "at": "2026-11-10T22:21:20.470Z"
+     }
+    ],
+    "vote AddBounty DAO #1107": [
+     {
+      "hash": "HsvVkQBXDhtW4kkfPofcPEZf2DKJY86BAgubq4EcosQ7",
+      "tgas": 2.76,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:22.977Z"
+     },
+     {
+      "hash": "BeRgZzS7ESmyMKQqpGQNGD1gtAWDEb4wF8b1d6jrx3VN",
+      "tgas": 3.6,
+      "fee_near": "0.000339",
+      "ok": true,
+      "at": "2026-11-10T22:21:25.263Z"
+     }
+    ],
+    "vote AddBounty DAO #1108": [
+     {
+      "hash": "GAfsdAezTv9BD3HjK9yv9pqAriy3BQ4RpHVoGuKw13jw",
+      "tgas": 2.76,
+      "fee_near": "0.000277",
+      "ok": true,
+      "at": "2026-11-10T22:21:27.642Z"
+     },
+     {
+      "hash": "E22Y6fk1vwkDdtvQeegKCc6X1Zkfas5fnfbAfKSeEazJ",
+      "tgas": 3.6,
+      "fee_near": "0.000339",
+      "ok": true,
+      "at": "2026-11-10T22:21:30.346Z"
+     }
+    ],
+    "claim #0 by dina": {
+     "hash": "BDMbRmPDTEtV46HkufUNt6QxLrem4zfZQVwJcuNNHFPU",
+     "tgas": 2.73,
+     "fee_near": "0.000274",
+     "ok": true,
+     "at": "2026-11-10T22:21:50.383Z"
+    },
+    "claim #1 by emil": {
+     "hash": "D4bsHCwSiqfNPvDQB3EBju5iM6uMmWHZsXcvf8iJQMEe",
+     "tgas": 2.74,
+     "fee_near": "0.000274",
+     "ok": true,
+     "at": "2026-11-10T22:21:53.365Z"
+    },
+    "claim #2 by ana": {
+     "hash": "GFoyZWKYwBvBZY11rngUTibTHbvAF4WcDqvXw7uogDBQ",
+     "tgas": 2.74,
+     "fee_near": "0.000275",
+     "ok": true,
+     "at": "2026-11-10T22:21:57.062Z"
+    },
+    "claim #5 by ben": {
+     "hash": "GBYeA3wtataweq81hbsogx26UAfBQqErPEksH74djTFm",
+     "tgas": 2.75,
+     "fee_near": "0.000275",
+     "ok": true,
+     "at": "2026-11-10T22:22:00.735Z"
+    },
+    "done #0 by dina": {
+     "hash": "8Gue5CMb7aorMpmBnhMZeziQVyEXRENAwt5wJdQuEhYt",
+     "tgas": 2.76,
+     "fee_near": "0.000276",
+     "ok": true,
+     "at": "2026-11-10T22:30:28.813Z"
+    },
+    "done #1 by emil": {
+     "hash": "V9dBx9pJcCS9LFuLBXdVgzE5w7Tm6aCEY1jWMHuyyX4",
+     "tgas": 2.76,
+     "fee_near": "0.000276",
+     "ok": true,
+     "at": "2026-11-10T22:30:32.638Z"
+    },
+    "done #2 by ana": {
+     "hash": "DPWfi1stvvkGv214kre7a526ZxDUokDFxXiSfBQ5mmMQ",
+     "tgas": 2.76,
+     "fee_near": "0.000276",
+     "ok": true,
+     "at": "2026-11-10T22:30:36.039Z"
+    },
+    "vote BountyDone DAO #1112": {
+     "hash": "A9BDpTUXRdeXczGbdCmGmn3thSw4XMgmMVNV3bPgrUny",
+     "tgas": 9.96,
+     "fee_near": "0.000929",
+     "ok": true,
+     "at": "2026-11-10T22:32:50.364Z"
+    },
+    "vote BountyDone DAO #1113": {
+     "hash": "AiuaDXY4ABRzmRypBPDtfiuK9nNHBg2XxwSNPmgk5hEn",
+     "tgas": 9.95,
+     "fee_near": "0.000929",
+     "ok": true,
+     "at": "2026-11-10T22:32:54.135Z"
+    },
+    "vote BountyDone DAO #1114": {
+     "hash": "DE6psLJEZoxvDkPiiC2C5tRUT6JUsegM94JDZ55xWshJ",
+     "tgas": 9.95,
+     "fee_near": "0.000929",
+     "ok": true,
+     "at": "2026-11-10T22:32:58.356Z"
+    },
+    "thank r181: ana -> dina (bounty #0)": {
+     "hash": "9a9PARRGYYoTavWgNdnCArjvsKd25d3aUHG9Ayf4MZSc",
+     "tgas": 2.61,
+     "fee_near": "0.000261",
+     "ok": true,
+     "at": "2026-11-10T22:37:07.861Z"
+    },
+    "note r181: dina (bounty #0)": {
+     "hash": "5icLizfBeUtp2GYcf9zd4xoP5Nw9X4gkxrovseVdaTCz",
+     "tgas": 2.49,
+     "fee_near": "0.000249",
+     "ok": true,
+     "at": "2026-11-10T22:37:10.155Z"
+    },
+    "thank r181: ben -> emil (bounty #1)": {
+     "hash": "HcDNg21MZQt77pjtUcvnrMmSog2oGrkMqjsQ2wRtkAFj",
+     "tgas": 2.61,
+     "fee_near": "0.000261",
+     "ok": true,
+     "at": "2026-11-10T22:37:15.585Z"
+    },
+    "note r181: emil (bounty #1)": {
+     "hash": "GxBz1sXRK98qZh34kpwFG1BzyZEtp1VbwDHhtn9q2aW9",
+     "tgas": 2.49,
+     "fee_near": "0.000249",
+     "ok": true,
+     "at": "2026-11-10T22:37:17.327Z"
+    },
+    "thank r181: cleo -> ana (bounty #2)": {
+     "hash": "7Uf6pynZ2bSaDjP1kfBo4Gn3j17cfwuqvXCnPm9AgCj8",
+     "tgas": 2.53,
+     "fee_near": "0.000254",
+     "ok": true,
+     "at": "2026-11-10T22:37:22.640Z"
+    },
+    "note r181: ana (bounty #2)": {
+     "hash": "8akApqxk6qwjGSNysRw5M7w7HhNkpCwA21RnQ877Td7s",
+     "tgas": 2.49,
+     "fee_near": "0.000249",
+     "ok": true,
+     "at": "2026-11-10T22:37:24.835Z"
+    }
+   },
+   "policy": "after",
+   "policy_changed": "2026-11-10T22:17:59.272Z",
+   "proposals": {
+    "add": [
+     1103,
+     1104,
+     1105,
+     1106,
+     1107,
+     1108
+    ],
+    "done": [
+     1112,
+     1113,
+     1114
+    ]
+   },
+   "judging_board": {
+    "done_and_paid": [
+     0,
+     1,
+     2
+    ],
+    "open": [
+     3,
+     4
+    ],
+    "claimed": {
+     "bounty": 5,
+     "by": "ben.hat-tip.testnet",
+     "until": "2026-11-20T22:22Z"
+    },
+    "keys": "posted, claimed and filed with the members' own full-access keys from the legacy keychain (scripts/bounties.mjs --keychain); votes with the house council's function-call keys; the GitHub house holds no bounty keys",
+    "detail": "docs/bounties.md"
+   }
   }
  },
  "staging": {
@@ -1085,6 +1472,24 @@
     "hash": "7cpFqdJJmJHP6bamUHg77EGEKmHU2BiU88gwuwPQRpdw",
     "tgas": 7.36,
     "fee_near": "0.000692"
+   },
+   "fund ana.hat-tip-stage.testnet from hat-tip-fund-8.testnet": {
+    "hash": "BJqwBJgwfYvCSuMCbErBofNct7bNVZinogNeE6wKNkNi",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund ben.hat-tip-stage.testnet from hat-tip-fund-8.testnet": {
+    "hash": "5eWPN6SYfogiVFuWZYCsuZiWDqcwEnerkJBV5QKcVoPR",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
+   },
+   "fund cleo.hat-tip-stage.testnet from hat-tip-fund-8.testnet": {
+    "hash": "82NmCPLzTg9DULdeXPPdsTKQBZfe2uwdMWamQGU1gxiU",
+    "tgas": 0.44,
+    "fee_near": "0.000045",
+    "note": "1.2000 NEAR"
    }
   },
   "root": "hat-tip-stage.testnet",
@@ -1551,6 +1956,143 @@
    "council_decisions": 20,
    "replay": "house.mjs council-replay: of the 94 decided tier-2/3 payouts of the reviewed contract, the new rule decides one otherwise: payout 9 (emil, round 2, a guest he welcomed with 5 thanks as top giver), rejected then, paid now; the pair rejections (finn from gus, rounds 6 and 7) and every other decision stay",
    "evidence": "docs/testnet-stage-2.json, docs/testnet-stage.md"
+  },
+  "bounties": {
+   "txs": {
+    "policy: file role council (DAO #331)": {
+     "hash": "49BEZfV1KgoyajMH8rNAQyPbYKvXQwwDb6ZuJWhq8gqD",
+     "tgas": 2.8,
+     "fee_near": "0.000281",
+     "ok": true,
+     "at": "2026-11-10T21:56:18.851Z"
+    },
+    "policy: file role members (DAO #332)": {
+     "hash": "94nXtaeUTeR2g6rC5kkFk4grKTeKaBK67GjbJ2reXyhF",
+     "tgas": 2.67,
+     "fee_near": "0.000268",
+     "ok": true,
+     "at": "2026-11-10T21:56:21.133Z"
+    },
+    "policy: vote role council (DAO #331)": [
+     {
+      "hash": "G4qyfxWn5WWM7DmpwocE1YkqnszNtnHt3spKwF1BMBYa",
+      "tgas": 3.06,
+      "fee_near": "0.000307",
+      "ok": true,
+      "at": "2026-11-10T21:56:30.343Z"
+     },
+     {
+      "hash": "FK1a3wYD2XFWkrcgb5eud3EKAzb6kV29ZF716axjvpdF",
+      "tgas": 4.17,
+      "fee_near": "0.000395",
+      "ok": true,
+      "at": "2026-11-10T21:56:33.021Z"
+     }
+    ],
+    "policy: vote role members (DAO #332)": [
+     {
+      "hash": "Gz15YBbtmetm9n9bXnarHhz4fx8YjoB3RVHUjQSmb4ux",
+      "tgas": 2.91,
+      "fee_near": "0.000292",
+      "ok": true,
+      "at": "2026-11-10T21:56:35.091Z"
+     },
+     {
+      "hash": "FVYafPqC9q2okU3RuD1N3gK256RAu2vGHrhYqHv74GUj",
+      "tgas": 4.02,
+      "fee_near": "0.000380",
+      "ok": true,
+      "at": "2026-11-10T21:56:37.592Z"
+     }
+    ],
+    "post by ana (DAO #333)": {
+     "hash": "5oSqZHgwTc4CgmGoqjYf7VVNnEpsW8Lgs7AMdu5R8miR",
+     "tgas": 2.59,
+     "fee_near": "0.000260",
+     "ok": true,
+     "at": "2026-11-10T21:57:39.323Z"
+    },
+    "vote AddBounty DAO #333": [
+     {
+      "hash": "6Desmx4Qrvd9efu2ERNu3jJm5W3WNBW4UwwxAhrEYQcg",
+      "tgas": 2.78,
+      "fee_near": "0.000278",
+      "ok": true,
+      "at": "2026-11-10T21:57:50.602Z"
+     },
+     {
+      "hash": "8mKiBTLzrphNNsgg9VdFH7VhXapH8BnGvcoV1CVaTCLZ",
+      "tgas": 3.62,
+      "fee_near": "0.000340",
+      "ok": true,
+      "at": "2026-11-10T21:57:53.079Z"
+     }
+    ],
+    "claim #0 by ben": {
+     "hash": "FRtpF8Tviq2GAv2UQtxEw4oJ2Ymq8UyuYCjzundVXzZ4",
+     "tgas": 2.74,
+     "fee_near": "0.000275",
+     "ok": true,
+     "at": "2026-11-10T21:58:03.966Z"
+    },
+    "done #0 by ben": {
+     "hash": "A7HcnmFr4oovFwS4etzx5vRvAzVeUFYoTm1NBpC79ehe",
+     "tgas": 2.75,
+     "fee_near": "0.000276",
+     "ok": true,
+     "at": "2026-11-10T21:58:12.573Z"
+    },
+    "vote BountyDone DAO #334": {
+     "hash": "61Vvk1PDsKaBoMSRMVbUAifA3Lw1gQtCiRvWeDa4NJB",
+     "tgas": 9.97,
+     "fee_near": "0.000931",
+     "ok": true,
+     "at": "2026-11-10T21:58:28.825Z"
+    }
+   },
+   "policy": "after",
+   "policy_changed": "2026-11-10T21:56:37.769Z",
+   "keys": {
+    "ana.hat-tip-stage.testnet": {
+     "public_key": "ed25519:8qSzmWNjRN6CBWgVr8P6r1pc9vfap8k5Sh5DAegyWLPZ",
+     "added_tx": "5yn4SuZP86BhcL3Pn1Rjno1aHfrxboNbh1sDVvsCk6af",
+     "kind": "full access (bounty calls attach deposits); used only for add_proposal AddBounty, bounty_claim, bounty_done, bounty_giveup"
+    },
+    "ben.hat-tip-stage.testnet": {
+     "public_key": "ed25519:DBhQ4qH9zb47CLGBkHqPaooCZDkGDDatThH7AcsoahQJ",
+     "added_tx": "2Z8fHeXrtnS1JJzggJgoPT3GwGkzydy2bFfsekaUXnSM",
+     "kind": "full access (bounty calls attach deposits); used only for add_proposal AddBounty, bounty_claim, bounty_done, bounty_giveup"
+    },
+    "cleo.hat-tip-stage.testnet": {
+     "public_key": "ed25519:Cv2agYjJ8UuPQNLGdrVbN3K98uTZheMzUbC7mjo6FvUb",
+     "added_tx": "ASsTGXwXeX8aKrTZiLHmM54Ysg6zxNa8hM3oLC4o43Xc",
+     "kind": "full access (bounty calls attach deposits); used only for add_proposal AddBounty, bounty_claim, bounty_done, bounty_giveup"
+    },
+    "dina.hat-tip-stage.testnet": {
+     "public_key": "ed25519:6RCsZXqmLvGYSaBRhGVNhhUx9ov36hDzLWVcnLJjJZ1T",
+     "added_tx": "5YfmEu9azY9DrhaW3DgDWJREeGv18Qm87ZF8srgjFG4v",
+     "kind": "full access (bounty calls attach deposits); used only for add_proposal AddBounty, bounty_claim, bounty_done, bounty_giveup"
+    },
+    "emil.hat-tip-stage.testnet": {
+     "public_key": "ed25519:5RVvEp2AoUxEFxsvmenc4LRrPyWrWQPJY5sxWYD8HGuJ",
+     "added_tx": "Ax19ypaizS4j5fsJA33Joh8ctXs3QjZXWeRXPSCHPAuA",
+     "kind": "full access (bounty calls attach deposits); used only for add_proposal AddBounty, bounty_claim, bounty_done, bounty_giveup"
+    }
+   },
+   "house_run": {
+    "when": "2026-11-10 22:02-23:05 UTC, rounds 917-928 (5 minutes)",
+    "script": "scripts/house.mjs run --section staging --rounds 12 --bounty-scale 0.2 --seed 2026111022",
+    "transactions": 482,
+    "failed": 0,
+    "refused": 0,
+    "bounties": "house cycles #1-#4 posted, approved, claimed, filed and paid; #5 posted and approved; the first cycle (#0) by hand with scripts/bounties.mjs",
+    "payouts_rounds_917_928": {
+     "tier2_paid": 32,
+     "tier2_rejected": 4,
+     "tier3_paid": 33
+    },
+    "detail": "docs/bounties.md"
+   }
   }
  }
 }
