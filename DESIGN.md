@@ -28,6 +28,7 @@ This file is the spec in words. The contract (`contract/`, API in `contract/READ
 | carry | a share too small to pay (`min_payout`), kept as a claim until a later round adds to it. |
 | strike | reputation removed when the council rejects a payout. |
 | tUSD | the demo's test dollar: an NEP-141 token with a fixed supply minted to the DAO at init, 6 decimals, no owner, no value. |
+| bounty | a Sputnik DAO bounty: a task with an amount in tUSD that a member posts (`AddBounty`, council majority), a member claims with the DAO's bounty bond (`bounty_claim`) and files as done (`bounty_done`, one council vote), paid by the DAO. Runs next to the rounds; see "Bounties". |
 
 ## Who holds what
 
@@ -36,6 +37,7 @@ This file is the spec in words. The contract (`contract/`, API in `contract/READ
 | the money (tUSD, plus NEAR for the DAO's own storage) | the DAO account | only DAO proposals that pass the DAO's policy |
 | who is a member, who is on the council | DAO policy roles `members` and `council` | DAO proposals (`AddMemberToRole`, `RemoveMemberFromRole`), council majority |
 | what the `thanks` contract may do in the DAO | DAO policy role `thanks` (one member: the contract) | DAO proposals; the council can remove the role with one majority proposal at any time |
+| bounties, their claims and payouts | the DAO itself (`get_bounties`, `get_bounty_claims`, `AddBounty` and `BountyDone` proposals) | DAO proposals by members and the council, under the policy's bounty permissions ("Bounties") |
 | rounds, allocations, notes, points, reputation, payouts and their DAO proposal ids | the `thanks` contract | nobody: the rules are fixed at init and the account has no keys |
 | the tier rules and every other parameter | `thanks` contract config, set once at init | nobody |
 
@@ -97,7 +99,7 @@ Sputnik v2 has no amount limits. It has roles, per-role permissions per proposal
 | 2 one council vote | `FunctionCall` on the tUSD contract: `ft_transfer(receiver, amount)`, 1 yoctoNEAR | `thanks` (only the `thanks` role may add `call` proposals) | any one council member: role `council` has `call: threshold 1` | DAO -> receiver, when the council member votes |
 | 3 council majority | `Transfer` (token tUSD) | `thanks`, without voting | council majority (default vote policy 1/2 of a council of 3 = 2 votes) | DAO -> receiver, on the second vote |
 
-Demo policy (passed to the factory at creation; JSON as `get_policy` returns it):
+Demo policy (passed to the factory at creation; JSON as `get_policy` returns it), with the two additions of "Bounties" (2026-11-10) marked `+`:
 
 ```json
 {
@@ -108,13 +110,16 @@ Demo policy (passed to the factory at creation; JSON as `get_policy` returns it)
        "policy_update_default_vote_policy:AddProposal", "policy_update_parameters:AddProposal",
        "add_member_to_role:AddProposal", "remove_member_from_role:AddProposal",
        "factory_info_update:AddProposal", "vote:AddProposal",
-       "*:VoteApprove", "*:VoteReject", "*:VoteRemove", "*:Finalize"],
-     "vote_policy": {"call": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"}}},
+       "*:VoteApprove", "*:VoteReject", "*:VoteRemove", "*:Finalize",
+       + "add_bounty:AddProposal"],
+     "vote_policy": {"call": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"},
+       + "bounty_done": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": "1"}}},
     {"name": "thanks", "kind": {"Group": ["<thanks contract>"]},
      "permissions": ["transfer:AddProposal", "transfer:VoteApprove", "call:AddProposal",
        "transfer:Finalize", "call:Finalize"],
      "vote_policy": {"transfer": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": [1, 1]}}},
-    {"name": "members", "kind": {"Group": ["ana.<root>", "ben.<root>", "..."]}, "permissions": [], "vote_policy": {}}
+    {"name": "members", "kind": {"Group": ["ana.<root>", "ben.<root>", "..."]},
+     "permissions": [+ "add_bounty:AddProposal", + "bounty_done:AddProposal"], "vote_policy": {}}
   ],
   "default_vote_policy": {"weight_kind": "RoleWeight", "quorum": "0", "threshold": [1, 2]},
   "proposal_bond": "10000000000000000000000",
@@ -125,7 +130,8 @@ Demo policy (passed to the factory at creation; JSON as `get_policy` returns it)
 ```
 
 Why this holds:
-- There is no `Everyone` role, so nobody else can file anything. The council cannot file `call` proposals, so every `call` proposal in the DAO comes from the contract, and the contract files only `ft_transfer` on the configured token for a planned tier-2 payout. One council vote can approve exactly those and nothing else; a council member who wanted more would need a majority `ChangePolicy` first.
+- There is no `Everyone` role, so nobody else can file anything. The council cannot file `call` proposals, so every `call` proposal in the DAO comes from the contract, and the contract files only `ft_transfer` on the configured token for a planned tier-2 payout. One council vote can approve exactly those and finished bounty work, nothing else; a council member who wanted more would need a majority `ChangePolicy` first.
+- Members can file exactly two kinds, a bounty and their finished work for it; they vote on nothing. Posting a bounty commits the treasury, so it needs the council majority (the default policy); finished work needs one council vote, like a tier-2 payout, and one council `VoteReject` refuses it.
 - The contract never votes on a `call` (it lacks `call:VoteApprove`), so a tier-2 payout cannot pass without a council vote. The contract does not vote on tier-3 transfers, so they need two council votes.
 - A single council `VoteReject` on a tier-2 proposal rejects it (threshold 1 applies to reject too): one council member can veto a mid-size payout. Tier 3 needs two votes either way.
 
@@ -134,6 +140,22 @@ What Sputnik enforces and what the contract enforces, stated plainly: Sputnik en
 The bond: `add_proposal` requires the attached deposit to equal `proposal_bond` exactly (`ERR_MIN_BOND`). The DAO returns it to the proposer (the contract) when the proposal is approved, rejected or finalized after expiry, and keeps it when the proposal is removed. The contract holds a bond float from its own balance (demo bond 0.01 NEAR).
 
 Factory auto-update: a DAO from `sputnikv2.testnet` starts with `get_factory_info().auto_update = true`, so the factory owner could upgrade its code. The setup files a `FactoryInfoUpdate` proposal that turns it off, and the judge checks look for `false`.
+
+## Bounties
+
+The track's starter idea is a bounty board: members post small bounties, contributors claim and finish them, payouts flow from the treasury. Hat Tip runs it next to the rounds, with Sputnik's own bounties and nothing added to the contract (which has no keys and stays as it is). Thanks pay for help nobody posted in advance; bounties pay for jobs the café can name in advance, at a price set before the work.
+
+**The cycle, in the DAO.** (1) A member (or the council) files an `AddBounty` proposal: task text, token tUSD, amount, `times` 1, `max_deadline`; a council majority approves it and the DAO stores the bounty. (2) A member calls `bounty_claim(id, deadline)` with the DAO's `bounty_bond` (1 NEAR) attached. (3) Within the deadline the claimant calls `bounty_done(id, description)` with the `proposal_bond` (0.01 NEAR): the DAO files a `BountyDone` proposal in the claimant's name. (4) One council `VoteApprove` executes it: the DAO pays the amount in tUSD to the claimant and returns both bonds. A council `VoteReject` refuses it: the claim is removed, the bonds go back, the bounty is open again. A claimant may give up within `bounty_forgiveness_period` (1 day) and get the bond back; a claim past its deadline is freed by `bounty_done(id, account)` from anyone, and the DAO keeps that bond.
+
+**The policy change** (two `ChangePolicyAddOrUpdateRole` proposals, each passed by the council majority; `scripts/bounties.mjs policy`): role `members` gets `add_bounty:AddProposal` and `bounty_done:AddProposal`, nothing else (Sputnik's `bounty_done` files its proposal through `add_proposal` in the claimant's name, so the claimant needs that permission; adding it to `members` avoids an `Everyone` role); role `council` gets `add_bounty:AddProposal` and the vote policy `bounty_done: threshold "1"`. Role `thanks`, the default vote policy, the bonds and the periods stay as they are. The contract reads only the members and council groups, the bond, the period and role `thanks` from `get_policy` (`contract/src/dao.rs`), so it pays all three tiers under the new policy unchanged (staging: `docs/bounties.md`).
+
+**Traceable to finished work.** Every bounty payout is a `BountyDone` proposal naming the bounty and the finisher, approved by a named council member; the bounty names its poster's `AddBounty` proposal. In the round the work is approved, the finisher's note names the bounty (`+ bounty #12`) and the poster gives the finisher `thanks_each` (10) of its 100 thanks, up to the cap of 25 per receiver, so the reputation points behind that work trace to the bounty as well.
+
+**The house** (`sim/params.json`, `house.bounties`; `scripts/house.mjs`): the five honest members keep about two bounties open (a new one at most once an hour, from a published list of repair-café tasks of 5-20 tUSD, claim deadline two hours), claim open ones 10-50 minutes after they appear and file the work 10-45 minutes later. The house council votes two minutes after a bounty proposal is filed: `AddBounty`, two votes, approve a task posted by a member or council member, in tUSD, 5-20 tUSD, one finisher, a claim deadline of at most two weeks, while fewer than six are open; `BountyDone`, one vote, approve work a member files itself for a bounty it claimed and did not post, with a report of at least 10 characters. Otherwise reject. A `BountyDone` filed by someone else than the finisher is rejected: Sputnik would return the bonds to whoever filed it.
+
+**Keys.** Posting, claiming and filing work attach a deposit, which a function-call key cannot. The house's bounty members therefore use full-access keys for these four calls (`HOUSE_BOUNTY_KEYS`), wrapped in a signer that refuses every other call and any deposit above 2 NEAR (`scripts/bounty-chain.mjs`); their thanks, notes and the council's votes stay on function-call keys.
+
+**What a guest can do.** Watch: the page's *Bounties* board reads the DAO live (`get_bounties`, `get_bounty_claims`, `get_bounty_number_of_claims`, the bounty proposals). Claiming and filing work take a NEAR account in the DAO's `members` role (the council admits members by a majority proposal) and the bond; a guest's browser key is neither.
 
 ## Collusion and sybils
 
@@ -184,6 +206,7 @@ A static page (GitHub Pages), no build step, no wallet, reading testnet RPC.
 4. *Replay*: the last close in five seconds (thanks become points, points become payouts, proposals appear in the DAO, tier 1 executes), and a second replay of the simulation: the same community with and without dampening.
 5. *Proof*: the contract and the token with 0 access keys, the code hash checked against this repository, the DAO policy check, `audit()`, and every transaction this tab sent.
 6. After the close: if members thanked you, your payout sits in *Waiting for one council vote* until a house council member votes in the DAO; then the tUSD shows in your browser account.
+7. *Bounties*: the DAO's bounties in three columns, open, being worked on (claimed, or work filed and waiting for one council vote) and done and paid, each with its poster, claimant or finisher and its DAO proposal; read live from the DAO ("Bounties").
 
 ## No owner
 
@@ -233,7 +256,8 @@ Target for the testnet values: in steady state roughly 70 % of payouts in tier 1
 - Sputnik never deletes proposals: each payout leaves about 350 bytes (about 0.0035 NEAR) in the DAO's storage for good. That is why small shares are carried rather than paid.
 - The contract's copy of the member and council lists is as fresh as the last close of a round with allocations or `sync()`.
 - Testnet only. tUSD is a test token. Trezu's hosted app is mainnet-only; on mainnet a Trezu treasury is a Sputnik DAO (`*.sputnik-dao.near`) and the same contract works with it, but this was not run.
-- The testnet DAO code (factory default, `version()` 2.3.1) has no `get_actions_log`; the page reads proposals by id.
+- The testnet DAO code (factory default, `version()` 2.3.1) has no `get_actions_log`; the page reads proposals by id. The bounty board reads the last 300 proposals for bounty proposals; an older bounty shows without its poster.
+- Bounties: the house's bounty members hold full-access keys in the House workflow's secret (deposits need them). Anyone can claim a bounty with the 1 NEAR bond and so hold it for up to its deadline (two hours for the house's), even without being able to file the work; giving up within a day returns the bond. A `BountyDone` without a claim behind it (filed directly with `add_proposal`) can neither pass, nor be rejected or finalized in Sputnik 2.3.1 (each outcome removes the claim first and panics); it stays in the DAO with its filer's bond, and the house council leaves it alone.
 
 ## Prior art
 
@@ -245,13 +269,13 @@ Peer allocation is not new: Coordinape (GIVE circles per epoch), SourceCred, Col
 |---|---|
 | Shared budgets, programmable rewards, collective ownership, reputation-based access | programmable rewards: the round budget, split by peer thanks under published rules; reputation-based access: the auto and co-sign limits grow with reputation |
 | Build on Sputnik DAO and Trezu, don't rebuild the multisig | custody, approvals, membership and council all live in a Sputnik v2 DAO from the public factory; no multisig code. Trezu: compatible by construction (a Trezu treasury is a Sputnik DAO), not run (mainnet-only app) |
-| Members post bounties, contributors claim and finish them (the bracketed starter idea) | swapped, as the hackathon's guide allows ("Swap the starter idea for your own if you have a better one. Keep the requirements and the checkpoint."): the unit of work is a round's help, stated in a note and recognised by the people helped, since in a volunteer community most help is never posted or priced in advance. The requirements and the checkpoint are kept (README, "Fits the track") |
+| Members post bounties, contributors claim and finish them (the bracketed starter idea) | both: Sputnik bounties run in the same DAO ("Bounties": members post, a council majority approves, a member claims with a bond and files the work, one council vote pays), and peer thanks pay for the help nobody posted in advance: a round's help, stated in a note and recognised by the people helped |
 | Payouts flow from the treasury | every payout is a DAO proposal paid by the DAO |
 | Reputation tied to named accounts, every point traceable | members are named accounts in the DAO's `members` role; every point is attributed to a round and a giver (`points` events, `member()` view) |
 | Tiers: auto for trusted / one council member / full DAO vote | tier 1 `Transfer` approved by the contract's role; tier 2 `FunctionCall ft_transfer` approved by one council vote; tier 3 `Transfer` by council majority. All three visible in `get_policy` |
 | Use the existing DAO for custody and approvals | yes; the contract never holds the money |
 | A public board | the page: round board, payouts by tier with DAO links, every member's record |
-| Which approval flows exist, which must be added | exist: per-kind permissions and per-role vote policies, bonds, expiry, finalize, bounties. Added: nothing in the DAO; the contract decides which kind (and so which tier) each payout is filed as |
+| Which approval flows exist, which must be added | exist: per-kind permissions and per-role vote policies, bonds, expiry, finalize, bounties. Added: nothing in the DAO's code; the contract decides which kind (and so which tier) each payout is filed as; the policy lets members file bounties and their work, and one council vote approve the work |
 | Hint: named accounts (near.social) | named members; optional: near.social profile names on the cards |
 
 ## Feasibility evidence (2026-11-07, read-only)

@@ -2,15 +2,15 @@
 
 **Every payout is a proposal in the community's own Sputnik DAO, the contract that files it has no keys, and a guest without a wallet gets paid.**
 
-**What it is, against the track.** The `social` track's starter idea is a bounty board with earned trust. Hat Tip swaps it for thanks after the work, as the hackathon's guide allows (*"Swap the starter idea for your own if you have a better one. Keep the requirements and the checkpoint."*): in a volunteer community most help is never posted or priced in advance, and the people who were helped are the ones who judge it. The four requirements and the checkpoint stay, each with a live proof:
+**What it is, against the track.** The `social` track's starter idea is a bounty board with earned trust. Hat Tip runs it with Sputnik's own bounties in the café's DAO (members post, a council majority approves, a member claims with a bond and files the work, one council vote pays), and adds thanks after the work for the help nobody posts or prices in advance, judged by the people who were helped. The four requirements and the checkpoint, each with a live proof:
 
 | The `social` track asks for | How Hat Tip meets it | Live proof |
 |---|---|---|
 | 1. The community's existing DAO or Trezu treasury for custody and approvals, no new multisig | The money stays in the café's Sputnik v2 DAO from the public factory, unmodified. Every payout is a proposal in it, executed by the DAO. | [The DAO's policy, read live](https://replaycourt.github.io/hat-tip/web/#policy); checks 5-8, 14 below |
-| 2. Reputation tied to named accounts, every point traceable to a finished bounty | Members are named accounts in the DAO's `members` role. Every point traces to a round, its giver and the receiver's note of finished work ("fixed 2 kettles"). | [Ana's record, point by point](https://replaycourt.github.io/hat-tip/web/#record=ana.hat-tip.testnet) |
+| 2. Reputation tied to named accounts, every point traceable to a finished bounty | Members are named accounts in the DAO's `members` role. Every point traces to a round, its giver and the receiver's note of finished work ("fixed 2 kettles"); a finished bounty is a `BountyDone` proposal in the DAO, and its poster thanks the finisher in that round, whose note names it ("+ bounty #0"). | [Ana's record, point by point](https://replaycourt.github.io/hat-tip/web/#record=ana.hat-tip.testnet) |
 | 3. Small payouts auto-approve for trusted contributors, mid-size need one council member, large are a normal DAO proposal | Three vote policies of the DAO itself: the contract's role approves its own transfers 1 of 1, one council vote passes a `call`, the default policy needs the majority. The receiver's record picks the tier. | [DAO #41, filed and approved by the contract](https://replaycourt.github.io/hat-tip/web/#proposal=41) ([its transaction](https://testnet.nearblocks.io/txns/E7SnGkS6Z4oHJcqYLuSbXjDKzQa21sSspYmWDRVzS2zD)); checks 5, 12 |
-| 4. A public board: open bounties, claims, payouts, each contributor's record | The running round is the open board: each member's note is the claim of finished work, the thanks so far its acceptance, with a live payout preview and tier. Then payouts by tier with DAO links and votes, every record, the ledger of every round. | [The board](https://replaycourt.github.io/hat-tip/web/#board) |
-| Checkpoint: which approval flows exist and which must be added | Sputnik has the roles, the vote policies per proposal kind and the transfers. Hat Tip adds the amount limits, the counting and the choice of tier, and turns off the factory's auto-update. | [On the page](https://replaycourt.github.io/hat-tip/web/#flows), [in the README](README.md#which-approval-flows-exist-and-which-we-add) |
+| 4. A public board: open bounties, claims, payouts, each contributor's record | The *Bounties* board: open bounties, claims with their deadlines, finished work waiting for its council vote, and paid bounties with their DAO proposals, read live from the DAO. Next to it the round board (each member's note, the thanks so far, a live payout preview and tier), the payouts by tier with DAO links and votes, every record, the ledger of every round. | [The bounties](https://replaycourt.github.io/hat-tip/web/#bounties), [the round board](https://replaycourt.github.io/hat-tip/web/#board); check 15 |
+| Checkpoint: which approval flows exist and which must be added | Sputnik has the roles, the vote policies per proposal kind, the transfers and the bounties. Hat Tip adds the amount limits, the counting and the choice of tier; the policy lets members post bounties and file their work, and turns off the factory's auto-update. | [On the page](https://replaycourt.github.io/hat-tip/web/#flows), [in the README](README.md#which-approval-flows-exist-and-which-we-add) |
 
 Code, tests and checks for each row: [README, Fits the track](README.md#fits-the-track).
 
@@ -29,6 +29,14 @@ Open https://replaycourt.github.io/hat-tip/web/ in Chrome 137+, Safari 17+ or Fi
 7. **Open a member** (*rep … ›* on a card). See the reputation line over the rounds, each round's points with every giver behind them (given → counted), each payout with tier, DAO proposal and status, and the auto and co-sign limits for the next close. gus's record says how much of his points finn's thanks made (about a fifth) and shows the two payouts the council rejected, each with its strike.
 8. **Open *Rules*, then *Proof*.** *Rules* renders the DAO's `get_policy` (the three tiers as the DAO states them) and the contract's `config()`. *Proof* opens with *All N checks pass*, then the contract and the token with *0 access keys*, the transaction that locked the contract, both code hashes against `WASM_SHA256` in this repository, the policy checks, `audit()`, the relay keys and the methods they may call, and your transactions.
 
+**Bounties, in five steps** (the track's starter idea, run with Sputnik's own bounties; [README, Bounties](README.md#bounties)):
+
+1. **Open https://replaycourt.github.io/hat-tip/web/#bounties.** See *Bounties* in three columns: *Open* (#3 *Sort the screw box by size*, #4 *Repair the coffee grinder*, each with its poster and the DAO proposal that approved it), *Being worked on* (#5 *Fix the radio's volume knob*, claimed by Ben, with the time left on his claim), *Done and paid* (#0-#2, each with its finisher, its poster and its `BountyDone` proposal).
+2. **Tap #1103 on the toaster bounty.** The `AddBounty` proposal read live from the DAO: filed by Ana, 10 tUSD, approved by two council votes (*Council A*, *Council B*): a new bounty commits the treasury, so it needs the majority.
+3. **Tap #1112 on the same bounty.** The `BountyDone` proposal Dina filed with her report: one vote, *Council A*, approved it, and the DAO paid her 10 tUSD and returned her 1 NEAR bond and her 0.01 NEAR proposal bond.
+4. **Open Emil's record** (his name on bounty #1, the lamp socket): in round 181 Ben, who posted it, gave him 22 thanks, 12 by Ben's usual split and 10 for the bounty, and Emil's note that round names it (*mended 2 jackets + bounty #1*). The thanks for a bounty stop at the cap of 25 per receiver: Ana already gave Dina 24 that round, so the toaster added one. Every point traces to finished work.
+5. **Open *Its policy* in the requirements strip.** Role `members` may file exactly `add_bounty` and `bounty_done`; the council's vote policy has `bounty_done` at weight 1 next to `call`. `scripts/judge-checks.sh` checks the same (5-7) and that bounties are live (15). Claiming yourself needs a NEAR account in the `members` role and the bond; a guest watches.
+
 **To see your own result, join in the first half of a round.** Each house member gives once, between halfway and four fifths of the 20-minute round, and then thanks up to two guests who wrote a note and gave thanks (5 thanks each). A guest who joins later is not thanked back that round; the page says so. After the close, the round card shows your result: who thanked you back and what came of it. A share below 5 tUSD is kept for you and paid with a later round (most single welcomes are); above it, it is a tier-2 payout (a guest is never in tier 1), a house council member votes on it at least two minutes after it is filed, and the tUSD shows in your browser account. The README walks through the same steps: [How to use it](README.md#how-to-use-it).
 
 ## 2. One-command checks (read-only, about 15 seconds)
@@ -39,35 +47,36 @@ scripts/judge-checks.sh
 
 It needs bash, curl and python3 (macOS or Linux), sends no transaction, reads everything at one final block, and prints PASS or FAIL for each check. Its exit code is the number of failed checks (65: the final deployment is not in `deploy/testnet.json` yet; it then says "not launched yet"). A read that gets no answer from FastNEAR or the dRPC fallback fails its check; it never passes.
 
-Expected (the final deployment, read 2026-11-10 at 21:48 UTC, while round 179 ran; the block, the round and the payout counts grow with every round; `--section staging` checks the staging deployment, where checks 1 and 2 are INFO because staging keeps its keys):
+Expected (the final deployment, read 2026-11-10 at 22:41 UTC, while round 182 ran; the block, the round and the payout counts grow with every round; `--section staging` checks the staging deployment, where checks 1 and 2 are INFO because staging keeps its keys):
 
 ```
-Hat Tip (final): read-only checks of thanks.hat-tip.testnet, tusd.hat-tip.testnet and hat-tip.sputnikv2.testnet at block 277124746
+Hat Tip (final): read-only checks of thanks.hat-tip.testnet, tusd.hat-tip.testnet and hat-tip.sputnikv2.testnet at block 277130235
 RPC: https://test.rpc.fastnear.com, fallback https://near-testnet.drpc.org
 PASS  1. thanks.hat-tip.testnet has no access keys
 PASS  2. tusd.hat-tip.testnet has no access keys
 PASS  3. code hash of thanks.hat-tip.testnet = contract/WASM_SHA256
 PASS  4. code hash of tusd.hat-tip.testnet = token/WASM_SHA256
-PASS  5. DAO policy: the three tiers exactly (council of 3)
+PASS  5. DAO policy: the three tiers and the bounty vote exactly (council of 3)
 PASS  6. DAO policy: no Everyone role
-PASS  7. DAO policy: call:AddProposal only in role thanks
+PASS  7. DAO policy: call:AddProposal only in role thanks; members file only bounties
 PASS  8. DAO factory auto-update off
-PASS  9. audit(): balanced, attributed, statuses, ids, carry (1095 payouts)
-PASS  10. the last close is less than two rounds old (round 179)
+PASS  9. audit(): balanced, attributed, statuses, ids, carry (1110 payouts)
+PASS  10. the last close is less than two rounds old (round 182)
 PASS  11. config(): dao = hat-tip.sputnikv2.testnet, token = tusd.hat-tip.testnet
-PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (40 payouts and DAO #1056-#1095, 40 by the contract)
+PASS  12. a sample of the DAO's proposals matches payouts() (proposer, kind, receiver, amount, status) (29 payouts and DAO #1082-#1121, 29 by the contract)
 PASS  13. relay keys only call act, close_round, pay, check_payout, sync (11 relay keys)
 PASS  14. the DAO's code is one the factory sputnikv2.testnet publishes (version 3.31)
-All 14 checks passed.
+PASS  15. bounties: open ones in tUSD, and finished work paid by the DAO (6 posted, 3 open or being worked on, 3 done and paid; DAO #1114 paid bounty #2, 15.0 tUSD, to ana.hat-tip.testnet)
+All 15 checks passed.
 ```
 
 | Check | What it shows |
 |---|---|
 | 1, 2 | `view_access_key_list` of the contract and of tUSD is empty: nobody can redeploy them, change a rule, mint tUSD or act as them. |
 | 3, 4 | The chain's code hash, decoded from base58, equals `contract/WASM_SHA256` and `token/WASM_SHA256`. |
-| 5 | The DAO policy states the three tiers exactly: role `thanks` is the contract alone with exactly `transfer:AddProposal`, `transfer:VoteApprove`, `call:AddProposal`, `transfer:Finalize`, `call:Finalize` and `transfer` 1 of 1; the council's `call` threshold is weight 1; the default policy is 1/2. |
+| 5 | The DAO policy states the three tiers and the bounty vote exactly: role `thanks` is the contract alone with exactly `transfer:AddProposal`, `transfer:VoteApprove`, `call:AddProposal`, `transfer:Finalize`, `call:Finalize` and `transfer` 1 of 1; the council's thresholds for `call` and `bounty_done` are weight 1, nothing else; the default policy is 1/2 (a new bounty needs the majority). |
 | 6 | No `Everyone` role: nobody outside the roles can file anything. |
-| 7 | Only role `thanks` holds `call:AddProposal` (or a wildcard covering it): every `call` proposal comes from the contract, so one council vote can approve those and nothing else. |
+| 7 | Only role `thanks` holds `call:AddProposal` (or a wildcard covering it): every `call` proposal comes from the contract, so one council vote can approve those and finished bounty work, nothing else. Role `members` may file exactly `add_bounty` and `bounty_done`; the council exactly the demo policy's kinds and `add_bounty`. |
 | 8 | `get_factory_info().auto_update` is false: the factory owner cannot replace the DAO's code. |
 | 9 | `audit()`: budgets = planned + carry + lapsed + dust; every round's points equal their attributions; every payout has one status; every filed payout has a DAO proposal id; carries add up. |
 | 10 | The oldest unclosed round is the current one or the one before: the rounds are being closed. |
@@ -75,6 +84,7 @@ All 14 checks passed.
 | 12 | The last 40 DAO proposals against the last 100 payouts, both ways: every proposal the contract filed belongs to a payout, and every payout's proposal was filed by the contract with its tier's kind, receiver, amount and a status that agrees. |
 | 13 | Every function-call key on the gas account may only call `act`, `close_round`, `pay`, `check_payout`, `sync` on the contract; its one full-access key is not in the repository. |
 | 14 | The DAO's code hash is one of the versions the factory `sputnikv2.testnet` publishes (`get_contracts_metadata`): an unmodified Sputnik v2. |
+| 15 | Bounties run: the DAO holds bounties in tUSD, at least one open or being worked on, and a member's finished work (`BountyDone`, recorded in `deploy/testnet.json` or among the last 100 proposals) approved and paid: Sputnik counts a bounty's `times` down to 0 only when its payout succeeded. |
 
 The same checks by hand, as curl one-liners: [Check it without an account](README.md#check-it-without-an-account). Checks 3 and 4 compare two numbers; that `WASM_SHA256` is the build of this source is shown by a rebuild: `cd contract && ./build.sh --check` (and `cd token && ./build.sh --check`) rebuild the wasm with cargo-near 0.22 and the toolchain pinned in `rust-toolchain.toml` and compare the sha256, and `python3 scripts/compare-wasm.py contract/target/near/hat_tip.wasm --deployment contract` (`token/target/near/tusd.wasm --deployment token`) compares the result with the code on chain, section by section. On the Intel Mac that built the deployed wasm, both rebuilds took about 4.5 minutes from a cold target directory and were byte-identical to the chain. CI repeats both rebuilds on every push on Linux, an Intel Mac and an arm64 Mac, reads the deployed code from the chain in the same job and fails on any difference. The first run with all three platforms ([run 42491248652](https://github.com/replaycourt/hat-tip/actions/runs/42491248652), 2026-11-08) found all six rebuilds byte-identical to the code on `thanks.hat-tip.testnet` and `tusd.hat-tip.testnet`.
 
@@ -100,8 +110,9 @@ Line numbers are at the deployed source (`contract/WASM_SHA256` `91e5f94a…4ab8
 | Carry, lapse, budget capped by the DAO, dust stays in the DAO | `close_counted`, `contract/src/close.rs:314`; `lapse_carries`, `:290` | `contract/tests/carry.rs` | |
 | The books add up; the events alone rebuild every reputation | `audit`, `contract/src/views.rs:298`; `contract/src/events.rs` | `many_random_rounds_keep_the_books` in `contract/tests/invariant.rs` (600 random rounds) | check 9; staging: every reputation rebuilt from the events of 744 transactions |
 | Gas: the largest round closes in one receipt; every chain fits its gas | `contract/src/config.rs:69-90`; `contract/src/pay.rs:27-56` | `contract/tests/gas.rs` | burnt gas per call: [docs/testnet-stage.md](docs/testnet-stage.md#gas-measured) |
-| The three tiers are the DAO's own policy | the policy in [DESIGN.md](DESIGN.md#the-three-tiers-in-the-dao); created and compared by `scripts/create-dao.mjs` | the tier probe on testnet, [docs/testnet-probe.md](docs/testnet-probe.md) | checks 5-8, 14 |
+| The three tiers are the DAO's own policy | the policy in [DESIGN.md](DESIGN.md#the-three-tiers-in-the-dao); created and compared by `scripts/create-dao.mjs`; the bounty additions by `scripts/bounties.mjs policy` | the tier probe on testnet, [docs/testnet-probe.md](docs/testnet-probe.md) | checks 5-8, 14 |
 | tUSD: fixed supply to the DAO, no mint | `new`, `token/src/lib.rs:47` | `token/tests/token.rs` | check 2, 4 |
+| Bounties: members post, a council majority approves, a member claims with the bond and files the work, one council vote pays; the house council's rule; the poster's thanks | the policy change and the rule, `scripts/bounty-lib.mjs` (`bountyRoles`, `bountyDecision`, `withBountyThanks`); the house's part, `tickBounties` in `scripts/house.mjs`; the board, `bountyBoard`, `bountyColumns` in `web/js/logic.js` | `scripts/test/bounty.test.mjs`, `web/test/bounty.test.mjs` | policy DAO #1101 `4Eg9shBKkKpnAYFxTyKUWo4bkZGUyNTrrhAgSJR26j33`, paid work DAO #1112 `A9BDpTUXRdeXczGbdCmGmn3thSw4XMgmMVNV3bPgrUny`; check 15; [docs/bounties.md](docs/bounties.md) |
 | The page counts like the contract and checks what it shows | `countRound`, `web/js/logic.js:101`; `policyReport`, `web/js/logic.js:614`; `proofHtml`, `web/js/ui.js:436` | `web/test/golden.test.mjs`, `web/test/logic.test.mjs` | |
 | Each requirement links to its proof on the page: the DAO's policy role by role, a member's record, a proposal the contract filed, the board, the approval flows | `parseRoute`, `reqProposal`, `policyRoles`, `web/js/logic.js:1084`, `:1105`, `:1115`; `policyHtml`, `web/js/ui.js:514`; `renderReqs`, `route`, `web/js/main.js:376`, `:882`; the strip and the flows in `web/index.html` | `web/test/reqs.test.mjs` | |
 | The page tells the close and the demo from the chain's records: proposals filed so far, the colluding pair's real partner, a guest's own result | `pickReason`, `filedText`, `guestOutcome`, `web/js/logic.js:839`, `:886`, `:957`; `storyHtml`, `web/js/ui.js:162` | `web/test/story.test.mjs` | |
@@ -115,12 +126,12 @@ More evidence transactions (each path once) are in `deploy/testnet.json`, `stagi
 Measured 2026-11-08 on a 4-core Intel laptop (macOS 15), cold builds from an empty target directory:
 
 ```sh
-node --test 'web/test/*.test.mjs'      # 100 tests; Node 20+, no install; about 6 seconds
-node --test 'scripts/test/*.test.mjs'  # 12 tests (the house council's rule, the keeper's window); under 1 second
+node --test 'web/test/*.test.mjs'      # 107 tests; Node 20+, no install; about 6 seconds
+node --test 'scripts/test/*.test.mjs'  # 22 tests (the house council's rules for payouts and bounties, the bounty policy change, the bounty board, the poster's thanks, the keeper's window); under 1 second
 (cd contract && cargo test)           # 82 tests in the SDK's mock VM with a model of the Sputnik DAO; cold build 11 minutes, tests about 2 seconds
 (cd token && cargo test)              # 6 tests (NEP-141, storage, fixed supply); cold build 14 minutes
 python3 sim/hat_tip_sim.py --check    # golden vectors, replay and launch parameters reproduced; about 1.5 seconds
-scripts/judge-checks.sh               # 14 read-only checks of the live deployment; about 15 seconds
+scripts/judge-checks.sh               # 15 read-only checks of the live deployment; about 20 seconds
 ```
 
 The contract's tests run the real contract in near-sdk's mock VM against a model of the Sputnik v2 DAO (2.3.1: bonds, per-kind permissions, role thresholds, execution, removal, expiry) and of the token, executing every receipt the contract creates and feeding the answers back into the callbacks with the gas each receipt attached. The table of test files is in [contract/README.md](contract/README.md#tests). Not done: an integration test in near-sandbox; the staging run on testnet covers the same paths against the real DAO.
