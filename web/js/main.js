@@ -881,6 +881,8 @@ function renderRules() {
  */
 function route({ boot = false } = {}) {
   const r = L.parseRoute(location.hash)
+  // Back from a drawer's link closes the drawer (no link on the page can be clicked while one is open)
+  if (!r && !boot && U.drawerOpen()) U.closeDrawer()
   if (!r && boot && location.hash.length > 1) {
     let el = null
     try {
